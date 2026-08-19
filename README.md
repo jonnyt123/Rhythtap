@@ -6,6 +6,14 @@ Each track has Easy, Normal, and Hard charts generated from the same pitch seque
 
 Completed tracks award difficulty-scaled XP. Player level and progress persist locally; Afterglow Circuit unlocks at level 2 and Zero Gravity unlocks at level 4.
 
+## Licensed audio tracks
+
+- Disturbed — Down With the Sickness
+- blink-182 — If You Never Left
+- Fly Like an Eagle (Metal version)
+
+These supplied recordings are loaded through the same Web Audio clock used for note judgment. Each includes independently generated Easy, Normal, and Hard beat-grid charts. Distribution permission was confirmed by the project owner.
+
 Play online: https://jonnyt123.github.io/Rhythtap/
 
 ## Run
