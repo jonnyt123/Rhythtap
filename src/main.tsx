@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ArrowLeft, Gauge, Pause, Play, RotateCcw, Settings, Volume2, Zap} from 'lucide-react';
+import {flyEagleEvents,neverLeftEvents,sicknessEvents,type OnsetEvent} from './audioChartData';
 import './styles.css';
 
 type Note={id:number,time:number,lane:number,duration?:number};
@@ -28,15 +29,17 @@ const makeMelodyChart=(bpm:number,melody:number[],difficulty:Difficulty,bars=20)
 const charts=(bpm:number,melody:number[]):Record<Difficulty,Note[]>=>({EASY:makeMelodyChart(bpm,melody,'EASY'),NORMAL:makeMelodyChart(bpm,melody,'NORMAL'),HARD:makeMelodyChart(bpm,melody,'HARD')});
 const makeBeatChart=(bpm:number,offset:number,duration:number,difficulty:Difficulty,seed:number):Note[]=>{const beat=60000/bpm,step=difficulty==='EASY'?beat:beat/2,out:Note[]=[];let id=0,n=0;for(let time=offset;time<duration*1000-700;time+=step,n++){const lane=(n*3+Math.floor(n/4)+seed)%4;out.push({id:id++,time,lane,duration:n%32===20?beat*(difficulty==='EASY'?1:1.5):undefined});if(difficulty!=='EASY'&&n%8===0)out.push({id:id++,time,lane:(lane+2)%4});if(difficulty==='HARD'&&n%4===3)out.push({id:id++,time:time+step/2,lane:(lane+1+seed)%4})}return out};
 const beatCharts=(bpm:number,offset:number,duration:number,seed:number):Record<Difficulty,Note[]>=>({EASY:makeBeatChart(bpm,offset,duration,'EASY',seed),NORMAL:makeBeatChart(bpm,offset,duration,'NORMAL',seed),HARD:makeBeatChart(bpm,offset,duration,'HARD',seed)});
+const makeOnsetChart=(events:readonly OnsetEvent[],difficulty:Difficulty):Note[]=>{const threshold={EASY:72,NORMAL:46,HARD:20}[difficulty],gap={EASY:330,NORMAL:170,HARD:85}[difficulty],out:Note[]=[];let id=0,last=-Infinity;for(let i=0;i<events.length;i++){const [time,lane,strength]=events[i];if(strength<threshold||time-last<gap)continue;const next=events[i+1]?.[0]??time;out.push({id:id++,time,lane,duration:strength>88&&next-time>650?Math.min(1200,(next-time)*.62):undefined});if(difficulty==='NORMAL'&&strength>88)out.push({id:id++,time,lane:(lane+2)%4});if(difficulty==='HARD'&&strength>70)out.push({id:id++,time,lane:(lane+1)%4});last=time}return out};
+const onsetCharts=(events:readonly OnsetEvent[]):Record<Difficulty,Note[]>=>({EASY:makeOnsetChart(events,'EASY'),NORMAL:makeOnsetChart(events,'NORMAL'),HARD:makeOnsetChart(events,'HARD')});
 const audioParts=(folder:string,count:number)=>Array.from({length:count},(_,i)=>`audio/${folder}/${String(i).padStart(2,'0')}.b64`);
 const melodyVoltage=[12,15,19,17,12,10,7,10],melodyAfterglow=[12,14,15,19,17,15,14,10],melodyGravity=[12,19,17,15,14,10,12,7];
 const songs:Song[]=[
  {id:'voltage',title:'Midnight Voltage',artist:'NOVA//STATIC',bpm:118,color:'#22e8ff',root:45,progression:[0,5,3,7],melody:melodyVoltage,unlockLevel:1,duration:43,charts:charts(118,melodyVoltage)},
  {id:'afterglow',title:'Afterglow Circuit',artist:'Luma Driver',bpm:132,color:'#ff3dad',root:40,progression:[0,3,7,5],melody:melodyAfterglow,unlockLevel:2,duration:39,charts:charts(132,melodyAfterglow)},
  {id:'gravity',title:'Zero Gravity',artist:'Phase Garden',bpm:102,color:'#b650ff',root:43,progression:[0,7,5,3],melody:melodyGravity,unlockLevel:4,duration:49,charts:charts(102,melodyGravity)},
- {id:'sickness',title:'Down With the Sickness',artist:'Disturbed',bpm:95,color:'#9cff3d',root:0,progression:[],melody:[],unlockLevel:1,duration:217.704,audioParts:audioParts('down-with-the-sickness',17),charts:beatCharts(95,2163,217.704,1)},
- {id:'never-left',title:'If You Never Left',artist:'blink-182',bpm:195,color:'#ff704d',root:0,progression:[],melody:[],unlockLevel:1,duration:178.495,audioParts:audioParts('if-you-never-left',6),charts:beatCharts(195,2028,178.495,2)},
- {id:'fly-eagle',title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',bpm:105.4,color:'#ffd43b',root:0,progression:[],melody:[],unlockLevel:1,duration:192.192,audioParts:audioParts('fly-like-an-eagle-metal',9),charts:beatCharts(105.4,2067,192.192,3)}
+ {id:'sickness',title:'Down With the Sickness',artist:'Disturbed',bpm:95,color:'#9cff3d',root:0,progression:[],melody:[],unlockLevel:1,duration:217.704,audioParts:audioParts('down-with-the-sickness',17),charts:onsetCharts(sicknessEvents)},
+ {id:'never-left',title:'If You Never Left',artist:'blink-182',bpm:195,color:'#ff704d',root:0,progression:[],melody:[],unlockLevel:1,duration:178.495,audioParts:audioParts('if-you-never-left',6),charts:onsetCharts(neverLeftEvents)},
+ {id:'fly-eagle',title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',bpm:105.4,color:'#ffd43b',root:0,progression:[],melody:[],unlockLevel:1,duration:192.192,audioParts:audioParts('fly-like-an-eagle-metal',9),charts:onsetCharts(flyEagleEvents)}
 ];
 const levelFor=(xp:number)=>Math.floor(Math.sqrt(xp/350))+1;
 const xpFloor=(level:number)=>(level-1)*(level-1)*350;
