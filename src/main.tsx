@@ -5,34 +5,43 @@ import './styles.css';
 
 type Note={id:number,time:number,lane:number,duration?:number};
 type Difficulty='EASY'|'NORMAL'|'HARD';
-type Song={id:string,title:string,artist:string,bpm:number,color:string,root:number,progression:number[],melody:number[],charts:Record<Difficulty,Note[]>};
+type Song={id:string,title:string,artist:string,bpm:number,color:string,root:number,progression:number[],melody:number[],unlockLevel:number,charts:Record<Difficulty,Note[]>};
+type Profile={xp:number,level:number};
+type GameResult={score:number,accuracy:number,maxCombo:number,counts:Record<Judge,number>,xpEarned:number,levelUp:boolean};
 type Screen='home'|'select'|'game'|'results'|'settings';
 type Judge='PERFECT'|'GREAT'|'GOOD'|'MISS';
 type Feedback=Judge|'HOLD';
 const LANES=['D','F','J','K'];
 const COLORS=['#29f2ff','#b650ff','#ff3dad','#ffd43b'];
-const makeChart=(bpm:number, pattern:number[][], difficulty:Difficulty, bars=20):Note[]=>{
-  const beat=60000/bpm, out:Note[]=[]; let id=0;
-  for(let b=0;b<bars*4;b++){
-    const base=pattern[b%pattern.length];
-    const lanes=difficulty==='EASY'?[base[0]]:base;
-    lanes.forEach((lane,i)=>out.push({id:id++,time:1800+b*beat,lane,duration:(b%(difficulty==='HARD'?9:13)===8&&i===0)?beat*(difficulty==='EASY'?1:1.5):undefined}));
-    if(difficulty!=='EASY'&&b%8===6) out.push({id:id++,time:1800+b*beat+beat/2,lane:(b/2)%4});
-    if(difficulty==='HARD'&&b%4===3){out.push({id:id++,time:1800+b*beat+beat*.5,lane:(b+1)%4});out.push({id:id++,time:1800+b*beat+beat*.75,lane:(b+3)%4})}
-  } return out;
+const laneFor=(pitch:number,melody:number[])=>{const low=Math.min(...melody),high=Math.max(...melody);return Math.max(0,Math.min(3,Math.round((pitch-low)/Math.max(1,high-low)*3)))};
+const makeMelodyChart=(bpm:number,melody:number[],difficulty:Difficulty,bars=20):Note[]=>{
+ const step=30000/bpm,out:Note[]=[];let id=0;
+ for(let n=0;n<bars*8;n++){
+  if(difficulty==='EASY'&&n%2)continue;
+  const pitch=melody[n%melody.length],lane=laneFor(pitch,melody),next=melody[(n+1)%melody.length];
+  out.push({id:id++,time:1800+n*step,lane,duration:next===pitch?step*.9:undefined});
+  if(difficulty!=='EASY'&&n%8===0)out.push({id:id++,time:1800+n*step,lane:(lane+2)%4});
+  if(difficulty==='HARD'&&n%8===4)out.push({id:id++,time:1800+n*step,lane:(lane+1)%4});
+ }
+ return out;
 };
-const charts=(bpm:number,pattern:number[][]):Record<Difficulty,Note[]>=>({EASY:makeChart(bpm,pattern,'EASY'),NORMAL:makeChart(bpm,pattern,'NORMAL'),HARD:makeChart(bpm,pattern,'HARD')});
+const charts=(bpm:number,melody:number[]):Record<Difficulty,Note[]>=>({EASY:makeMelodyChart(bpm,melody,'EASY'),NORMAL:makeMelodyChart(bpm,melody,'NORMAL'),HARD:makeMelodyChart(bpm,melody,'HARD')});
+const melodyVoltage=[12,15,19,17,12,10,7,10],melodyAfterglow=[12,14,15,19,17,15,14,10],melodyGravity=[12,19,17,15,14,10,12,7];
 const songs:Song[]=[
- {id:'voltage',title:'Midnight Voltage',artist:'NOVA//STATIC',bpm:118,color:'#22e8ff',root:45,progression:[0,5,3,7],melody:[12,15,19,17,12,10,7,10],charts:charts(118,[[0],[1],[2],[3],[0,3],[1],[2],[1,2]])},
- {id:'afterglow',title:'Afterglow Circuit',artist:'Luma Driver',bpm:132,color:'#ff3dad',root:40,progression:[0,3,7,5],melody:[12,14,15,19,17,15,14,10],charts:charts(132,[[0],[1,3],[2],[0,2],[3],[1],[0,3],[2]])},
- {id:'gravity',title:'Zero Gravity',artist:'Phase Garden',bpm:102,color:'#b650ff',root:43,progression:[0,7,5,3],melody:[12,19,17,15,14,10,12,7],charts:charts(102,[[0],[2],[1],[3],[0],[2],[1,3],[2]])}
+ {id:'voltage',title:'Midnight Voltage',artist:'NOVA//STATIC',bpm:118,color:'#22e8ff',root:45,progression:[0,5,3,7],melody:melodyVoltage,unlockLevel:1,charts:charts(118,melodyVoltage)},
+ {id:'afterglow',title:'Afterglow Circuit',artist:'Luma Driver',bpm:132,color:'#ff3dad',root:40,progression:[0,3,7,5],melody:melodyAfterglow,unlockLevel:2,charts:charts(132,melodyAfterglow)},
+ {id:'gravity',title:'Zero Gravity',artist:'Phase Garden',bpm:102,color:'#b650ff',root:43,progression:[0,7,5,3],melody:melodyGravity,unlockLevel:4,charts:charts(102,melodyGravity)}
 ];
+const levelFor=(xp:number)=>Math.floor(Math.sqrt(xp/350))+1;
+const xpFloor=(level:number)=>(level-1)*(level-1)*350;
+const xpCeil=(level:number)=>level*level*350;
+const loadProfile=():Profile=>{try{const saved=JSON.parse(localStorage.getItem('rhythtap-profile')||'{}');const xp=Math.max(0,Number(saved.xp)||0);return{xp,level:levelFor(xp)}}catch{return{xp:0,level:1}}};
 
 class SynthTransport{
  ctx:AudioContext|null=null; startAt=0; pausedAt=0; timer:number|undefined; song:Song|null=null;
  async start(song:Song,from=0){this.stop();this.song=song;this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime-from/1000;this.schedule(song,from)}
  now(){return this.ctx?(this.ctx.currentTime-this.startAt)*1000:this.pausedAt}
- schedule(song:Song,from:number){if(!this.ctx)return;const ctx=this.ctx,step=30/song.bpm;let n=Math.floor(from/1000/step);const pump=()=>{if(!this.ctx)return;const horizon=(ctx.currentTime-this.startAt)+1.2;while(n*step<horizon){const t=this.startAt+n*step;if(t>ctx.currentTime){const bar=Math.floor(n/8),pos=n%8,root=song.root+song.progression[bar%song.progression.length];this.hat(t,pos%2?0.035:0.055);if(pos===0||pos===4)this.kick(t,pos===0?.34:.25);if(pos===2||pos===6)this.snare(t,.13);if(pos%2===0)this.tone(t,this.midi(root-12),step*.82,.12,'sawtooth',520);if(pos===0)this.chord(t,root,step*7.4,.035);if(pos%2===1)this.tone(t,this.midi(song.root+song.melody[(n>>1)%song.melody.length]),step*.7,.045,'square',1800)}n++}this.timer=window.setTimeout(pump,260)};pump()}
+ schedule(song:Song,from:number){if(!this.ctx)return;const ctx=this.ctx,step=30/song.bpm,leadIn=1.8;let n=Math.max(0,Math.floor((from/1000-leadIn)/step));const pump=()=>{if(!this.ctx)return;const horizon=(ctx.currentTime-this.startAt)+1.2;while(leadIn+n*step<horizon){const t=this.startAt+leadIn+n*step;if(t>ctx.currentTime){const bar=Math.floor(n/8),pos=n%8,root=song.root+song.progression[bar%song.progression.length],pitch=song.melody[n%song.melody.length];this.hat(t,pos%2?0.035:0.055);if(pos===0||pos===4)this.kick(t,pos===0?.34:.25);if(pos===2||pos===6)this.snare(t,.13);if(pos%2===0)this.tone(t,this.midi(root-12),step*.82,.12,'sawtooth',520);if(pos===0||pos===4)this.chord(t,root,step*3.4,.035);this.tone(t,this.midi(song.root+pitch),step*.72,pos%2?.042:.052,'square',1800)}n++}this.timer=window.setTimeout(pump,260)};pump()}
  midi(n:number){return 440*Math.pow(2,(n-69)/12)}
  tone(t:number,f:number,d:number,v:number,type:OscillatorType='triangle',cutoff=2200){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain(),filter=this.ctx.createBiquadFilter();o.type=type;o.frequency.setValueAtTime(f,t);filter.type='lowpass';filter.frequency.setValueAtTime(cutoff,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(filter).connect(g).connect(this.ctx.destination);o.start(t);o.stop(t+d+.03)}
  chord(t:number,root:number,d:number,v:number){[0,3,7].forEach((x,i)=>this.tone(t,this.midi(root+x),d,v/(i+1),'sine',1400))}
@@ -46,31 +55,32 @@ class SynthTransport{
 }
 
 function App(){
- const [screen,setScreen]=useState<Screen>('home'),[song,setSong]=useState(songs[0]),[difficulty,setDifficulty]=useState<Difficulty>('NORMAL'),[speed,setSpeed]=useState(1),[offset,setOffset]=useState(()=>Number(localStorage.getItem('ntr-offset')||0));
- const [result,setResult]=useState({score:0,accuracy:0,maxCombo:0,counts:{PERFECT:0,GREAT:0,GOOD:0,MISS:0}});
+ const [screen,setScreen]=useState<Screen>('home'),[song,setSong]=useState(songs[0]),[difficulty,setDifficulty]=useState<Difficulty>('NORMAL'),[profile,setProfile]=useState<Profile>(loadProfile),[speed,setSpeed]=useState(1),[offset,setOffset]=useState(()=>Number(localStorage.getItem('ntr-offset')||0));
+ const [result,setResult]=useState<GameResult>({score:0,accuracy:0,maxCombo:0,counts:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},xpEarned:0,levelUp:false});
+ const finishGame=(r:Omit<GameResult,'xpEarned'|'levelUp'>)=>{const multiplier={EASY:1,NORMAL:1.4,HARD:1.9}[difficulty],xpEarned=Math.max(25,Math.round((r.accuracy*1.8+r.score/850)*multiplier)),xp=profile.xp+xpEarned,level=levelFor(xp);setProfile({xp,level});localStorage.setItem('rhythtap-profile',JSON.stringify({xp}));setResult({...r,xpEarned,levelUp:level>profile.level});setScreen('results')};
  return <main>
-  {screen==='home'&&<Home onPlay={()=>setScreen('select')} onSettings={()=>setScreen('settings')}/>} 
-  {screen==='select'&&<Select song={song} setSong={setSong} difficulty={difficulty} setDifficulty={setDifficulty} back={()=>setScreen('home')} play={()=>setScreen('game')} />}
-  {screen==='game'&&<Game song={song} difficulty={difficulty} speed={speed} offset={offset} quit={()=>setScreen('select')} finish={(r)=>{setResult(r);setScreen('results')}}/>}
-  {screen==='results'&&<Results song={song} difficulty={difficulty} result={result} retry={()=>setScreen('game')} done={()=>setScreen('select')}/>} 
+  {screen==='home'&&<Home profile={profile} onPlay={()=>setScreen('select')} onSettings={()=>setScreen('settings')}/>} 
+  {screen==='select'&&<Select song={song} setSong={setSong} difficulty={difficulty} setDifficulty={setDifficulty} profile={profile} back={()=>setScreen('home')} play={()=>setScreen('game')} />}
+  {screen==='game'&&<Game song={song} difficulty={difficulty} speed={speed} offset={offset} quit={()=>setScreen('select')} finish={finishGame}/>}
+  {screen==='results'&&<Results song={song} difficulty={difficulty} result={result} profile={profile} retry={()=>setScreen('game')} done={()=>setScreen('select')}/>} 
   {screen==='settings'&&<SettingsScreen speed={speed} setSpeed={setSpeed} offset={offset} setOffset={(v)=>{setOffset(v);localStorage.setItem('ntr-offset',String(v))}} back={()=>setScreen('home')}/>} 
  </main>
 }
 
-function Home({onPlay,onSettings}:{onPlay:()=>void,onSettings:()=>void}){return <section className="home screen">
- <div className="topbar"><span className="brandmark">NT//R</span><button className="icon" onClick={onSettings} aria-label="Settings"><Settings/></button></div>
+function Home({profile,onPlay,onSettings}:{profile:Profile,onPlay:()=>void,onSettings:()=>void}){const progress=(profile.xp-xpFloor(profile.level))/(xpCeil(profile.level)-xpFloor(profile.level))*100;return <section className="home screen">
+ <div className="topbar"><span className="brandmark">NT//R</span><div className="profile-chip"><span>LV. {profile.level}</span><div><i style={{width:progress+'%'}}/></div></div><button className="icon" onClick={onSettings} aria-label="Settings"><Settings/></button></div>
  <div className="hero"><div className="eyebrow">A NEW RHYTHM EXPERIENCE</div><h1>NEON<br/><i>TAP</i></h1><p className="subtitle">RECHARGED</p><div className="orb"><span/><span/><span/></div><button className="primary" onClick={onPlay}><Play fill="currentColor"/> ENTER THE BEAT</button><p className="hint">HEADPHONES RECOMMENDED</p></div>
- <div className="footerline"><span>LOCAL PLAYER</span><strong>READY</strong></div></section>}
+ <div className="footerline"><span>{profile.xp.toLocaleString()} XP</span><strong>PLAYER READY</strong></div></section>}
 
-function Select({song,setSong,difficulty,setDifficulty,back,play}:{song:Song,setSong:(s:Song)=>void,difficulty:Difficulty,setDifficulty:(d:Difficulty)=>void,back:()=>void,play:()=>void}){return <section className="select screen">
- <header><button className="icon" onClick={back}><ArrowLeft/></button><div><small>CHOOSE YOUR SIGNAL</small><h2>TRACK SELECT</h2></div><span className="level">LV. 01</span></header>
- <div className="songlist">{songs.map((s,i)=><button key={s.id} className={'song '+(song.id===s.id?'active':'')} onClick={()=>setSong(s)} style={{'--song':s.color} as React.CSSProperties}>
-  <div className="cover"><div className="covergrid"/><b>0{i+1}</b></div><div className="songmeta"><span>{s.artist}</span><h3>{s.title}</h3><div><em>{s.charts[difficulty].length} NOTES</em><span>{s.bpm} BPM</span></div></div><div className="rank">—</div></button>)}</div>
+function Select({song,setSong,difficulty,setDifficulty,profile,back,play}:{song:Song,setSong:(s:Song)=>void,difficulty:Difficulty,setDifficulty:(d:Difficulty)=>void,profile:Profile,back:()=>void,play:()=>void}){return <section className="select screen">
+ <header><button className="icon" onClick={back}><ArrowLeft/></button><div><small>CHOOSE YOUR SIGNAL</small><h2>TRACK SELECT</h2></div><span className="level">LV. {profile.level}</span></header>
+ <div className="songlist">{songs.map((s,i)=>{const locked=profile.level<s.unlockLevel;return <button key={s.id} disabled={locked} className={'song '+(song.id===s.id?'active ':'')+(locked?'locked':'')} onClick={()=>setSong(s)} style={{'--song':s.color} as React.CSSProperties}>
+  <div className="cover"><div className="covergrid"/><b>{locked?'×':'0'+(i+1)}</b></div><div className="songmeta"><span>{locked?`UNLOCKS AT LEVEL ${s.unlockLevel}`:s.artist}</span><h3>{s.title}</h3><div><em>{s.charts[difficulty].length} NOTES</em><span>{s.bpm} BPM</span></div></div><div className="rank">{locked?'LOCK':'—'}</div></button>})}</div>
  <div className="difficulty" aria-label="Difficulty">{(['EASY','NORMAL','HARD'] as Difficulty[]).map(d=><button key={d} className={difficulty===d?'active':''} onClick={()=>setDifficulty(d)}><span>{d}</span><small>{song.charts[d].length}</small></button>)}</div>
  <div className="playdock"><div><small>{difficulty} · {song.charts[difficulty].length} NOTES</small><strong>{song.title}</strong></div><button className="primary" onClick={play}><Play fill="currentColor"/> PLAY</button></div>
  </section>}
 
-function Game({song,difficulty,speed,offset,quit,finish}:{song:Song,difficulty:Difficulty,speed:number,offset:number,quit:()=>void,finish:(r:any)=>void}){
+function Game({song,difficulty,speed,offset,quit,finish}:{song:Song,difficulty:Difficulty,speed:number,offset:number,quit:()=>void,finish:(r:Omit<GameResult,'xpEarned'|'levelUp'>)=>void}){
  const notes=song.charts[difficulty];
  const transport=useRef(new SynthTransport()),raf=useRef(0),pressed=useRef(new Set<number>()),judged=useRef(new Set<number>()),activeHolds=useRef(new Map<number,Note>()),feedbackTimer=useRef(0);
  const [ready,setReady]=useState(false),[now,setNow]=useState(0),[paused,setPaused]=useState(false),[score,setScore]=useState(0),[combo,setCombo]=useState(0),[maxCombo,setMaxCombo]=useState(0),[judge,setJudge]=useState<Feedback|null>(null),[counts,setCounts]=useState({PERFECT:0,GREAT:0,GOOD:0,MISS:0}),[pulse,setPulse]=useState(0),[energy,setEnergy]=useState(100);
@@ -95,7 +105,7 @@ function Game({song,difficulty,speed,offset,quit,finish}:{song:Song,difficulty:D
   {paused&&<div className="modal"><Pause/><h2>PAUSED</h2><button className="primary" onClick={togglePause}><Play/> RESUME</button><button className="secondary" onClick={quit}>EXIT TRACK</button></div>}
  </section>}
 
-function Results({song,difficulty,result,retry,done}:{song:Song,difficulty:Difficulty,result:any,retry:()=>void,done:()=>void}){const grade=result.accuracy>=95?'S':result.accuracy>=88?'A':result.accuracy>=75?'B':'C';useEffect(()=>{const key=`ntr-high-${song.id}-${difficulty}`;localStorage.setItem(key,String(Math.max(result.score,Number(localStorage.getItem(key)||0))))},[]);return <section className="results screen"><small>{difficulty} · TRACK COMPLETE</small><h2>{song.title}</h2><div className="grade">{grade}</div><div className="bigscore">{result.score.toLocaleString()}</div><p>{result.accuracy.toFixed(1)}% ACCURACY · {result.maxCombo} MAX COMBO</p><div className="breakdown">{Object.entries(result.counts).map(([k,v])=><div key={k}><span>{k}</span><strong>{String(v)}</strong></div>)}</div><button className="primary" onClick={retry}><RotateCcw/> RETRY</button><button className="secondary" onClick={done}>TRACK SELECT</button></section>}
+function Results({song,difficulty,result,profile,retry,done}:{song:Song,difficulty:Difficulty,result:GameResult,profile:Profile,retry:()=>void,done:()=>void}){const grade=result.accuracy>=95?'S':result.accuracy>=88?'A':result.accuracy>=75?'B':'C',progress=(profile.xp-xpFloor(profile.level))/(xpCeil(profile.level)-xpFloor(profile.level))*100;useEffect(()=>{const key=`ntr-high-${song.id}-${difficulty}`;localStorage.setItem(key,String(Math.max(result.score,Number(localStorage.getItem(key)||0))))},[]);return <section className="results screen"><small>{difficulty} · TRACK COMPLETE</small><h2>{song.title}</h2><div className="grade">{grade}</div><div className="bigscore">{result.score.toLocaleString()}</div><p>{result.accuracy.toFixed(1)}% ACCURACY · {result.maxCombo} MAX COMBO</p><div className="xp-award"><strong>{result.levelUp?`LEVEL UP · ${profile.level}`:`+${result.xpEarned} XP`}</strong><div><i style={{width:progress+'%'}}/></div><small>{profile.xp-xpFloor(profile.level)} / {xpCeil(profile.level)-xpFloor(profile.level)} XP</small></div><div className="breakdown">{Object.entries(result.counts).map(([k,v])=><div key={k}><span>{k}</span><strong>{String(v)}</strong></div>)}</div><button className="primary" onClick={retry}><RotateCcw/> RETRY</button><button className="secondary" onClick={done}>TRACK SELECT</button></section>}
 
 function SettingsScreen({speed,setSpeed,offset,setOffset,back}:{speed:number,setSpeed:(n:number)=>void,offset:number,setOffset:(n:number)=>void,back:()=>void}){return <section className="settingsPage screen"><header><button className="icon" onClick={back}><ArrowLeft/></button><div><small>SYSTEM</small><h2>SETTINGS</h2></div></header><div className="setting"><div><Gauge/><span><strong>NOTE SPEED</strong><small>How quickly notes cross the playfield</small></span></div><output>{speed.toFixed(1)}×</output><input type="range" min="0.7" max="1.5" step="0.1" value={speed} onChange={e=>setSpeed(Number(e.target.value))}/></div><div className="setting"><div><Volume2/><span><strong>AUDIO OFFSET</strong><small>Shift note timing to match your device</small></span></div><output>{offset} ms</output><input type="range" min="-200" max="200" step="5" value={offset} onChange={e=>setOffset(Number(e.target.value))}/></div><div className="how"><h3>HOW TO PLAY</h3><p>Tap the four pads when notes meet the bright judgment line. Desktop players can use D, F, J and K. For long notes, keep holding until the glowing tail reaches the judgment line; releasing early breaks the combo.</p></div></section>}
 
