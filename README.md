@@ -14,7 +14,7 @@ npm run dev
 ## Controls
 
 - Desktop: D, F, J, K
-- Mobile: tap the four colored pads
+- Mobile: tap the four colored pads; press and sustain long notes until their tails reach the judgment line
 - Escape or the pause button pauses the track
 
 ## Timing
@@ -23,7 +23,7 @@ The oscillator-backed transport and notes share the `AudioContext.currentTime` c
 
 ## Add a track
 
-Add a `Song` entry in `src/main.tsx`. Charts use millisecond timestamps and lane indexes 0–3. A note may include `duration` for a hold visual.
+Add a `Song` entry in `src/main.tsx`. Charts use millisecond timestamps and lane indexes 0–3. Add `duration` to create a fully judged hold note.
 
 ## Build
 
