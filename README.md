@@ -12,7 +12,7 @@ Completed tracks award difficulty-scaled XP. Player level and progress persist l
 - blink-182 — If You Never Left
 - Fly Like an Eagle (Metal version)
 
-These supplied recordings are loaded through the same Web Audio clock used for note judgment. Each includes independently generated Easy, Normal, and Hard beat-grid charts. Distribution permission was confirmed by the project owner.
+These supplied recordings are loaded through the same Web Audio clock used for note judgment. Their Easy, Normal, and Hard charts are derived from spectral-flux onset analysis of the actual recordings; note lanes also reflect the frequency centroid of each detected attack. Distribution permission was confirmed by the project owner.
 
 Play online: https://jonnyt123.github.io/Rhythtap/
 
