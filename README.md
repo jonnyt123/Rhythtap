@@ -2,7 +2,9 @@
 
 An original four-lane browser rhythm game built with React, TypeScript, Vite and the Web Audio API. It does not contain Tap Tap Revenge branding, artwork, music, charts, or other proprietary assets.
 
-Each track has Easy, Normal, and Hard charts. Music is generated in real time from original track-specific arrangements with layered kick, snare, hi-hat, bass, chord, and lead synthesizers.
+Each track has Easy, Normal, and Hard charts generated from the same pitch sequence and timestamps as its audible lead melody. Music is generated in real time from original track-specific arrangements with layered kick, snare, hi-hat, bass, chord, and lead synthesizers.
+
+Completed tracks award difficulty-scaled XP. Player level and progress persist locally; Afterglow Circuit unlocks at level 2 and Zero Gravity unlocks at level 4.
 
 Play online: https://jonnyt123.github.io/Rhythtap/
 
