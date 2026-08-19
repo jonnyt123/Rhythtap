@@ -5,7 +5,7 @@ import './styles.css';
 
 type Note={id:number,time:number,lane:number,duration?:number};
 type Difficulty='EASY'|'NORMAL'|'HARD';
-type Song={id:string,title:string,artist:string,bpm:number,color:string,root:number,progression:number[],melody:number[],unlockLevel:number,charts:Record<Difficulty,Note[]>};
+type Song={id:string,title:string,artist:string,bpm:number,color:string,root:number,progression:number[],melody:number[],unlockLevel:number,duration:number,audioParts?:string[],charts:Record<Difficulty,Note[]>};
 type Profile={xp:number,level:number};
 type GameResult={score:number,accuracy:number,maxCombo:number,counts:Record<Judge,number>,xpEarned:number,levelUp:boolean};
 type Screen='home'|'select'|'game'|'results'|'settings';
@@ -26,11 +26,17 @@ const makeMelodyChart=(bpm:number,melody:number[],difficulty:Difficulty,bars=20)
  return out;
 };
 const charts=(bpm:number,melody:number[]):Record<Difficulty,Note[]>=>({EASY:makeMelodyChart(bpm,melody,'EASY'),NORMAL:makeMelodyChart(bpm,melody,'NORMAL'),HARD:makeMelodyChart(bpm,melody,'HARD')});
+const makeBeatChart=(bpm:number,offset:number,duration:number,difficulty:Difficulty,seed:number):Note[]=>{const beat=60000/bpm,step=difficulty==='EASY'?beat:beat/2,out:Note[]=[];let id=0,n=0;for(let time=offset;time<duration*1000-700;time+=step,n++){const lane=(n*3+Math.floor(n/4)+seed)%4;out.push({id:id++,time,lane,duration:n%32===20?beat*(difficulty==='EASY'?1:1.5):undefined});if(difficulty!=='EASY'&&n%8===0)out.push({id:id++,time,lane:(lane+2)%4});if(difficulty==='HARD'&&n%4===3)out.push({id:id++,time:time+step/2,lane:(lane+1+seed)%4})}return out};
+const beatCharts=(bpm:number,offset:number,duration:number,seed:number):Record<Difficulty,Note[]>=>({EASY:makeBeatChart(bpm,offset,duration,'EASY',seed),NORMAL:makeBeatChart(bpm,offset,duration,'NORMAL',seed),HARD:makeBeatChart(bpm,offset,duration,'HARD',seed)});
+const audioParts=(folder:string,count:number)=>Array.from({length:count},(_,i)=>`audio/${folder}/${String(i).padStart(2,'0')}.b64`);
 const melodyVoltage=[12,15,19,17,12,10,7,10],melodyAfterglow=[12,14,15,19,17,15,14,10],melodyGravity=[12,19,17,15,14,10,12,7];
 const songs:Song[]=[
- {id:'voltage',title:'Midnight Voltage',artist:'NOVA//STATIC',bpm:118,color:'#22e8ff',root:45,progression:[0,5,3,7],melody:melodyVoltage,unlockLevel:1,charts:charts(118,melodyVoltage)},
- {id:'afterglow',title:'Afterglow Circuit',artist:'Luma Driver',bpm:132,color:'#ff3dad',root:40,progression:[0,3,7,5],melody:melodyAfterglow,unlockLevel:2,charts:charts(132,melodyAfterglow)},
- {id:'gravity',title:'Zero Gravity',artist:'Phase Garden',bpm:102,color:'#b650ff',root:43,progression:[0,7,5,3],melody:melodyGravity,unlockLevel:4,charts:charts(102,melodyGravity)}
+ {id:'voltage',title:'Midnight Voltage',artist:'NOVA//STATIC',bpm:118,color:'#22e8ff',root:45,progression:[0,5,3,7],melody:melodyVoltage,unlockLevel:1,duration:43,charts:charts(118,melodyVoltage)},
+ {id:'afterglow',title:'Afterglow Circuit',artist:'Luma Driver',bpm:132,color:'#ff3dad',root:40,progression:[0,3,7,5],melody:melodyAfterglow,unlockLevel:2,duration:39,charts:charts(132,melodyAfterglow)},
+ {id:'gravity',title:'Zero Gravity',artist:'Phase Garden',bpm:102,color:'#b650ff',root:43,progression:[0,7,5,3],melody:melodyGravity,unlockLevel:4,duration:49,charts:charts(102,melodyGravity)},
+ {id:'sickness',title:'Down With the Sickness',artist:'Disturbed',bpm:95,color:'#9cff3d',root:0,progression:[],melody:[],unlockLevel:1,duration:217.704,audioParts:audioParts('down-with-the-sickness',17),charts:beatCharts(95,2163,217.704,1)},
+ {id:'never-left',title:'If You Never Left',artist:'blink-182',bpm:195,color:'#ff704d',root:0,progression:[],melody:[],unlockLevel:1,duration:178.495,audioParts:audioParts('if-you-never-left',6),charts:beatCharts(195,2028,178.495,2)},
+ {id:'fly-eagle',title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',bpm:105.4,color:'#ffd43b',root:0,progression:[],melody:[],unlockLevel:1,duration:192.192,audioParts:audioParts('fly-like-an-eagle-metal',9),charts:beatCharts(105.4,2067,192.192,3)}
 ];
 const levelFor=(xp:number)=>Math.floor(Math.sqrt(xp/350))+1;
 const xpFloor=(level:number)=>(level-1)*(level-1)*350;
@@ -38,8 +44,8 @@ const xpCeil=(level:number)=>level*level*350;
 const loadProfile=():Profile=>{try{const saved=JSON.parse(localStorage.getItem('rhythtap-profile')||'{}');const xp=Math.max(0,Number(saved.xp)||0);return{xp,level:levelFor(xp)}}catch{return{xp:0,level:1}}};
 
 class SynthTransport{
- ctx:AudioContext|null=null; startAt=0; pausedAt=0; timer:number|undefined; song:Song|null=null;
- async start(song:Song,from=0){this.stop();this.song=song;this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime-from/1000;this.schedule(song,from)}
+ ctx:AudioContext|null=null;source:AudioBufferSourceNode|null=null;startAt=0;pausedAt=0;timer:number|undefined;song:Song|null=null;
+ async start(song:Song,from=0){this.stop();this.song=song;this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime-from/1000;if(song.audioParts){const encoded=await Promise.all(song.audioParts.map(async path=>{const response=await fetch(import.meta.env.BASE_URL+path);if(!response.ok)throw new Error(`Unable to load ${song.title}`);return response.text()}));const chunks=encoded.map(part=>{const raw=atob(part.trim()),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);return bytes}),size=chunks.reduce((sum,part)=>sum+part.length,0),audio=new Uint8Array(size);let cursor=0;for(const part of chunks){audio.set(part,cursor);cursor+=part.length}const buffer=await this.ctx.decodeAudioData(audio.buffer);this.source=this.ctx.createBufferSource();this.source.buffer=buffer;this.source.connect(this.ctx.destination);this.source.start(this.ctx.currentTime,Math.min(from/1000,Math.max(0,buffer.duration-.05)));return}this.schedule(song,from)}
  now(){return this.ctx?(this.ctx.currentTime-this.startAt)*1000:this.pausedAt}
  schedule(song:Song,from:number){if(!this.ctx)return;const ctx=this.ctx,step=30/song.bpm,leadIn=1.8;let n=Math.max(0,Math.floor((from/1000-leadIn)/step));const pump=()=>{if(!this.ctx)return;const horizon=(ctx.currentTime-this.startAt)+1.2;while(leadIn+n*step<horizon){const t=this.startAt+leadIn+n*step;if(t>ctx.currentTime){const bar=Math.floor(n/8),pos=n%8,root=song.root+song.progression[bar%song.progression.length],pitch=song.melody[n%song.melody.length];this.hat(t,pos%2?0.035:0.055);if(pos===0||pos===4)this.kick(t,pos===0?.34:.25);if(pos===2||pos===6)this.snare(t,.13);if(pos%2===0)this.tone(t,this.midi(root-12),step*.82,.12,'sawtooth',520);if(pos===0||pos===4)this.chord(t,root,step*3.4,.035);this.tone(t,this.midi(song.root+pitch),step*.72,pos%2?.042:.052,'square',1800)}n++}this.timer=window.setTimeout(pump,260)};pump()}
  midi(n:number){return 440*Math.pow(2,(n-69)/12)}
@@ -51,7 +57,7 @@ class SynthTransport{
  hat(t:number,v:number){this.noise(t,.045,v,6200)}
  pause(){if(!this.ctx)return;this.pausedAt=this.now();this.ctx.close();this.ctx=null;if(this.timer)clearTimeout(this.timer)}
  async resume(){if(this.song)await this.start(this.song,this.pausedAt)}
- stop(){if(this.timer)clearTimeout(this.timer);if(this.ctx)this.ctx.close();this.ctx=null}
+ stop(){if(this.timer)clearTimeout(this.timer);try{this.source?.stop()}catch{}this.source=null;if(this.ctx)this.ctx.close();this.ctx=null}
 }
 
 function App(){
@@ -83,11 +89,11 @@ function Select({song,setSong,difficulty,setDifficulty,profile,back,play}:{song:
 function Game({song,difficulty,speed,offset,quit,finish}:{song:Song,difficulty:Difficulty,speed:number,offset:number,quit:()=>void,finish:(r:Omit<GameResult,'xpEarned'|'levelUp'>)=>void}){
  const notes=song.charts[difficulty];
  const transport=useRef(new SynthTransport()),raf=useRef(0),pressed=useRef(new Set<number>()),judged=useRef(new Set<number>()),activeHolds=useRef(new Map<number,Note>()),feedbackTimer=useRef(0);
- const [ready,setReady]=useState(false),[now,setNow]=useState(0),[paused,setPaused]=useState(false),[score,setScore]=useState(0),[combo,setCombo]=useState(0),[maxCombo,setMaxCombo]=useState(0),[judge,setJudge]=useState<Feedback|null>(null),[counts,setCounts]=useState({PERFECT:0,GREAT:0,GOOD:0,MISS:0}),[pulse,setPulse]=useState(0),[energy,setEnergy]=useState(100);
+ const [ready,setReady]=useState(false),[loading,setLoading]=useState(false),[loadError,setLoadError]=useState(''),[now,setNow]=useState(0),[paused,setPaused]=useState(false),[score,setScore]=useState(0),[combo,setCombo]=useState(0),[maxCombo,setMaxCombo]=useState(0),[judge,setJudge]=useState<Feedback|null>(null),[counts,setCounts]=useState({PERFECT:0,GREAT:0,GOOD:0,MISS:0}),[pulse,setPulse]=useState(0),[energy,setEnergy]=useState(100);
  const scoreRef=useRef(score),comboRef=useRef(combo),countsRef=useRef(counts),maxRef=useRef(maxCombo);useEffect(()=>{scoreRef.current=score;comboRef.current=combo;countsRef.current=counts;maxRef.current=maxCombo},[score,combo,counts,maxCombo]);
  const end=notes.at(-1)!.time+2200;
  const showFeedback=(value:Feedback)=>{setJudge(value);clearTimeout(feedbackTimer.current);feedbackTimer.current=window.setTimeout(()=>setJudge(null),220)};
- const begin=async()=>{judged.current.clear();activeHolds.current.clear();pressed.current.clear();await transport.current.start(song);setReady(true)};
+ const begin=async()=>{judged.current.clear();activeHolds.current.clear();pressed.current.clear();setLoading(true);setLoadError('');try{await transport.current.start(song);setReady(true)}catch{setLoadError('The track could not be loaded. Check your connection and try again.')}finally{setLoading(false)}};
  useEffect(()=>()=>{cancelAnimationFrame(raf.current);transport.current.stop()},[]);
  const applyJudge=(j:Judge)=>{showFeedback(j);setCounts(c=>({...c,[j]:c[j]+1}));if(j==='MISS'){setCombo(0);setEnergy(e=>Math.max(0,e-8));return}const add={PERFECT:1000,GREAT:700,GOOD:350,MISS:0}[j];setScore(s=>s+add+comboRef.current*8);setCombo(c=>{const n=c+1;setMaxCombo(m=>Math.max(m,n));return n});setPulse(p=>Math.min(100,p+(j==='PERFECT'?5:2)));setEnergy(e=>Math.min(100,e+1))};
  const completeHold=(lane:number)=>{if(!activeHolds.current.has(lane))return;activeHolds.current.delete(lane);setScore(s=>s+600+comboRef.current*10);setPulse(p=>Math.min(100,p+8));setEnergy(e=>Math.min(100,e+3));showFeedback('HOLD')};
@@ -101,7 +107,7 @@ function Game({song,difficulty,speed,offset,quit,finish}:{song:Song,difficulty:D
   <div className="meters"><div className="energy"><span style={{width:energy+'%'}}/></div><div className="pulse"><Zap size={14}/><span style={{width:pulse+'%'}}/></div></div>
   <div className="arena">{LANES.map((k,l)=><div className={'lane '+(activeHolds.current.has(l)?'holding':'')} key={k} style={{'--lane':COLORS[l]} as React.CSSProperties}>{notes.filter(n=>n.lane===l&&(!judged.current.has(n.id)||activeHolds.current.get(l)?.id===n.id)).map(n=>{const isActive=activeHolds.current.get(l)?.id===n.id;const y=isActive?Math.min(84,(now-(n.time-travel))/travel*100):(now-(n.time-travel))/travel*100;const tail=n.duration?Math.max(28,(n.time+n.duration-now)/travel*70):undefined;return y>-12&&y<115?<div key={n.id} className={'note '+(n.duration?'hold ':'')+(isActive?'active-hold':'')} style={{top:y+'%',height:n.duration?tail:undefined}}/>:null})}<button className="pad" onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);hit(l)}} onPointerUp={()=>release(l)} onPointerCancel={()=>release(l)}><span>{activeHolds.current.has(l)?'HOLD':k}</span></button></div>)}</div>
   <div className="feedback">{judge&&<strong className={judge.toLowerCase()}>{judge}</strong>}{combo>1&&<span>{combo}<small> COMBO</small></span>}</div>
-  {!ready&&<div className="modal"><Volume2/><h2>READY TO SYNC?</h2><p>Turn up your sound. Notes are timed to the audio clock.</p><button className="primary" onClick={begin}><Play fill="currentColor"/> TAP TO START</button></div>}
+  {!ready&&<div className="modal"><Volume2/><h2>{loading?'LOADING TRACK':'READY TO SYNC?'}</h2><p>{loadError||'Turn up your sound. Notes are timed to the audio clock.'}</p><button className="primary" disabled={loading} onClick={begin}><Play fill="currentColor"/> {loading?'DECODING AUDIO…':'TAP TO START'}</button></div>}
   {paused&&<div className="modal"><Pause/><h2>PAUSED</h2><button className="primary" onClick={togglePause}><Play/> RESUME</button><button className="secondary" onClick={quit}>EXIT TRACK</button></div>}
  </section>}
 
