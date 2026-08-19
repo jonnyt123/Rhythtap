@@ -1,4 +1,4 @@
-name: Deploy Neon Tap to GitHub Pages
+name: Deploy Rhythtap to GitHub Pages
 
 on:
   push:
