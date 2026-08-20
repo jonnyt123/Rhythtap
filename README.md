@@ -35,7 +35,7 @@ The oscillator-backed transport and notes share the `AudioContext.currentTime` c
 
 ## Import charts
 
-Open **My Charts** from the home screen to import Phoenix-style `.tap` chart files. Imported charts persist in local browser storage and can be selected, played, or removed from the dedicated library screen.
+Open **My Charts** from the home screen to import Phoenix-style `.tap` chart files. Imported charts persist in local browser storage and can be selected, played, or removed from the dedicated library screen. Pair an MP3, M4A, WAV, OGG, AAC, or FLAC file with any imported chart; the audio is stored locally in IndexedDB and never uploaded. Each chart has a saved ±500 ms sync adjustment in 10 ms steps. High scores are tracked independently for every chart and difficulty and ranked on the personal leaderboard.
 
 ## Add a track
 
