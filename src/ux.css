@@ -221,3 +221,6 @@ button:focus-visible,label:focus-within{outline:2px solid var(--cyan);outline-of
  .select{gap:6px}.select header{min-height:44px}.select .song{min-height:82px}.select .cover{height:64px}.select .difficulty{padding:5px}.select .playdock{min-height:54px;padding:7px 8px}.select .playdock .primary{min-height:44px;min-width:104px;padding:0 18px}
  .tutorial{backdrop-filter:none}.tutorial-card{max-height:calc(100dvh - max(28px,env(safe-area-inset-top)) - max(28px,env(safe-area-inset-bottom)))}
 }
+
+/* On-demand audio storage controls */
+.audio-storage{width:min(100%,520px);margin:12px auto;padding:14px 16px;border:1px solid #ffffff18;border-radius:17px;background:linear-gradient(120deg,#ffffff0b,#ffffff04);box-shadow:0 8px 24px #0003}.audio-storage>div{display:flex;align-items:center;gap:11px}.audio-storage svg{width:19px;color:var(--cyan)}.audio-storage span{min-width:0}.audio-storage strong,.audio-storage small{display:block}.audio-storage strong{font-size:11px}.audio-storage small{margin-top:3px;color:#817a8b;font-size:6px}.audio-storage output{display:block;margin:12px 0 8px;color:var(--cyan);font:700 9px 'Space Mono';letter-spacing:.08em}.audio-storage button{width:100%;min-height:42px;font-size:8px}.audio-storage button:disabled{opacity:.4}
