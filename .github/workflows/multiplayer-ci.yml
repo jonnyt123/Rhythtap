@@ -3,6 +3,8 @@ name: Multiplayer CI
 on:
   push:
     branches: [codex/multiplayer-score-battle]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
