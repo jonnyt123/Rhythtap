@@ -2,7 +2,7 @@ name: Multiplayer CI
 
 on:
   push:
-    branches: [codex/multiplayer-score-battle]
+    branches: [codex/multiplayer-score-battle, codex/authoritative-multiplayer]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,3 +21,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Compile authoritative validator
+        run: npx tsc supabase/functions/validate-match/validator.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck --outDir .validator-ci
+      - name: Run authoritative validator attacks
+        run: node tests/authoritative-validator.test.mjs
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check validate-match Edge Function
+        run: deno check supabase/functions/validate-match/index.ts
