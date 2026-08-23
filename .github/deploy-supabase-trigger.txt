@@ -1,0 +1,2 @@
+Supabase production deployment trigger for authoritative multiplayer.
+Triggered: 2026-08-23T19:22:00-04:00
