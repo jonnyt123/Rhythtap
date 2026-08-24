@@ -32,14 +32,13 @@ jobs:
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/index.ts
 
   deploy-supabase:
-    if: github.event_name == 'pull_request' && github.event.pull_request.number == 3
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy-supabase]'))
     needs: build
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_ID: hcaawhtkldabetxzptmc
-      RHYTHMTAP_SITE_URL: https://jonnyt123.github.io/Rhythtap/
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,24 +53,6 @@ jobs:
       - name: Link production project
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
       - name: Apply database migrations
-        run: supabase db push --yes
-      - name: Configure production Auth redirect
-        shell: bash
-        run: |
-          set -euo pipefail
-          endpoint="https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_ID}/config/auth"
-          current="$(curl --fail --silent --show-error "$endpoint" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")"
-          existing="$(printf '%s' "$current" | jq -r '.uri_allow_list // ""')"
-          merged="$(python3 -c 'import sys; existing,target=sys.argv[1],sys.argv[2]; urls=[u.strip() for u in existing.split(",") if u.strip()]; print(",".join(urls if target in urls else urls+[target]))' "$existing" "$RHYTHMTAP_SITE_URL")"
-          payload="$(jq -n --arg site "$RHYTHMTAP_SITE_URL" --arg allow "$merged" '{site_url:$site,uri_allow_list:$allow}')"
-          curl --fail --silent --show-error -X PATCH "$endpoint" \
-            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-            -H 'Content-Type: application/json' \
-            --data "$payload" >/dev/null
-      - name: Verify production Auth redirect
-        shell: bash
-        run: |
-          set -euo pipefail
-          endpoint="https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_ID}/config/auth"
-          current="$(curl --fail --silent --show-error "$endpoint" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")"
-          printf '%s' "$current" | jq -e --arg site "$RHYTHMTAP_SITE_URL" '.site_url == $site and ((.uri_allow_list // "") | split(",") | map(gsub("^\\s+|\\s+$"; "")) | index($site) != null)' >/dev/null
+        run: supabase db push
+      - name: Deploy validate-match Edge Function
+        run: supabase functions deploy validate-match --project-ref "$SUPABASE_PROJECT_ID" --use-api
