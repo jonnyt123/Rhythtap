@@ -62,15 +62,7 @@ jobs:
           endpoint="https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_ID}/config/auth"
           current="$(curl --fail --silent --show-error "$endpoint" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")"
           existing="$(printf '%s' "$current" | jq -r '.uri_allow_list // ""')"
-          merged="$(python3 - "$existing" "$RHYTHMTAP_SITE_URL" <<'PY'
-import sys
-existing, target = sys.argv[1], sys.argv[2]
-urls = [u.strip() for u in existing.split(',') if u.strip()]
-if target not in urls:
-    urls.append(target)
-print(','.join(urls))
-PY
-)"
+          merged="$(python3 -c 'import sys; existing,target=sys.argv[1],sys.argv[2]; urls=[u.strip() for u in existing.split(",") if u.strip()]; print(",".join(urls if target in urls else urls+[target]))' "$existing" "$RHYTHMTAP_SITE_URL")"
           payload="$(jq -n --arg site "$RHYTHMTAP_SITE_URL" --arg allow "$merged" '{site_url:$site,uri_allow_list:$allow}')"
           curl --fail --silent --show-error -X PATCH "$endpoint" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
