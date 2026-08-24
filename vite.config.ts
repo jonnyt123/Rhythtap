@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { multiplayerTransform } from './scripts/multiplayer-transform';
+import { accountTransform } from './scripts/account-transform';
 
 export default defineConfig({
-  plugins: [multiplayerTransform(), react()],
+  plugins: [multiplayerTransform(), accountTransform(), react()],
   base: '/Rhythtap/',
 });
