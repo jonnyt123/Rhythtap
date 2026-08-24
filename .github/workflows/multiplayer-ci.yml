@@ -2,7 +2,7 @@ name: Multiplayer CI
 
 on:
   push:
-    branches: [codex/multiplayer-score-battle]
+    branches: [codex/multiplayer-score-battle, codex/authoritative-multiplayer]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,3 +21,38 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Compile authoritative validator
+        run: npx tsc supabase/functions/validate-match/validator.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck --outDir .validator-ci
+      - name: Run authoritative validator attacks
+        run: node tests/authoritative-validator.test.mjs
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check validate-match Edge Function
+        run: deno check --node-modules-dir=auto supabase/functions/validate-match/index.ts
+
+  deploy-supabase:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy-supabase]'))
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: hcaawhtkldabetxzptmc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require production deployment credentials
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'Missing SUPABASE_ACCESS_TOKEN repository secret'; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo 'Missing SUPABASE_DB_PASSWORD repository secret'; exit 1; }
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Link production project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - name: Apply database migrations
+        run: supabase db push
+      - name: Deploy validate-match Edge Function
+        run: supabase functions deploy validate-match --project-ref "$SUPABASE_PROJECT_ID" --use-api

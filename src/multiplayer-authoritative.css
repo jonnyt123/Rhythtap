@@ -1,0 +1,5 @@
+/* Append these rules to the existing multiplayer.css. */
+.mp-sync{width:min(720px,calc(100% - 32px));margin:10px auto 0;text-align:center;font-size:10px;font-weight:900;letter-spacing:.12em;color:#69ff9b}
+.mp-history{width:min(720px,calc(100% - 32px));margin:22px auto 0;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.035)}
+.mp-history>small{display:block;margin-bottom:8px;color:#8da1bc;font-size:10px;font-weight:900;letter-spacing:.16em}.mp-history>div{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)}.mp-history>div:first-of-type{border-top:0}.mp-history span{font-size:11px;font-weight:800}.mp-history em{font-size:10px;color:#8da1bc;font-style:normal;text-align:right}.mp-history p{margin:4px 0;color:#71839a;font-size:10px}.mp-history .outcome{font-size:10px;letter-spacing:.08em}.mp-history .outcome.win{color:#69ff9b}.mp-history .outcome.loss{color:#ff5f75}.mp-history .outcome.draw{color:#ffd43b}
+@media(max-width:520px){.mp-history>div{grid-template-columns:48px 1fr}.mp-history em{grid-column:2;text-align:left}}
