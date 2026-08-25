@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {buildCanonicalChart,validateAgainstChart,parseOnsetEvents,makeOnsetChart} from '../.validator-ci/validator.js';
+import {buildCanonicalChart,validateAgainstChart,parseOnsetEvents,makeOnsetChart,makeBeatChart} from '../.validator-ci/validator.js';
 
 const chart=buildCanonicalChart('voltage','EASY');
 const events=[];
@@ -29,4 +29,24 @@ const holdEarly=structuredClone(holdGood);holdEarly[1].atMs=1500;assert.throws((
 
 const source='export type OnsetEvent=readonly [time:number,lane:number,strength:number];\nexport const sicknessEvents:readonly OnsetEvent[]=[[1000,0,100],[1500,1,80],[2100,2,95]];';
 const parsed=parseOnsetEvents(source,'sicknessEvents');assert.equal(parsed.length,3);assert.ok(makeOnsetChart(parsed,'NORMAL').length>=3);
-console.log(JSON.stringify({noteCount:result.noteCount,holdCount:result.holdCount,score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo}));
+
+const beatCases=[
+ ['my-immortal',76,232,270.497,4],
+ ['crazy-train',136,325,226.325,1],
+ ['kill-you',107.666,232,264.411,2],
+ ['kryptonite',99.384,627,234.292,0],
+ ['through-fire-flames',198.8,1324,300.121,3],
+];
+for(const [songId,bpm,offset,duration,seed] of beatCases){
+ for(const difficulty of ['EASY','NORMAL','HARD']){
+  const canonical=buildCanonicalChart(songId,difficulty);
+  const expected=makeBeatChart(bpm,offset,duration,difficulty,seed);
+  assert.deepEqual(canonical.notes,expected,`${songId} ${difficulty} must match client beat-chart rules`);
+  assert.ok(canonical.notes.length>100,`${songId} ${difficulty} chart is unexpectedly sparse`);
+  assert.ok(canonical.notes.every(note=>note.lane>=0&&note.lane<=2));
+ }
+}
+const dragonHard=buildCanonicalChart('through-fire-flames','HARD');
+assert.ok(dragonHard.notes.length>2500,'Through the Fire and Flames HARD should remain the dense challenge chart');
+
+console.log(JSON.stringify({noteCount:result.noteCount,holdCount:result.holdCount,score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,dragonHardNotes:dragonHard.notes.length}));
