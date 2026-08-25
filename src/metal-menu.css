@@ -1,0 +1,210 @@
+/* RhythmTap hard-rock / heavy-metal main-menu skin.
+   Presentation only: all state, navigation and progression logic stays in main.tsx. */
+.metal-home.screen{
+ --metal-red:#ef3b3b;
+ --metal-red-hot:#ff5b42;
+ --metal-blue:#35a7ff;
+ --metal-silver:#cbd1d8;
+ --metal-steel:#68717d;
+ --metal-panel:#14171c;
+ --metal-panel-2:#090b0e;
+ max-width:880px;
+ min-height:100dvh;
+ padding:max(12px,env(safe-area-inset-top)) clamp(12px,3.3vw,28px) max(16px,env(safe-area-inset-bottom));
+ overflow:hidden;
+ isolation:isolate;
+ background:
+  radial-gradient(circle at 12% 15%,#d8291f33 0 7%,transparent 30%),
+  radial-gradient(circle at 88% 17%,#1979c633 0 8%,transparent 31%),
+  radial-gradient(ellipse at 50% 112%,#9d151a28 0 25%,transparent 57%),
+  linear-gradient(165deg,#11141a 0,#07090d 46%,#020304 100%);
+ color:#f5f2ed;
+}
+.metal-home.screen:after{
+ z-index:-1;
+ opacity:.52;
+ background:
+  repeating-linear-gradient(0deg,transparent 0 3px,#ffffff05 4px,transparent 5px 9px),
+  linear-gradient(115deg,transparent 0 46%,#ffffff05 47%,transparent 48% 100%);
+ background-size:auto,46px 46px;
+}
+.metal-home:before{
+ content:"";
+ position:absolute;
+ z-index:-2;
+ left:7%;right:7%;top:76px;height:110px;
+ border-top:2px solid #89919b22;
+ border-bottom:1px solid #ffffff08;
+ background:
+  linear-gradient(62deg,transparent 48%,#8a929c20 49% 51%,transparent 52%) 0 0/74px 54px,
+  linear-gradient(-62deg,transparent 48%,#8a929c20 49% 51%,transparent 52%) 0 0/74px 54px;
+ opacity:.75;
+ pointer-events:none;
+}
+.metal-stage-bg{position:absolute;z-index:-1;inset:0;overflow:hidden;pointer-events:none}
+.metal-stage-bg:before,.metal-stage-bg:after{
+ content:"";position:absolute;top:22%;bottom:5%;width:74px;opacity:.22;
+ border:1px solid #9ba3ad44;border-radius:10px;
+ background:
+  radial-gradient(circle at 50% 18%,#050607 0 21px,#89919c33 22px 24px,#050607 25px 31px,transparent 32px),
+  radial-gradient(circle at 50% 45%,#050607 0 24px,#89919c33 25px 27px,#050607 28px 35px,transparent 36px),
+  radial-gradient(circle at 50% 73%,#050607 0 24px,#89919c33 25px 27px,#050607 28px 35px,transparent 36px),
+  linear-gradient(145deg,#171a1f,#050607);
+ box-shadow:inset 0 0 0 3px #000,0 18px 35px #000c;
+}
+.metal-stage-bg:before{left:-34px;transform:rotate(1.5deg)}
+.metal-stage-bg:after{right:-34px;transform:rotate(-1.5deg)}
+.metal-stage-bg>i{position:absolute;display:block;border-radius:50%;filter:none;opacity:.24}
+.metal-stage-bg>i:nth-child(1){width:290px;height:290px;left:-170px;top:-40px;background:radial-gradient(circle,#ff392f55 0 4%,#e3261d1f 24%,transparent 65%)}
+.metal-stage-bg>i:nth-child(2){width:300px;height:300px;right:-185px;top:-34px;background:radial-gradient(circle,#35a7ff55 0 4%,#197bd11d 24%,transparent 65%)}
+.metal-stage-bg>i:nth-child(3){width:70%;height:170px;left:15%;bottom:-65px;background:radial-gradient(ellipse,#ef3b3b24,transparent 67%)}
+
+.metal-home .topbar.metal-status{
+ position:relative;z-index:5;height:48px;padding:0 4px 8px;
+ border-bottom:1px solid #9ca4ae30;
+ background:linear-gradient(90deg,transparent,#12151a88 14% 86%,transparent);
+}
+.metal-mini-brand{font:900 12px/1 Impact,'Arial Black',system-ui,sans-serif!important;letter-spacing:.11em!important;color:#e7e9ec!important;text-shadow:0 1px #000,0 0 12px #ef3b3b40}
+.metal-mini-brand svg{color:var(--metal-red-hot)!important;filter:drop-shadow(0 0 7px #ef3b3baa)!important}
+.metal-home .wallet.metal-wallet{
+ margin-left:auto;margin-right:8px;height:36px;padding:0 10px;border-radius:5px;
+ border:1px solid #929aa557;background:linear-gradient(180deg,#242932,#0c0e12);
+ box-shadow:inset 0 1px #ffffff1f,inset 0 -2px #0008,0 0 15px #0008;
+ color:#e8e2d9;
+}
+.metal-wallet>svg{color:#d6a548;width:15px}
+.metal-wallet>span{display:flex;flex-direction:column;line-height:1.02}
+.metal-wallet small{font:700 5px 'Space Mono',monospace;letter-spacing:.12em;color:#8d939c}
+.metal-wallet strong{font:800 10px 'Space Mono',monospace;color:#f3e0a3}
+.metal-home .icon.metal-icon{width:38px;height:36px;border-radius:5px;border-color:#929aa557;background:linear-gradient(180deg,#242932,#0c0e12);color:#d7dbe0;box-shadow:inset 0 1px #ffffff1f,inset 0 -2px #0008}
+.metal-home .icon.metal-icon svg{width:17px}
+
+.metal-home-content{height:calc(100dvh - 62px);padding:8px 2px max(28px,env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.metal-home-content::-webkit-scrollbar{display:none}
+.metal-logo-block{position:relative;text-align:center;padding:10px 4px 16px}
+.metal-logo-block>small{display:block;font:700 6px 'Space Mono',monospace;letter-spacing:.35em;color:#777f89;margin-bottom:7px}
+.metal-logo{display:flex;align-items:center;justify-content:center;gap:2px;font-family:Impact,'Arial Black',system-ui,sans-serif;font-style:italic;font-weight:900;font-size:clamp(42px,11vw,74px);line-height:.86;letter-spacing:-.055em;filter:drop-shadow(0 7px 4px #000b)}
+.metal-logo svg{width:clamp(25px,6vw,41px);height:auto;margin-right:2px;color:#ff4b30;filter:drop-shadow(0 0 9px #ef3b3baa)}
+.metal-logo span,.metal-logo b{
+ color:#e5e8eb;
+ -webkit-text-stroke:1px #707782;
+ text-shadow:0 1px #fff8,0 3px #0a0b0d,0 6px #000,0 0 18px #ffffff12;
+}
+.metal-logo b{color:#f0f1f2;font-weight:inherit;-webkit-text-stroke-color:#8e3230;text-shadow:0 1px #fff9,0 3px #48100e,0 6px #000,0 0 17px #ef3b3b55}
+.metal-logo-block>p{display:flex;justify-content:center;align-items:center;gap:9px;margin:9px 0 0;font:800 8px 'Space Mono',monospace;letter-spacing:.12em;color:#c4433f}
+.metal-logo-block>p i{display:block;width:4px;height:4px;transform:rotate(45deg);background:#8b939d;box-shadow:0 0 6px #fff6}
+
+.metal-home .player-card.metal-player-card{
+ position:relative;width:100%;min-height:112px;margin:0;padding:13px 18px 13px 13px;
+ display:grid;grid-template-columns:66px minmax(0,1fr) 18px;align-items:center;gap:13px;
+ border:1px solid #858d975e;border-radius:3px;
+ clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);
+ background:
+  linear-gradient(125deg,#ffffff0b 0 1px,transparent 1px 36%),
+  linear-gradient(180deg,#1d2229 0,#0c0f13 56%,#08090c 100%);
+ background-size:16px 16px,auto;
+ box-shadow:inset 0 1px #ffffff24,inset 0 -2px #000,0 10px 25px #0009;
+ color:#f6f4f0;text-align:left;cursor:pointer;
+}
+.metal-player-card:before,.metal-player-card:after{content:"";position:absolute;top:7px;bottom:7px;width:3px;background:linear-gradient(#ef3b3b00,#ef3b3baa,#ef3b3b00);opacity:.75}
+.metal-player-card:before{left:4px}.metal-player-card:after{right:4px}
+.metal-home .avatar.metal-avatar{width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 50% 38%,#343a42,#090b0e 66%);border:2px solid #89919b;box-shadow:0 0 0 4px #050607,0 0 0 5px #ef3b3b8c,0 0 20px #ef3b3b42;color:#e5e8eb}
+.metal-avatar svg{width:30px!important;height:30px}
+.metal-player-card .player-copy>small{font-size:6px;color:#8d949e;letter-spacing:.14em}
+.metal-player-card .player-copy>strong{font-family:Impact,'Arial Black',system-ui,sans-serif;font-size:clamp(21px,5vw,29px);font-style:italic;letter-spacing:.02em;margin:1px 0 4px;color:#f4f2ed;text-shadow:0 2px #000}
+.metal-rank-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.metal-rank-row span{padding:3px 7px;border:1px solid #ef3b3b85;background:#6d151849;font:900 7px 'Space Mono',monospace;color:#ff8d80;clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)}
+.metal-rank-row em{font:800 6px 'Space Mono',monospace;letter-spacing:.15em;color:#aeb4bc;font-style:normal}
+.metal-player-card .xp-line{font-size:6px}.metal-player-card .xp-line span:first-child{color:#ff6257}
+.metal-player-card .xp-track{height:7px;border-radius:1px;border:1px solid #555c64;background:#050609;box-shadow:inset 0 2px 4px #000}
+.metal-player-card .xp-track i{background:linear-gradient(90deg,#95191d,#ef3b3b 63%,#ff8a5d);box-shadow:0 0 10px #ef3b3b9c}
+.metal-card-chevron{width:18px;color:#8e969f}
+
+.metal-menu-stack{display:grid;gap:8px;margin-top:12px}
+.metal-menu-button{
+ --edge:#7d858f;--glow:#9ba3ad33;
+ position:relative;isolation:isolate;min-height:72px;width:100%;padding:8px 15px 8px 10px;
+ display:grid;grid-template-columns:50px minmax(0,1fr) 20px;align-items:center;gap:11px;
+ border:1px solid color-mix(in srgb,var(--edge) 66%,#1b1e22);border-radius:2px;
+ clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,9px 100%,0 calc(100% - 9px),0 9px);
+ background:
+  linear-gradient(100deg,color-mix(in srgb,var(--edge) 11%,transparent),transparent 33%),
+  repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 2px 5px),
+  linear-gradient(180deg,#22262c,#0c0e11 58%,#08090b);
+ box-shadow:inset 0 1px #ffffff24,inset 0 -2px #000b,0 7px 18px #0008,0 0 14px var(--glow);
+ color:#f2f0ec;text-align:left;cursor:pointer;
+ transition:transform .14s ease,filter .14s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.metal-menu-button:before{content:"";position:absolute;z-index:-1;left:0;top:0;bottom:0;width:4px;background:var(--edge);box-shadow:0 0 12px var(--edge);opacity:.75}
+.metal-menu-button:after{content:"";position:absolute;right:7px;top:7px;width:3px;height:3px;border-radius:50%;background:#aab0b7;box-shadow:0 calc(100% + 49px) #555b62;opacity:.7}
+.metal-menu-button>svg{width:19px;color:var(--edge);filter:drop-shadow(0 0 6px var(--glow))}
+.metal-menu-icon{width:50px;height:50px;display:grid;place-items:center;border:1px solid #777f8955;border-radius:50%;background:radial-gradient(circle,#252a31,#080a0d 72%);box-shadow:inset 0 1px #ffffff1b,0 0 14px var(--glow);color:var(--edge)}
+.metal-menu-icon svg{width:22px;height:22px}
+.metal-menu-copy{min-width:0;display:block}
+.metal-menu-copy small{display:block;font:800 6px 'Space Mono',monospace;letter-spacing:.15em;color:color-mix(in srgb,var(--edge) 82%,white)}
+.metal-menu-copy strong{display:block;margin:1px 0 1px;font-family:Impact,'Arial Black',system-ui,sans-serif;font-style:italic;font-size:clamp(21px,5.2vw,30px);line-height:1;letter-spacing:.035em;color:#e9e8e5;text-shadow:0 2px #000,0 0 12px #ffffff0c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metal-menu-copy em{display:block;font:600 7px 'Space Mono',monospace;color:#7d838b;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metal-menu-solo{--edge:#ef3b3b;--glow:#ef3b3b55;background:linear-gradient(100deg,#8c181e48,transparent 48%),repeating-linear-gradient(0deg,#ffffff03 0 1px,transparent 2px 5px),linear-gradient(180deg,#2a2021,#110b0c 58%,#090606)}
+.metal-menu-solo .metal-menu-icon{background:radial-gradient(circle,#7b1d20,#130708 72%)}
+.metal-menu-online{--edge:#35a7ff;--glow:#35a7ff44;background:linear-gradient(100deg,#1766a64a,transparent 48%),repeating-linear-gradient(0deg,#ffffff03 0 1px,transparent 2px 5px),linear-gradient(180deg,#1b252f,#090e13 58%,#06080a)}
+.metal-menu-achievements{--edge:#d6a548;--glow:#d6a54833}
+.metal-menu-profile{--edge:#a976ff;--glow:#a976ff35}
+.metal-menu-settings{--edge:#84909d;--glow:#84909d25}
+.metal-menu-button:hover{filter:brightness(1.12);transform:translateY(-1px);border-color:color-mix(in srgb,var(--edge) 85%,white);box-shadow:inset 0 1px #ffffff30,inset 0 -2px #000b,0 9px 20px #0009,0 0 20px var(--glow)}
+.metal-menu-button:active{transform:scale(.985);filter:brightness(.97)}
+.metal-menu-button:focus-visible,.metal-player-card:focus-visible,.metal-footer button:focus-visible{outline:2px solid var(--metal-red-hot);outline-offset:3px}
+
+.metal-utility-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:8px;margin-top:10px}
+.metal-home .daily.metal-daily{margin:0;min-height:78px;padding:11px 13px;border:1px solid #9a6b2c68;border-radius:2px;background:linear-gradient(100deg,#8b581927,transparent),linear-gradient(180deg,#181715,#0b0a08);clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);color:#e6b85c;box-shadow:inset 0 1px #fff1,0 7px 18px #0008}
+.metal-home .daily.metal-daily.complete{border-color:#5c9f6870;background:linear-gradient(100deg,#22783920,transparent),linear-gradient(180deg,#151a16,#090c09);color:#79d68b}
+.metal-daily small{font-size:6px!important}.metal-daily strong{font-size:8px!important;color:#d2cdc4!important}.metal-daily>div>i{display:block;height:4px;margin-top:7px;background:#030403;border:1px solid #665b46;overflow:hidden}.metal-daily>div>i b{display:block;height:100%;background:linear-gradient(90deg,#9b5b25,#efb84d);box-shadow:0 0 8px #efb84d88}.metal-daily.complete>div>i b{background:linear-gradient(90deg,#327441,#72d484)}
+.metal-stage-card{min-height:78px;padding:10px 12px;display:grid;grid-template-columns:38px 1fr;align-items:center;gap:9px;border:1px solid #65717d5e;border-radius:2px;background:linear-gradient(135deg,#1b2026,#080a0d);clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);box-shadow:inset 0 1px #fff1,0 7px 18px #0008}
+.metal-stage-card>span{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:1px solid #697480;background:#090b0e;color:#c3c9cf}.metal-stage-card svg{width:17px}.metal-stage-card small{display:block;font:800 5.5px 'Space Mono',monospace;letter-spacing:.13em;color:#6e7781}.metal-stage-card strong{display:block;margin:3px 0;font:900 11px Impact,'Arial Black',system-ui,sans-serif;letter-spacing:.05em;color:#dddfe1}.metal-stage-card em{display:block;font:600 6px 'Space Mono',monospace;color:#777e86;font-style:normal;line-height:1.4}
+.metal-footer{min-height:38px;margin:10px 2px 0;padding:7px 4px 0;border-top:1px solid #7b838c36;display:flex;align-items:center;justify-content:space-between;gap:10px;font:700 5.5px 'Space Mono',monospace;letter-spacing:.11em;color:#5e656d}
+.metal-footer button{display:flex;align-items:center;gap:3px;padding:7px 4px;border:0;background:transparent;color:#8d949c;font:800 6px 'Space Mono',monospace;letter-spacing:.08em;cursor:pointer}.metal-footer button svg{width:12px}
+
+/* Home-only animation language: energetic without costly continuous effects. */
+.metal-home .metal-logo-block{animation:metal-drop .38s cubic-bezier(.2,.8,.2,1) both}
+.metal-home .metal-player-card{animation:metal-rise .38s .05s both}
+.metal-home .metal-menu-button{animation:metal-rise .34s both}
+.metal-home .metal-menu-button:nth-child(1){animation-delay:.08s}.metal-home .metal-menu-button:nth-child(2){animation-delay:.11s}.metal-home .metal-menu-button:nth-child(3){animation-delay:.14s}.metal-home .metal-menu-button:nth-child(4){animation-delay:.17s}.metal-home .metal-menu-button:nth-child(5){animation-delay:.20s}.metal-home .metal-menu-button:nth-child(6){animation-delay:.23s}
+.metal-home .metal-utility-grid{animation:metal-rise .35s .26s both}
+@keyframes metal-drop{from{opacity:0;transform:translateY(-9px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes metal-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+@media(max-width:560px){
+ .metal-home.screen{padding-left:10px;padding-right:10px}
+ .metal-home-content{padding-left:1px;padding-right:1px}
+ .metal-logo-block{padding-top:8px;padding-bottom:13px}
+ .metal-home .player-card.metal-player-card{grid-template-columns:58px minmax(0,1fr) 16px;min-height:104px;padding:11px 14px 11px 11px;gap:11px}
+ .metal-home .avatar.metal-avatar{width:58px;height:58px}
+ .metal-menu-stack{gap:7px}
+ .metal-menu-button{min-height:67px;grid-template-columns:44px minmax(0,1fr) 17px;padding-left:9px;padding-right:12px;gap:9px}
+ .metal-menu-icon{width:44px;height:44px}.metal-menu-icon svg{width:20px}
+ .metal-menu-copy strong{font-size:clamp(20px,6.5vw,26px)}
+ .metal-utility-grid{grid-template-columns:1fr}
+ .metal-stage-card{min-height:68px}
+}
+@media(max-width:370px){
+ .metal-mini-brand{font-size:10px!important}.metal-wallet{display:flex!important;margin-right:5px!important;padding:0 7px!important}.metal-wallet small{display:none}.metal-home .icon.metal-icon{width:34px}
+ .metal-logo{font-size:39px}.metal-logo svg{width:23px}.metal-logo-block>small{font-size:5px}.metal-logo-block>p{font-size:6px}
+ .metal-home .player-card.metal-player-card{grid-template-columns:52px minmax(0,1fr) 14px;gap:9px}.metal-home .avatar.metal-avatar{width:52px;height:52px}.metal-player-card .player-copy>strong{font-size:20px}.metal-rank-row em{display:none}
+ .metal-menu-button{grid-template-columns:40px minmax(0,1fr) 15px;min-height:64px}.metal-menu-icon{width:40px;height:40px}.metal-menu-copy em{font-size:6px}.metal-menu-copy strong{font-size:20px}
+ .metal-footer>span{display:none}.metal-footer{justify-content:flex-end}
+}
+@media(max-height:720px) and (min-width:371px){
+ .metal-logo-block{padding-top:3px;padding-bottom:8px}.metal-logo{font-size:40px}.metal-logo-block>small{display:none}.metal-logo-block>p{margin-top:5px}
+ .metal-home .player-card.metal-player-card{min-height:90px;grid-template-columns:52px minmax(0,1fr) 15px;padding-top:9px;padding-bottom:9px}.metal-home .avatar.metal-avatar{width:52px;height:52px}.metal-player-card .player-copy>strong{font-size:20px;margin-bottom:2px}.metal-rank-row{margin-bottom:4px}
+ .metal-menu-stack{gap:5px;margin-top:8px}.metal-menu-button{min-height:57px;grid-template-columns:38px minmax(0,1fr) 16px}.metal-menu-icon{width:38px;height:38px}.metal-menu-copy strong{font-size:20px}.metal-menu-copy em{display:none}
+ .metal-utility-grid{margin-top:7px}.metal-home .daily.metal-daily,.metal-stage-card{min-height:62px}.metal-footer{margin-top:6px}
+}
+@media(min-width:760px){
+ .metal-home-content{padding-left:34px;padding-right:34px}
+ .metal-menu-stack{grid-template-columns:1fr 1fr}
+ .metal-menu-solo,.metal-menu-online{min-height:84px}
+ .metal-player-card{max-width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .metal-home .metal-logo-block,.metal-home .metal-player-card,.metal-home .metal-menu-button,.metal-home .metal-utility-grid{animation:none!important}
+ .metal-menu-button{transition:none}
+}
