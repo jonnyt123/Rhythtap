@@ -1,0 +1,21 @@
+/* Regression fix: keep circular gameplay note styling without dropping the
+   vertical --note-y translation on Safari / shorter mobile viewports. */
+.game .note:not(.hold){
+  transform:translate3d(-50%,var(--note-y),0) scale(var(--note-scale,1)) perspective(220px) rotateX(-10deg);
+}
+
+/* Theme overrides in ux.css also restyle notes; preserve movement there too. */
+.game.theme-diamond .note:not(.hold),
+.game.theme-hex .note:not(.hold){
+  border-radius:50%;
+  clip-path:none;
+  transform:translate3d(-50%,var(--note-y),0) scale(var(--note-scale,1)) perspective(220px) rotateX(-10deg);
+}
+
+.game.theme-diamond .note.hold:before,
+.game.theme-hex .note.hold:before{
+  border-radius:50%;
+  clip-path:none;
+  transform:translateX(-50%) scale(var(--note-scale,1));
+  transform-origin:50% 0;
+}
