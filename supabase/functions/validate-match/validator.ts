@@ -14,6 +14,13 @@ const SYNTH_SONGS:Record<string,{bpm:number,melody:number[]}>= {
  afterglow:{bpm:132,melody:[12,14,15,19,17,15,14,10]},
  gravity:{bpm:102,melody:[12,19,17,15,14,10,12,7]},
 };
+const BEAT_SONGS:Record<string,{bpm:number,offset:number,duration:number,seed:number}>={
+ 'my-immortal':{bpm:76,offset:232,duration:270.497,seed:4},
+ 'crazy-train':{bpm:136,offset:325,duration:226.325,seed:1},
+ 'kill-you':{bpm:107.666,offset:232,duration:264.411,seed:2},
+ kryptonite:{bpm:99.384,offset:627,duration:234.292,seed:0},
+ 'through-fire-flames':{bpm:198.8,offset:1324,duration:300.121,seed:3},
+};
 const AUDIO_EXPORTS:Record<string,string>={sickness:'sicknessEvents','never-left':'neverLeftEvents','fly-eagle':'flyEagleEvents'};
 
 const laneFor=(pitch:number,melody:number[])=>{const low=Math.min(...melody),high=Math.max(...melody);return Math.max(0,Math.min(2,Math.round((pitch-low)/Math.max(1,high-low)*2)))};
@@ -25,6 +32,17 @@ export const makeMelodyChart=(bpm:number,melody:number[],difficulty:Difficulty,b
   out.push({id:id++,time:1800+n*step,lane,duration:next===pitch?step*.9:undefined});
   if(difficulty!=='EASY'&&n%8===0)out.push({id:id++,time:1800+n*step,lane:(lane+1)%3});
   if(difficulty==='HARD'&&n%8===4)out.push({id:id++,time:1800+n*step,lane:(lane+2)%3});
+ }
+ return out;
+};
+
+export const makeBeatChart=(bpm:number,offset:number,duration:number,difficulty:Difficulty,seed:number):Note[]=>{
+ const beat=60000/bpm,step=difficulty==='EASY'?beat:beat/2,out:Note[]=[];let id=0,n=0;
+ for(let time=offset;time<duration*1000-700;time+=step,n++){
+  const lane=(n*2+Math.floor(n/4)+seed)%3;
+  out.push({id:id++,time,lane,duration:n%32===20?beat*(difficulty==='EASY'?1:1.5):undefined});
+  if(difficulty!=='EASY'&&n%8===0)out.push({id:id++,time,lane:(lane+1)%3});
+  if(difficulty==='HARD'&&n%4===3)out.push({id:id++,time:time+step/2,lane:(lane+2+seed)%3});
  }
  return out;
 };
@@ -61,8 +79,9 @@ export const parseOnsetEvents=(source:string,exportName:string):OnsetEvent[]=>{
 
 export const buildCanonicalChart=(songId:string,difficulty:Difficulty,onsetSource?:string):CanonicalChart=>{
  let notes:Note[];
- const synth=SYNTH_SONGS[songId];
+ const synth=SYNTH_SONGS[songId],beatSong=BEAT_SONGS[songId];
  if(synth)notes=makeMelodyChart(synth.bpm,synth.melody,difficulty);
+ else if(beatSong)notes=makeBeatChart(beatSong.bpm,beatSong.offset,beatSong.duration,difficulty,beatSong.seed);
  else{
   const exportName=AUDIO_EXPORTS[songId];
   if(!exportName||!onsetSource)throw new Error('Unsupported multiplayer chart');
