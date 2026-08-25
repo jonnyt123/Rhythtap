@@ -4,8 +4,9 @@ import { songPackTransform } from './scripts/song-pack-transform';
 import { multiplayerTransform } from './scripts/multiplayer-transform';
 import { accountTransform } from './scripts/account-transform';
 import { metalMenuTransform } from './scripts/metal-menu-transform';
+import { gameplayPositionFixTransform } from './scripts/gameplay-position-fix-transform';
 
 export default defineConfig({
-  plugins: [songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), react()],
+  plugins: [songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), react()],
   base: '/Rhythtap/',
 });
