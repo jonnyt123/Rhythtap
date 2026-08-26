@@ -1,5 +1,5 @@
 export type Difficulty='EASY'|'NORMAL'|'HARD';
-export type JudgementKind='PERFECT'|'GREAT'|'GOOD'|'MISS'|'HOLD';
+export type JudgementKind='PERFECT'|'GREAT'|'GOOD'|'MISS'|'HOLD'|'HOLD_BREAK';
 export type Note={id:number,time:number,lane:number,duration?:number};
 export type JudgementEvent={kind:JudgementKind,atMs:number,noteId:number,lane:number};
 export type OnsetEvent=readonly [time:number,lane:number,strength:number];
@@ -8,7 +8,7 @@ export type ValidatedResult={score:number,accuracy:number,maxCombo:number,eventC
 
 export const TIMING={perfect:55,great:110,good:220} as const;
 const HIT_KINDS=new Set<JudgementKind>(['PERFECT','GREAT','GOOD']);
-const ALL_KINDS=new Set<JudgementKind>(['PERFECT','GREAT','GOOD','MISS','HOLD']);
+const ALL_KINDS=new Set<JudgementKind>(['PERFECT','GREAT','GOOD','MISS','HOLD','HOLD_BREAK']);
 const SYNTH_SONGS:Record<string,{bpm:number,melody:number[]}>= {
  voltage:{bpm:118,melody:[12,15,19,17,12,10,7,10]},
  afterglow:{bpm:132,melody:[12,14,15,19,17,15,14,10]},
@@ -92,7 +92,7 @@ export const buildCanonicalChart=(songId:string,difficulty:Difficulty,onsetSourc
  return{songId,difficulty,notes,endMs};
 };
 
-const claimedJudge=(distance:number):Exclude<JudgementKind,'MISS'|'HOLD'>|null=>distance<=TIMING.perfect?'PERFECT':distance<=TIMING.great?'GREAT':distance<=TIMING.good?'GOOD':null;
+const claimedJudge=(distance:number):Exclude<JudgementKind,'MISS'|'HOLD'|'HOLD_BREAK'>|null=>distance<=TIMING.perfect?'PERFECT':distance<=TIMING.great?'GREAT':distance<=TIMING.good?'GOOD':null;
 
 const normalizeEvents=(input:unknown,chart:CanonicalChart):JudgementEvent[]=>{
  if(!Array.isArray(input)||input.length>chart.notes.length*2+16)throw new Error('Invalid event log length');
@@ -108,19 +108,25 @@ const normalizeEvents=(input:unknown,chart:CanonicalChart):JudgementEvent[]=>{
 };
 
 export const validateAgainstChart=(input:unknown,chart:CanonicalChart):ValidatedResult=>{
- const events=normalizeEvents(input,chart),notesById=new Map(chart.notes.map(note=>[note.id,note])),initial=new Map<number,JudgementEvent>(),holds=new Map<number,JudgementEvent>();
+ const events=normalizeEvents(input,chart),notesById=new Map(chart.notes.map(note=>[note.id,note])),initial=new Map<number,JudgementEvent>(),holds=new Map<number,JudgementEvent>(),holdBreaks=new Map<number,JudgementEvent>();
  for(const event of events){
   const note=notesById.get(event.noteId);
   if(!note)throw new Error(`Unknown note ${event.noteId}`);
   if(event.lane!==note.lane)throw new Error(`Lane mismatch for note ${event.noteId}`);
-  if(event.kind==='HOLD'){
-   if(!note.duration)throw new Error(`Hold bonus on non-hold note ${event.noteId}`);
+  if(event.kind==='HOLD'||event.kind==='HOLD_BREAK'){
+   if(!note.duration)throw new Error(`${event.kind==='HOLD'?'Hold bonus':'Hold break'} on non-hold note ${event.noteId}`);
    const first=initial.get(note.id);
-   if(!first||first.kind==='MISS')throw new Error(`Hold bonus without a valid hold start for note ${event.noteId}`);
-   if(holds.has(note.id))throw new Error(`Duplicate hold completion for note ${event.noteId}`);
+   if(!first||first.kind==='MISS')throw new Error(`${event.kind==='HOLD'?'Hold bonus':'Hold break'} without a valid hold start for note ${event.noteId}`);
+   if(holds.has(note.id)||holdBreaks.has(note.id))throw new Error(`Duplicate hold outcome for note ${event.noteId}`);
    const tail=note.time+note.duration;
-   if(event.atMs<tail-150)throw new Error(`Hold completed too early for note ${event.noteId}`);
-   holds.set(note.id,event);
+   if(event.kind==='HOLD'){
+    if(event.atMs<tail-150)throw new Error(`Hold completed too early for note ${event.noteId}`);
+    holds.set(note.id,event);
+   }else{
+    if(event.atMs<first.atMs)throw new Error(`Hold break precedes hold start for note ${event.noteId}`);
+    if(event.atMs>=tail-100)throw new Error(`Hold break reported too late for note ${event.noteId}`);
+    holdBreaks.set(note.id,event);
+   }
    continue;
   }
   if(initial.has(note.id))throw new Error(`Duplicate judgement for note ${event.noteId}`);
@@ -139,11 +145,11 @@ export const validateAgainstChart=(input:unknown,chart:CanonicalChart):Validated
 
  type ScoreEvent={kind:JudgementKind,note:Note,scoreTime:number};
  const scoreEvents:ScoreEvent[]=[];
- for(const note of chart.notes){const event=initial.get(note.id)!;scoreEvents.push({kind:event.kind,note,scoreTime:note.time});const hold=holds.get(note.id);if(hold)scoreEvents.push({kind:'HOLD',note,scoreTime:note.time+(note.duration??0)})}
- scoreEvents.sort((a,b)=>a.scoreTime-b.scoreTime||a.note.id-b.note.id||(a.kind==='HOLD'?1:-1));
+ for(const note of chart.notes){const event=initial.get(note.id)!;scoreEvents.push({kind:event.kind,note,scoreTime:note.time});const hold=holds.get(note.id),holdBreak=holdBreaks.get(note.id);if(hold)scoreEvents.push({kind:'HOLD',note,scoreTime:note.time+(note.duration??0)});else if(holdBreak)scoreEvents.push({kind:'HOLD_BREAK',note,scoreTime:holdBreak.atMs})}
+ scoreEvents.sort((a,b)=>a.scoreTime-b.scoreTime||a.note.id-b.note.id||(a.kind==='HOLD'||a.kind==='HOLD_BREAK'?1:-1));
  let score=0,combo=0,maxCombo=0,perfect=0,great=0,good=0,miss=0;
  for(const event of scoreEvents){
-  if(event.kind==='MISS'){miss++;combo=0;continue}
+  if(event.kind==='MISS'||event.kind==='HOLD_BREAK'){miss++;combo=0;continue}
   const multiplier=Math.min(4,1+Math.floor(combo/10));
   if(event.kind==='HOLD'){score+=600*multiplier;continue}
   if(event.kind==='PERFECT'){score+=1000*multiplier;perfect++}

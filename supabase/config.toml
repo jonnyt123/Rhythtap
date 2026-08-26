@@ -1,2 +1,5 @@
 [functions.validate-match]
 verify_jwt = true
+
+[functions.record-solo]
+verify_jwt = true

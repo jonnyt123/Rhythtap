@@ -2,7 +2,7 @@ name: Multiplayer CI
 
 on:
   push:
-    branches: [codex/multiplayer-score-battle, codex/authoritative-multiplayer]
+    branches: [main, codex/multiplayer-score-battle, codex/authoritative-multiplayer]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,15 +21,21 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
       - name: Compile authoritative validator
         run: npx tsc supabase/functions/validate-match/validator.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck --outDir .validator-ci
       - name: Run authoritative validator attacks
         run: node tests/authoritative-validator.test.mjs
+      - name: Run stability regression checks
+        run: node tests/stability-regressions.test.mjs
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
       - name: Check validate-match Edge Function
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/index.ts
+      - name: Check record-solo Edge Function
+        run: deno check --node-modules-dir=auto supabase/functions/record-solo/index.ts
 
   deploy-supabase:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy-supabase]'))
@@ -56,3 +62,5 @@ jobs:
         run: supabase db push
       - name: Deploy validate-match Edge Function
         run: supabase functions deploy validate-match --project-ref "$SUPABASE_PROJECT_ID" --use-api
+      - name: Deploy record-solo Edge Function
+        run: supabase functions deploy record-solo --project-ref "$SUPABASE_PROJECT_ID" --use-api
