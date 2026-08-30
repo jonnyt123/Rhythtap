@@ -7,10 +7,11 @@ import { metalMenuTransform } from './scripts/metal-menu-transform';
 import { gameplayPositionFixTransform } from './scripts/gameplay-position-fix-transform';
 import { stabilityTransform } from './scripts/stability-transform';
 import { weightedChartTransform } from './scripts/weighted-chart-transform';
+import { battleExperienceTransform } from './scripts/battle-experience-transform';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), react()],
+  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), battleExperienceTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });
