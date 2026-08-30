@@ -1,5 +1,5 @@
 import {createClient} from 'npm:@supabase/supabase-js@2';
-import {buildCanonicalChart,validateAgainstChart,type CanonicalChart,type Difficulty} from './validator.ts';
+import {buildCanonicalChart,validateAgainstChart,type CanonicalChart,type Difficulty} from './validator-v3.ts';
 
 const CHART_SOURCE_COMMIT=Deno.env.get('RHYTHTAP_CHART_COMMIT')||'50c9e0b39aa441e5628ef10d471ed460d758dd69';
 const CHART_SOURCE_URL=`https://raw.githubusercontent.com/jonnyt123/Rhythtap/${CHART_SOURCE_COMMIT}/src/audioChartData.ts`;
@@ -68,15 +68,15 @@ const finalize=async(body:any)=>{
  const chart=await loadChart(match.song_id,match.difficulty as Difficulty);
  if(match.chart_source_commit!==CHART_SOURCE_COMMIT||Number(match.chart_note_count)!==chart.notes.length)return json({error:'Authoritative chart version mismatch'},409);
  const result=validateAgainstChart(body?.events,chart),eventDigest=await sha256(JSON.stringify(result.normalizedEvents));
- const {error}=await admin.from('multiplayer_results').upsert({match_id:meta.matchId,room_code:match.room_code,player_id:meta.playerId,display_name:participant.display_name||meta.displayName,song_id:match.song_id,difficulty:match.difficulty,score:result.score,accuracy:result.accuracy,max_combo:result.maxCombo,event_count:result.eventCount,validation_version:2,chart_source_commit:CHART_SOURCE_COMMIT,chart_note_count:result.noteCount,validated_hold_count:result.holdCount,event_digest:eventDigest},{onConflict:'match_id,player_id'});
+ const {error}=await admin.from('multiplayer_results').upsert({match_id:meta.matchId,room_code:match.room_code,player_id:meta.playerId,display_name:participant.display_name||meta.displayName,song_id:match.song_id,difficulty:match.difficulty,score:result.score,accuracy:result.accuracy,max_combo:result.maxCombo,event_count:result.eventCount,validation_version:3,chart_source_commit:CHART_SOURCE_COMMIT,chart_note_count:result.noteCount,validated_hold_count:result.holdCount,event_digest:eventDigest},{onConflict:'match_id,player_id'});
  if(error)throw error;
- return json({score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,noteCount:result.noteCount,holdCount:result.holdCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},chartSourceCommit:CHART_SOURCE_COMMIT,validationVersion:2,validation:'verified'});
+ return json({score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,noteCount:result.noteCount,holdCount:result.holdCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},chartSourceCommit:CHART_SOURCE_COMMIT,validationVersion:3,validation:'verified'});
 };
 
 const history=async(body:any)=>{
  const admin=adminClient(),playerId=String(body?.playerId||'');if(!validUuid(playerId))return json({history:[]});
- const {data:mine,error}=await admin.from('multiplayer_results').select('*').eq('player_id',playerId).eq('validation_version',2).order('created_at',{ascending:false}).limit(10);if(error)throw error;if(!mine?.length)return json({history:[]});
- const ids=mine.map((row:any)=>row.match_id),{data:all,error:allError}=await admin.from('multiplayer_results').select('*').in('match_id',ids).eq('validation_version',2);if(allError)throw allError;
+ const {data:mine,error}=await admin.from('multiplayer_results').select('*').eq('player_id',playerId).in('validation_version',[2,3]).order('created_at',{ascending:false}).limit(10);if(error)throw error;if(!mine?.length)return json({history:[]});
+ const ids=mine.map((row:any)=>row.match_id),{data:all,error:allError}=await admin.from('multiplayer_results').select('*').in('match_id',ids).in('validation_version',[2,3]);if(allError)throw allError;
  const rows=mine.map((row:any)=>{const opponent=all?.find((other:any)=>other.match_id===row.match_id&&other.player_id!==row.player_id),opponentScore=opponent?.score??null,outcome=opponentScore===null?'UNKNOWN':row.score>opponentScore?'WIN':row.score<opponentScore?'LOSS':'DRAW';return{matchId:row.match_id,songId:row.song_id,difficulty:row.difficulty,createdAt:row.created_at,score:row.score,opponentName:opponent?.display_name??'Waiting for opponent',opponentScore,outcome,validationVersion:row.validation_version}});
  return json({history:rows});
 };
