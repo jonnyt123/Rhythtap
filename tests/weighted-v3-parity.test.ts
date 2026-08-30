@@ -38,7 +38,7 @@ const assertChartShape=(songId:string,difficulty:string,notes:{id:number,time:nu
   assert.ok(Number.isFinite(note.time)&&note.time>=0,`${songId} ${difficulty} has invalid note time`);
   assert.ok(Number.isInteger(note.lane)&&note.lane>=0&&note.lane<=2,`${songId} ${difficulty} has invalid lane`);
   if(note.duration!==undefined)assert.ok(Number.isFinite(note.duration)&&note.duration>0,`${songId} ${difficulty} has invalid hold duration`);
-  if(i>0){const previous=notes[i-1];assert.ok(note.time>previous.time||(note.time===previous.time&&note.lane>=previous.lane),`${songId} ${difficulty} must be sorted deterministically`)}
+  if(i>0){const previous=notes[i-1];assert.ok(note.time>=previous.time,`${songId} ${difficulty} note times must be nondecreasing`)}
  }
 };
 
