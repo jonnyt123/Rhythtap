@@ -15,12 +15,21 @@ const adminClient=()=>{
  if(!url||!secretKey)throw new Error('Server configuration missing');
  return createClient(url,secretKey,{auth:{persistSession:false,autoRefreshToken:false}});
 };
+const authenticatedUserId=async(req:Request)=>{
+ const url=Deno.env.get('SUPABASE_URL'),anon=Deno.env.get('SUPABASE_ANON_KEY'),authorization=req.headers.get('authorization')||'',token=authorization.replace(/^Bearer\s+/i,'').trim();
+ if(!url||!anon)throw new Error('Server configuration missing');
+ if(!token)throw new Error('Authentication required');
+ const client=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:`Bearer ${token}`}}}),{data,error}=await client.auth.getUser(token);
+ if(error||!data.user?.id)throw new Error('Authentication required');
+ return data.user.id;
+};
 const validUuid=(value:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const bytesToHex=(bytes:Uint8Array)=>Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');
 const sha256=async(value:string)=>bytesToHex(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))));
 const randomToken=()=>{const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);return bytesToHex(bytes)};
-const cleanMetadata=(body:any)=>{
+const cleanMetadata=(body:any,authenticatedId:string)=>{
  const matchId=String(body?.matchId||''),playerId=String(body?.playerId||''),roomCode=String(body?.roomCode||'').toUpperCase(),displayName=String(body?.displayName||'PLAYER').trim().slice(0,18),songId=String(body?.songId||'').slice(0,80),difficulty=String(body?.difficulty||'') as Difficulty;
+ if(playerId!==authenticatedId)throw new Error('Battle identity does not match signed-in account');
  if(!validUuid(matchId)||!validUuid(playerId)||!/^[A-Z0-9]{6}$/.test(roomCode)||!displayName||!songId||!['EASY','NORMAL','HARD'].includes(difficulty))throw new Error('Invalid match metadata');
  return{matchId,playerId,roomCode,displayName,songId,difficulty};
 };
@@ -31,8 +40,10 @@ const loadOnsetSource=async()=>{
 };
 const loadChart=async(songId:string,difficulty:Difficulty):Promise<CanonicalChart>=>buildCanonicalChart(songId,difficulty,AUDIO_SONGS.has(songId)?await loadOnsetSource():undefined);
 
-const register=async(body:any)=>{
- const serverReceivedAt=Date.now(),admin=adminClient(),meta=cleanMetadata(body),isHost=Boolean(body?.isHost),chart=await loadChart(meta.songId,meta.difficulty),now=serverReceivedAt;
+const register=async(body:any,authenticatedId:string)=>{
+ const serverReceivedAt=Date.now(),admin=adminClient(),rawMeta=cleanMetadata(body,authenticatedId),isHost=Boolean(body?.isHost),chart=await loadChart(rawMeta.songId,rawMeta.difficulty),now=serverReceivedAt;
+ const {data:profile}=await admin.from('player_profiles').select('display_name,username').eq('user_id',authenticatedId).maybeSingle();
+ const meta={...rawMeta,displayName:String(profile?.display_name||profile?.username||rawMeta.displayName).trim().slice(0,18)};
  let match:any;
  const {data:existing,error:existingError}=await admin.from('multiplayer_matches').select('*').eq('match_id',meta.matchId).maybeSingle();
  if(existingError)throw existingError;
@@ -55,8 +66,8 @@ const register=async(body:any)=>{
  const serverSentAt=Date.now();return json({submissionToken:token,serverReceivedAt,serverSentAt,serverStartAt:new Date(match.server_start_at).getTime(),expectedEndAt:new Date(match.expected_end_at).getTime(),chartSourceCommit:CHART_SOURCE_COMMIT,chartNoteCount:chart.notes.length});
 };
 
-const finalize=async(body:any)=>{
- const admin=adminClient(),meta=cleanMetadata(body),submissionToken=String(body?.submissionToken||'');
+const finalize=async(body:any,authenticatedId:string)=>{
+ const admin=adminClient(),meta=cleanMetadata(body,authenticatedId),submissionToken=String(body?.submissionToken||'');
  if(!/^[0-9a-f]{64}$/i.test(submissionToken))return json({error:'Missing submission token'},401);
  const {data:match,error:matchError}=await admin.from('multiplayer_matches').select('*').eq('match_id',meta.matchId).maybeSingle();
  if(matchError)throw matchError;if(!match)return json({error:'Unknown match'},404);
@@ -73,8 +84,8 @@ const finalize=async(body:any)=>{
  return json({score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,noteCount:result.noteCount,holdCount:result.holdCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},chartSourceCommit:CHART_SOURCE_COMMIT,validationVersion:3,validation:'verified'});
 };
 
-const history=async(body:any)=>{
- const admin=adminClient(),playerId=String(body?.playerId||'');if(!validUuid(playerId))return json({history:[]});
+const history=async(authenticatedId:string)=>{
+ const admin=adminClient(),playerId=authenticatedId;
  const {data:mine,error}=await admin.from('multiplayer_results').select('*').eq('player_id',playerId).in('validation_version',[2,3]).order('created_at',{ascending:false}).limit(10);if(error)throw error;if(!mine?.length)return json({history:[]});
  const ids=mine.map((row:any)=>row.match_id),{data:all,error:allError}=await admin.from('multiplayer_results').select('*').in('match_id',ids).in('validation_version',[2,3]);if(allError)throw allError;
  const rows=mine.map((row:any)=>{const opponent=all?.find((other:any)=>other.match_id===row.match_id&&other.player_id!==row.player_id),opponentScore=opponent?.score??null,outcome=opponentScore===null?'UNKNOWN':row.score>opponentScore?'WIN':row.score<opponentScore?'LOSS':'DRAW';return{matchId:row.match_id,songId:row.song_id,difficulty:row.difficulty,createdAt:row.created_at,score:row.score,opponentName:opponent?.display_name??'Waiting for opponent',opponentScore,outcome,validationVersion:row.validation_version}});
@@ -84,6 +95,6 @@ const history=async(body:any)=>{
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
- try{const body=await req.json();if(body?.action==='register')return await register(body);if(body?.action==='finalize')return await finalize(body);if(body?.action==='history')return await history(body);return json({error:'Unknown action'},400)}
- catch(error){const message=error instanceof Error?error.message:'Validation failed',status=/unavailable|configuration/i.test(message)?503:400;return json({error:message},status)}
+ try{const authenticatedId=await authenticatedUserId(req),body=await req.json();if(body?.action==='register')return await register(body,authenticatedId);if(body?.action==='finalize')return await finalize(body,authenticatedId);if(body?.action==='history')return await history(authenticatedId);return json({error:'Unknown action'},400)}
+ catch(error){const message=error instanceof Error?error.message:'Validation failed',status=/Authentication required/i.test(message)?401:/identity does not match/i.test(message)?403:/unavailable|configuration/i.test(message)?503:400;return json({error:message},status)}
 });
