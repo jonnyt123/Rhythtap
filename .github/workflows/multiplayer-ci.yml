@@ -32,6 +32,8 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Run weighted V3 client-server parity checks
+        run: deno test --allow-read tests/weighted-v3-parity.test.ts
       - name: Check validate-match Edge Function
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/index.ts
       - name: Check record-solo Edge Function
