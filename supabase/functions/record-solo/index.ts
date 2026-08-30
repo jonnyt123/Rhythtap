@@ -1,5 +1,5 @@
 import {createClient} from 'npm:@supabase/supabase-js@2';
-import {buildCanonicalChart,validateAgainstChart,type CanonicalChart,type Difficulty} from '../validate-match/validator.ts';
+import {buildCanonicalChart,validateAgainstChart,type CanonicalChart,type Difficulty} from '../validate-match/validator-v3.ts';
 
 const CHART_SOURCE_COMMIT=Deno.env.get('RHYTHTAP_CHART_COMMIT')||'50c9e0b39aa441e5628ef10d471ed460d758dd69';
 const CHART_SOURCE_URL=`https://raw.githubusercontent.com/jonnyt123/Rhythtap/${CHART_SOURCE_COMMIT}/src/audioChartData.ts`;
@@ -45,10 +45,9 @@ Deno.serve(async req=>{
   if(!row)throw new Error('Progress update returned no data');
   return json({
    progress:{xp:Number(row.xp),level:Number(row.level),songsCompleted:Number(row.songs_completed),perfectHits:Number(row.perfect_hits),bestCombo:Number(row.best_combo),xpAwarded:Number(row.xp_awarded),dailyBonus:Number(row.daily_bonus)},
-   result:{score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},validation:'verified'}
+   result:{score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},validationVersion:3,validation:'verified'}
   });
  }catch(error){
   const message=error instanceof Error?error.message:'Solo validation failed',status=/Authentication required/i.test(message)?401:/too soon/i.test(message)?429:/unavailable|configuration/i.test(message)?503:400;
-  return json({error:message},status);
- }
+  return json({error:message},status)}
 });
