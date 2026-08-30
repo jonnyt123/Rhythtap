@@ -8,7 +8,9 @@ import { gameplayPositionFixTransform } from './scripts/gameplay-position-fix-tr
 import { stabilityTransform } from './scripts/stability-transform';
 import { weightedChartTransform } from './scripts/weighted-chart-transform';
 
+const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
+
 export default defineConfig({
   plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), react()],
-  base: '/Rhythtap/',
+  base: isVercel ? '/' : '/Rhythtap/',
 });
