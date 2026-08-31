@@ -37,6 +37,13 @@ assert.match(session,/payload\?\.matchId!==active\.matchId/,'multiplayer packets
 assert.match(session,/launchRef\.current\?\.matchId!==submittedMatchId/,'late validation responses must be discarded after a rematch');
 assert.match(session,/connectionState\.current==='connecting'/,'reconnects must have an in-flight guard');
 
+const accountSession=await readFile('scripts/account-session-transform.ts','utf8');
+assert.match(accountSession,/persistSession:true/,'RhythmTap ID sessions must persist across browser launches');
+assert.match(accountSession,/autoRefreshToken:true/,'persisted account sessions must automatically refresh access tokens');
+assert.match(accountSession,/window\.localStorage/,'account sessions must use durable same-origin browser storage');
+assert.match(accountSession,/storageKey:'rhythtap-account-auth'/,'account auth storage must use a stable dedicated key');
+assert.doesNotMatch(accountSession,/localStorage\.setItem\([^\n]*password/i,'raw account passwords must never be written to browser storage');
+
 const prepareAudio=await readFile('scripts/prepare-audio.mjs','utf8');
 for(const file of ['my-immortal.mp3','crazy-train.mp3','kill-you.mp3','kryptonite.mp3','through-fire-flames.mp3'])assert.ok(prepareAudio.includes(file),`build audio verification is missing ${file}`);
 
@@ -46,4 +53,4 @@ assert.ok(ci.includes('supabase/functions/record-solo/index.ts'),'CI must typech
 assert.ok(ci.includes('weighted-v3-parity.test.ts'),'CI must gate releases on weighted V3 client-server parity');
 assert.ok(ci.includes('supabase functions deploy record-solo'),'guarded backend deployment must include the solo Edge Function');
 
-console.log(JSON.stringify({assets:assetNames.length,authoritativeSolo:true,accountGatedBattles:true,battleProgression:true,matchScopedRealtime:true,versionedAudio:true,weightedV3Parity:true}));
+console.log(JSON.stringify({assets:assetNames.length,authoritativeSolo:true,accountGatedBattles:true,battleProgression:true,matchScopedRealtime:true,persistentAccountSessions:true,versionedAudio:true,weightedV3Parity:true}));
