@@ -19,8 +19,8 @@ export function tourSocialRankedTransform():Plugin{
    " const [multiplayerResume,setMultiplayerResume]=useState<{roomCode:string,isHost:boolean}|null>(null);",
    " const [multiplayerResume,setMultiplayerResume]=useState<{roomCode:string,isHost:boolean}|null>(null);\n const [tourRun,setTourRun]=useState<TourRun|null>(null);");
   code=replaceRequired(code,'record tour result',
-   "setResult({...r,xpEarned,dailyBonus,levelUp:level>previousLevel,previousLevel});if(!multiplayerLaunch)void playerAccount.recordGame({songId:song.id,difficulty,score:r.score,accuracy:r.accuracy,maxCombo:r.maxCombo,perfectHits:r.counts.PERFECT});setScreen('results')};",
-   "setResult({...r,xpEarned,dailyBonus,levelUp:level>previousLevel,previousLevel});if(!multiplayerLaunch){void playerAccount.recordGame({songId:song.id,difficulty,score:r.score,accuracy:r.accuracy,maxCombo:r.maxCombo,perfectHits:r.counts.PERFECT});void recordTourResult(playerAccount.userId,tourRun,r.score,r.accuracy,difficulty)}setScreen('results')};");
+   "setScreen('results')};",
+   "if(!multiplayerLaunch)void recordTourResult(playerAccount.userId,tourRun,r.score,r.accuracy,difficulty);setScreen('results')};");
   code=replaceRequired(code,'home navigation',
    "{screen==='home'&&<Home profile={profile} stats={stats} account={playerAccount} onPlay={()=>setScreen('select')} onMultiplayer={()=>setScreen('multiplayer')} onAccount={()=>setScreen('account')} onLibrary={()=>setScreen('library')} onAchievements={()=>setScreen('achievements')} onSettings={()=>setScreen('settings')}/>} ".trim(),
    "{screen==='home'&&<Home profile={profile} stats={stats} account={playerAccount} onPlay={()=>{setTourRun(null);setScreen('select')}} onTour={()=>setScreen('tour')} onSocial={()=>setScreen('social')} onRanked={()=>setScreen('ranked')} onMultiplayer={()=>setScreen('multiplayer')} onAccount={()=>setScreen('account')} onLibrary={()=>setScreen('library')} onAchievements={()=>setScreen('achievements')} onSettings={()=>setScreen('settings')}/>} ".trim());
