@@ -21,9 +21,9 @@ export function tourSocialRankedTransform():Plugin{
   code=replaceRequired(code,'record tour result',
    "setScreen('results')};",
    "if(!multiplayerLaunch)void recordTourResult(playerAccount.userId,tourRun,r.score,r.accuracy,difficulty);setScreen('results')};");
-  code=replaceRequired(code,'home navigation',
-   "{screen==='home'&&<Home profile={profile} stats={stats} account={playerAccount} onPlay={()=>setScreen('select')} onMultiplayer={()=>setScreen('multiplayer')} onAccount={()=>setScreen('account')} onLibrary={()=>setScreen('library')} onAchievements={()=>setScreen('achievements')} onSettings={()=>setScreen('settings')}/>} ".trim(),
-   "{screen==='home'&&<Home profile={profile} stats={stats} account={playerAccount} onPlay={()=>{setTourRun(null);setScreen('select')}} onTour={()=>setScreen('tour')} onSocial={()=>setScreen('social')} onRanked={()=>setScreen('ranked')} onMultiplayer={()=>setScreen('multiplayer')} onAccount={()=>setScreen('account')} onLibrary={()=>setScreen('library')} onAchievements={()=>setScreen('achievements')} onSettings={()=>setScreen('settings')}/>} ".trim());
+  code=replaceRequired(code,'home feature callbacks',
+   "onPlay={()=>setScreen('select')} onMultiplayer={()=>setScreen(playerAccount.profile?'multiplayer':'account')}",
+   "onPlay={()=>{setTourRun(null);setScreen('select')}} onTour={()=>setScreen('tour')} onSocial={()=>setScreen('social')} onRanked={()=>setScreen('ranked')} onMultiplayer={()=>setScreen(playerAccount.profile?'multiplayer':'account')}");
   code=replaceRequired(code,'feature screens',
    "  {screen==='account'&&<AccountScreen account={playerAccount} back={()=>setScreen('home')}/>}",
    "  {screen==='tour'&&<TourScreen songs={library} profileLevel={profile.level} userId={playerAccount.userId} back={()=>setScreen('home')} onPlay={(songId,nextDifficulty,run)=>{const selected=library.find(item=>item.id===songId);if(!selected)return;setSong(selected);setDifficulty(nextDifficulty);setTourRun(run);setMultiplayerLaunch(null);setScreen('game')}}/>}\n  {screen==='social'&&<SocialScreen userId={playerAccount.userId} back={()=>setScreen('home')} onBattle={(roomCode,isHost)=>{setMultiplayerResume({roomCode,isHost});setScreen('multiplayer')}}/>}\n  {screen==='ranked'&&<RankedScreen songs={library} userId={playerAccount.userId} back={()=>setScreen('home')}/>}\n  {screen==='account'&&<AccountScreen account={playerAccount} back={()=>setScreen('home')}/>}" );
