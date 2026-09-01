@@ -11,10 +11,11 @@ import { battleExperienceTransform } from './scripts/battle-experience-transform
 import { accountRecoveryTransform } from './scripts/account-recovery-transform';
 import { battleLobbyUsabilityTransform } from './scripts/battle-lobby-usability-transform';
 import { accountSessionTransform } from './scripts/account-session-transform';
+import { multiplayerSessionLoopTransform } from './scripts/multiplayer-session-loop-transform';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), react()],
+  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });
