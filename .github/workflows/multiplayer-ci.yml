@@ -23,6 +23,8 @@ jobs:
       - run: npm run build
         env:
           VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+      - name: Run gameplay timing regression checks
+        run: node tests/gameplay-quality.test.mjs
       - name: Compile authoritative validator
         run: npx tsc supabase/functions/validate-match/validator.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck --outDir .validator-ci
       - name: Run authoritative validator attacks
