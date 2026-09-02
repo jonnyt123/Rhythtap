@@ -51,7 +51,7 @@ const gigComplete=(progress:TourProgress[],gig:(typeof tours)[number])=>gig.song
 export const getTourStep=(run:TourRun)=>{const gig=tours.find(item=>item.id===run.gigId),step=gig?.songs[run.songIndex];return step?{songId:step.songId,difficulty:step.difficulty,passAccuracy:step.passAccuracy,label:step.label}:null};
 export const nextTourRun=(run:TourRun):TourRun|null=>{const gig=tours.find(item=>item.id===run.gigId);return gig&&run.songIndex+1<gig.songs.length?{gigId:run.gigId,songIndex:run.songIndex+1}:null};
 export const tourRunIsFinal=(run:TourRun)=>nextTourRun(run)===null;
-const diffRank=`;
+`;
 
 const recordTour=`export async function recordTourResult(userId:string|null,run:TourRun|null,score:number,accuracy:number,difficulty:TourDifficulty){
  if(!run)return;
@@ -86,7 +86,7 @@ const patchTour=(source:string)=>{
  code=replaceRequired(code,'tour run type',"export type TourRun={gigId:string};","export type TourRun={gigId:string,songIndex:number};");
  code=replaceBetweenRequired(code,'tour model','const tours=[','const diffRank=',tourModel);
  code=replaceBetweenRequired(code,'record result','export async function recordTourResult','export function TourScreen',recordTour);
- code=replaceBetweenRequired(code,'tour screen','export function TourScreen','const normalizeProfile=',tourScreen+'const normalizeProfile=');
+ code=replaceBetweenRequired(code,'tour screen','export function TourScreen','const normalizeProfile=',tourScreen);
  return code;
 };
 
