@@ -16,8 +16,8 @@ export function tourSocialRankedTransform():Plugin{
    "type Screen='home'|'select'|'library'|'leaderboard'|'multiplayer'|'account'|'publicProfile'|'game'|'results'|'settings'|'achievements';",
    "type Screen='home'|'select'|'library'|'leaderboard'|'multiplayer'|'account'|'publicProfile'|'tour'|'social'|'ranked'|'tutorial'|'game'|'results'|'settings'|'achievements';");
   code=replaceRequired(code,'first launch tutorial',
-   "const [screen,setScreen]=useState<Screen>(()=>location.hash.startsWith('#player/')?'publicProfile':'home'),",
-   "const [screen,setScreen]=useState<Screen>(()=>location.hash.startsWith('#player/')?'publicProfile':tutorialComplete()?'home':'tutorial'),");
+   "const [screen,setScreen]=useState<Screen>(()=>location.hash.startsWith('#player/')?'publicProfile':new URLSearchParams(location.search).get('recovery')==='password'?'account':'home'),",
+   "const [screen,setScreen]=useState<Screen>(()=>location.hash.startsWith('#player/')?'publicProfile':new URLSearchParams(location.search).get('recovery')==='password'?'account':tutorialComplete()?'home':'tutorial'),");
   code=replaceRequired(code,'tour state',
    " const [multiplayerResume,setMultiplayerResume]=useState<{roomCode:string,isHost:boolean}|null>(null);",
    " const [multiplayerResume,setMultiplayerResume]=useState<{roomCode:string,isHost:boolean}|null>(null);\n const [tourRun,setTourRun]=useState<TourRun|null>(null);");
