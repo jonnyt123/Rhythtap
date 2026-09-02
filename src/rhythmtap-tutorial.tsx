@@ -13,7 +13,7 @@ const laneLabels=['LEFT','CENTER','RIGHT'];
 export function RhythmTapTutorial({onDone}:{onDone:()=>void}){
  const[step,setStep]=useState(0),[lane,setLane]=useState<Lane>(1),[hits,setHits]=useState(0),[mode,setMode]=useState<DemoMode>('tap'),[holding,setHolding]=useState(false),[feedback,setFeedback]=useState('');
  const totalSteps=6;
- useEffect(()=>{if(step===1){setHits(0);setMode('tap');setLane(1);setFeedback('')}if(step===2){setHits(0);setMode('hold');setLane(0);setFeedback('')}},[step]);
+ useEffect(()=>{if(step===1){setHits(0);setMode('tap');setLane(1);setFeedback('');setHolding(false)}if(step===2){setHits(0);setMode('hold');setLane(0);setFeedback('');setHolding(false)}},[step]);
  const finish=()=>{markTutorialComplete();onDone()};
  const next=()=>step>=totalSteps-1?finish():setStep(value=>value+1);
  const tapLane=(nextLane:Lane)=>{
@@ -30,8 +30,8 @@ export function RhythmTapTutorial({onDone}:{onDone:()=>void}){
   <div className="tutorial-progress"><i style={{width:progress+'%'}}/></div>
   <main className="tutorial-wrap">
    {step===0&&<Intro/>}
-   {step===1&&<PlayDemo lane={lane} mode="tap" hits={hits} feedback={feedback} onTap={tapLane} onStart={startHold} onEnd={endHold}/>} 
-   {step===2&&<PlayDemo lane={lane} mode="hold" hits={hits} feedback={feedback} onTap={tapLane} onStart={startHold} onEnd={endHold}/>} 
+   {step===1&&<PlayDemo lane={lane} mode="tap" hits={hits} holding={holding} feedback={feedback} onTap={tapLane} onStart={startHold} onEnd={endHold}/>} 
+   {step===2&&<PlayDemo lane={lane} mode="hold" hits={hits} holding={holding} feedback={feedback} onTap={tapLane} onStart={startHold} onEnd={endHold}/>} 
    {step===3&&<JudgmentStep/>}
    {step===4&&<TourStep/>}
    {step===5&&<FeaturesStep/>}
@@ -42,7 +42,7 @@ export function RhythmTapTutorial({onDone}:{onDone:()=>void}){
 
 function Intro(){return <div className="tutorial-card intro-card"><div className="tutorial-logo"><Zap fill="currentColor"/></div><small>WELCOME TO RHYTHMTAP</small><h1>FOLLOW THE NOTES.<br/><i>HIT THE BEAT.</i></h1><p>Notes fall down one of three lanes. Your job is simple: tap the matching lane when the note reaches the hit line.</p><div className="three-rules"><span><b>1</b> WATCH</span><span><b>2</b> MATCH</span><span><b>3</b> TAP</span></div></div>}
 
-function PlayDemo({lane,mode,hits,feedback,onTap,onStart,onEnd}:{lane:Lane,mode:DemoMode,hits:number,feedback:string,onTap:(lane:Lane)=>void,onStart:(lane:Lane)=>void,onEnd:(lane:Lane)=>void}){
+function PlayDemo({lane,mode,hits,holding,feedback,onTap,onStart,onEnd}:{lane:Lane,mode:DemoMode,hits:number,holding:boolean,feedback:string,onTap:(lane:Lane)=>void,onStart:(lane:Lane)=>void,onEnd:(lane:Lane)=>void}){
  const noteKey=useMemo(()=>`${lane}-${hits}-${mode}`,[lane,hits,mode]);
  return <div className="tutorial-play-card"><div className="tutorial-copy"><small>{mode==='tap'?'TAP NOTES':'HOLD NOTES'}</small><h1>{mode==='tap'?'TAP AS IT CROSSES THE LINE':'PRESS, HOLD, THEN RELEASE'}</h1><p>{mode==='tap'?'Watch which lane the note is falling through, then tap that lane near the target line.':'Long notes have a tail. Keep your finger down until the tail finishes.'}</p></div><div className="demo-stage"><div className="demo-lanes">{([0,1,2] as Lane[]).map(index=><div className="demo-lane" key={index}><span>{laneLabels[index]}</span>{index===lane&&<div key={noteKey} className={'demo-note '+(mode==='hold'?'hold':'')}><i/></div>}</div>)}</div><div className="demo-hit-line"/><div className="demo-pads">{([0,1,2] as Lane[]).map(index=><button key={index} className={holding&&index===lane?'pressed':''} onClick={()=>onTap(index)} onPointerDown={()=>onStart(index)} onPointerUp={()=>onEnd(index)} onPointerCancel={()=>onEnd(index)}><span/></button>)}</div></div><div className="tutorial-feedback"><strong>{feedback||'WATCH THE NOTE FALL'}</strong><span>{hits} / {mode==='tap'?3:2}</span></div></div>;
 }
