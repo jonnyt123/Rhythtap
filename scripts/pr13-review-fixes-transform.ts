@@ -25,8 +25,8 @@ const patchTour=(source:string)=>{
 const patchMain=(source:string)=>{
  let code=source;
  code=replaceRequired(code,'tour quit behavior',
-  "quit={()=>setScreen('select')}",
-  "quit={()=>{if(tourRun){setTourRun(null);setScreen('tour')}else setScreen('select')}}");
+  "quit={()=>{if(multiplayerLaunch){setMultiplayerLaunch(null);setScreen('home')}else setScreen('select')}}",
+  "quit={()=>{if(multiplayerLaunch){setMultiplayerLaunch(null);setScreen('home')}else if(tourRun){setTourRun(null);setScreen('tour')}else setScreen('select')}}");
  return code;
 };
 
