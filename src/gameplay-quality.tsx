@@ -12,7 +12,7 @@ export const judgeDistance=(distanceMs:number)=>distanceMs<=55?'PERFECT':distanc
 const median=(values:number[])=>{const sorted=[...values].sort((a,b)=>a-b);if(!sorted.length)return 0;const middle=Math.floor(sorted.length/2);return sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2};
 
 export function CalibrationScreen({offset,setOffset,back}:{offset:number,setOffset:(value:number)=>void,back:()=>void}){
- const [running,setRunning]=useState(false),[samples,setSamples]=useState<number[]>([]),[flash,setFlash]=useState(false),[status,setStatus]=useState('Tap with the click, not the animation.'),ctx=useRef<AudioContext|null>(null),timer=useRef<number|undefined>(),nextBeat=useRef(0),beatIndex=useRef(0);
+ const [running,setRunning]=useState(false),[samples,setSamples]=useState<number[]>([]),[flash,setFlash]=useState(false),[status,setStatus]=useState('Tap with the click, not the animation.'),ctx=useRef<AudioContext|null>(null),timer=useRef<number|undefined>(undefined),nextBeat=useRef(0),beatIndex=useRef(0);
  const suggested=useMemo(()=>clampCalibration(offset-median(samples)),[offset,samples]);
  const stop=()=>{setRunning(false);if(timer.current)clearInterval(timer.current);timer.current=undefined;ctx.current?.close();ctx.current=null;setFlash(false)};
  useEffect(()=>stop,[]);
