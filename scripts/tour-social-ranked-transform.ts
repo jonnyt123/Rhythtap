@@ -15,9 +15,9 @@ export function tourSocialRankedTransform():Plugin{
   code=replaceRequired(code,'screens',
    "type Screen='home'|'select'|'library'|'leaderboard'|'multiplayer'|'account'|'publicProfile'|'game'|'results'|'settings'|'achievements';",
    "type Screen='home'|'select'|'library'|'leaderboard'|'multiplayer'|'account'|'publicProfile'|'tour'|'social'|'ranked'|'tutorial'|'game'|'results'|'settings'|'achievements';");
-  const screenInit=/const\s+\[screen,setScreen\]=useState<Screen>\('home'\)/;
-  if(!screenInit.test(code))throw new Error('[tour-social-ranked] Unable to patch first launch tutorial; screen state layout changed.');
-  code=code.replace(screenInit,"const [screen,setScreen]=useState<Screen>(()=>tutorialComplete()?'home':'tutorial')");
+  code=replaceRequired(code,'first launch tutorial',
+   "const [screen,setScreen]=useState<Screen>(()=>location.hash.startsWith('#player/')?'publicProfile':'home'),",
+   "const [screen,setScreen]=useState<Screen>(()=>location.hash.startsWith('#player/')?'publicProfile':tutorialComplete()?'home':'tutorial'),");
   code=replaceRequired(code,'tour state',
    " const [multiplayerResume,setMultiplayerResume]=useState<{roomCode:string,isHost:boolean}|null>(null);",
    " const [multiplayerResume,setMultiplayerResume]=useState<{roomCode:string,isHost:boolean}|null>(null);\n const [tourRun,setTourRun]=useState<TourRun|null>(null);");
