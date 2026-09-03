@@ -34,9 +34,9 @@ jobs:
           deno-version: v2.x
       - name: Run production gameplay timing checks
         run: deno test --allow-read tests/gameplay-quality.test.ts
-      - name: Run weighted V3 client-server parity checks
-        run: deno test --node-modules-dir=auto --allow-read tests/weighted-v3-parity.test.ts
-      - name: Run chart V4 playability audit
+      - name: Run chart version backward compatibility checks
+        run: deno test --node-modules-dir=auto --allow-read tests/chart-version-compat.test.ts
+      - name: Run chart V4 client-server parity and playability audit
         run: deno test --node-modules-dir=auto --allow-read tests/chart-quality-v4.test.ts
       - name: Check versioned chart selector
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/chart-validator.ts
