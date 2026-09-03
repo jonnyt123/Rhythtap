@@ -23,8 +23,6 @@ jobs:
       - run: npm run build
         env:
           VITE_RHYTHTAP_BUILD: ${{ github.sha }}
-      - name: Run gameplay timing regression checks
-        run: node tests/gameplay-quality.test.mjs
       - name: Compile authoritative validator
         run: npx tsc supabase/functions/validate-match/validator.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck --outDir .validator-ci
       - name: Run authoritative validator attacks
@@ -34,10 +32,14 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Run production gameplay timing checks
+        run: deno test --allow-read tests/gameplay-quality.test.ts
       - name: Run weighted V3 client-server parity checks
         run: deno test --node-modules-dir=auto --allow-read tests/weighted-v3-parity.test.ts
       - name: Run chart V4 playability audit
         run: deno test --node-modules-dir=auto --allow-read tests/chart-quality-v4.test.ts
+      - name: Check versioned chart selector
+        run: deno check --node-modules-dir=auto supabase/functions/validate-match/chart-validator.ts
       - name: Check validate-match Edge Function
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/index.ts
       - name: Check record-solo Edge Function
