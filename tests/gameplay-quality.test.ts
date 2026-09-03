@@ -1,0 +1,6 @@
+import {clampCalibration,effectiveHitTime,judgeDistance,suggestedCalibration} from '../src/gameplay-timing.ts';
+
+const assertEquals=(actual:unknown,expected:unknown,label:string)=>{if(actual!==expected)throw new Error(`${label}: expected ${expected}, got ${actual}`)};
+Deno.test('calibration clamping and suggestion',()=>{assertEquals(clampCalibration(900),300,'upper clamp');assertEquals(clampCalibration(-900),-300,'lower clamp');assertEquals(clampCalibration(42.4),42,'rounding');assertEquals(suggestedCalibration([100,100,100,100,100,100,100,100]),-100,'absolute latency correction')});
+Deno.test('effective hit time uses device and chart offsets',()=>{assertEquals(effectiveHitTime(1000,80,-20),1060,'positive device offset');assertEquals(effectiveHitTime(1000,-100,25),925,'negative device offset')});
+Deno.test('production judgement boundaries',()=>{assertEquals(judgeDistance(0),'PERFECT','zero');assertEquals(judgeDistance(55),'PERFECT','perfect edge');assertEquals(judgeDistance(56),'GREAT','great start');assertEquals(judgeDistance(110),'GREAT','great edge');assertEquals(judgeDistance(111),'GOOD','good start');assertEquals(judgeDistance(220),'GOOD','good edge');assertEquals(judgeDistance(221),'MISS','miss start')});
