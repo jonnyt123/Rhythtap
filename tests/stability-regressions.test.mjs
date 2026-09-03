@@ -26,11 +26,28 @@ assert.match(battleProgression,/record_validated_multiplayer_progress/,'verified
 assert.match(battleProgression,/perfect_count/,'verified battle perfect hits must be persisted authoritatively');
 assert.match(battleProgression,/revoke all on function public\.record_validated_multiplayer_progress\(uuid,uuid\) from public, anon, authenticated/,'battle progression RPC must not be browser-callable');
 
+const v4Progression=await readFile('supabase/migrations/20260903020626_allow_v4_multiplayer_progression.sql','utf8');
+assert.match(v4Progression,/validation_version in \(3,4\)/,'multiplayer account progression must accept both legacy v3 and release v4 verified results');
+assert.match(v4Progression,/revoke all on function public\.record_validated_multiplayer_progress\(uuid,uuid\) from public, anon, authenticated/,'v4 progression migration must preserve server-only RPC access');
+
 const validateMatch=await readFile('supabase/functions/validate-match/index.ts','utf8');
 assert.match(validateMatch,/authenticatedUserId/,'online battles must require an authenticated account');
 assert.match(validateMatch,/playerId!==authenticatedId/,'battle identity must be bound to the signed-in account');
 assert.match(validateMatch,/record_validated_multiplayer_progress/,'validated match finalization must award account progression');
 assert.match(validateMatch,/perfect_count:result\.perfect/,'validated match result must persist perfect-hit count');
+assert.match(validateMatch,/chart_version:meta\.chartVersion/,'new multiplayer matches must persist the negotiated chart version');
+assert.match(validateMatch,/normalizeChartVersion\(match\.chart_version\)/,'finalization must validate against the chart version stored on the match');
+
+const chartSelector=await readFile('supabase/functions/validate-match/chart-validator.ts','utf8');
+assert.match(chartSelector,/Number\(value\)===4\?4:3/,'missing or unknown chart versions must remain backward-compatible with v3');
+assert.match(chartSelector,/chartVersion===4\?buildV4/,'the authoritative selector must opt into v4 explicitly');
+
+const weightedTransform=await readFile('scripts/weighted-chart-transform.ts','utf8');
+assert.match(weightedTransform,/weighted-chart-v4/,'release client chart generation must use the shared v4 generator');
+
+const rolloutTransform=await readFile('scripts/chart-v4-rollout-transform.ts','utf8');
+assert.match(rolloutTransform,/player-account\.tsx/,'signed-in solo submissions must be patched in the actual TSX account module');
+assert.match(rolloutTransform,/chartVersion:4/,'release client requests must explicitly opt into authoritative chart v4');
 
 const session=await readFile('src/multiplayer-session.ts','utf8');
 assert.match(session,/payload\?\.matchId!==active\.matchId/,'multiplayer packets must be scoped to the active match');
@@ -50,7 +67,9 @@ for(const file of ['my-immortal.mp3','crazy-train.mp3','kill-you.mp3','kryptonit
 const ci=await readFile('.github/workflows/multiplayer-ci.yml','utf8');
 assert.match(ci,/branches: \[main,/,'full validator CI must run on pushes to main');
 assert.ok(ci.includes('supabase/functions/record-solo/index.ts'),'CI must typecheck the authoritative solo Edge Function');
-assert.ok(ci.includes('weighted-v3-parity.test.ts'),'CI must gate releases on weighted V3 client-server parity');
+assert.ok(ci.includes('tests/chart-version-compat.test.ts'),'CI must prove legacy v3 chart compatibility during the v4 rollout');
+assert.ok(ci.includes('tests/chart-quality-v4.test.ts'),'CI must gate releases on v4 client-server parity and playability');
+assert.ok(ci.includes('supabase/functions/validate-match/chart-validator.ts'),'CI must typecheck the versioned authoritative chart selector');
 assert.ok(ci.includes('supabase functions deploy record-solo'),'guarded backend deployment must include the solo Edge Function');
 
-console.log(JSON.stringify({assets:assetNames.length,authoritativeSolo:true,accountGatedBattles:true,battleProgression:true,matchScopedRealtime:true,persistentAccountSessions:true,versionedAudio:true,weightedV3Parity:true}));
+console.log(JSON.stringify({assets:assetNames.length,authoritativeSolo:true,accountGatedBattles:true,battleProgression:true,v4BattleProgression:true,matchScopedRealtime:true,persistentAccountSessions:true,versionedAudio:true,chartV3Compatibility:true,chartV4Parity:true}));
