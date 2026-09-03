@@ -11,5 +11,5 @@ export function gameplayQualityTransform():Plugin{return{name:'rhythmtap-gamepla
  code=required(code,'settings button',"<div className=\"how\"><h3>HOW TO PLAY</h3>","<div className=\"how calibration-entry\"><h3>AUDIO CALIBRATION</h3><p>Correct speaker, Bluetooth, and browser latency on this device. Your current gameplay offset is <strong>{offset>0?'+':''}{offset} ms</strong>.</p><button className=\"tutorial-replay\" onClick={calibrate}><Headphones/> CALIBRATE TIMING</button></div>\n  <div className=\"how\"><h3>HOW TO PLAY</h3>");
  code=required(code,'hit timing helper',"const hitTime=transport.current.now()+offset+(song.chartOffset||0)","const hitTime=effectiveHitTime(transport.current.now(),offset,song.chartOffset||0)");
  code=required(code,'frame timing helper',"const t=transport.current.now()+offset+(song.chartOffset||0)","const t=effectiveHitTime(transport.current.now(),offset,song.chartOffset||0)");
- code=required(code,'judgement helper',"applyJudge(dist<=TIMING.perfect?'PERFECT':dist<=TIMING.great?'GREAT':'GOOD',lane)","applyJudge(judgeDistance(dist)==='MISS'?'GOOD':judgeDistance(dist),lane)");
+ code=required(code,'judgement helper',"const hitJudge:Judge=dist<=TIMING.perfect?'PERFECT':dist<=TIMING.great?'GREAT':'GOOD';","const measuredJudge=judgeDistance(dist),hitJudge:Judge=measuredJudge==='MISS'?'GOOD':measuredJudge;");
  return{code,map:null}}}}
