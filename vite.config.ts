@@ -16,10 +16,11 @@ import { tourSocialRankedTransform } from './scripts/tour-social-ranked-transfor
 import { pr13ReviewFixesTransform } from './scripts/pr13-review-fixes-transform';
 import { tourSetCareerTransform } from './scripts/tour-set-career-transform';
 import { gameplayQualityTransform } from './scripts/gameplay-quality-transform';
+import { chartV4RolloutTransform } from './scripts/chart-v4-rollout-transform';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), react()],
+  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), chartV4RolloutTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });
