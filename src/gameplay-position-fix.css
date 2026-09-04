@@ -40,10 +40,10 @@
 }
 
 /* Keep a generous invisible lane-wide touch surface centered on the exact
-   judgment coordinate. This preserves easy mobile tapping while making the
-   visible circle the truthful 'tap now' location. */
+   judgment coordinate. Retain left:50% because ux.css centers pads with
+   translateX(-50%) on mobile/reduced-motion paths. */
 .game .pad{
-  left:4%;
+  left:50%;
   width:92%;
   top:calc(89% - 66px);
   bottom:auto;
@@ -53,7 +53,8 @@
   box-shadow:none;
   color:transparent;
 }
-.game .pad:before{display:none}
+.game .pad:before,
+.game .pad span{display:none}
 .game .pad:active,
 .game .lane.holding .pad{
   background:transparent;
@@ -63,6 +64,7 @@
 
 /* Hit/hold feedback blooms from the same 89% judgment coordinate. */
 .game .lane.holding:before{
+  display:block;
   left:50%;
   right:auto;
   top:89%;
