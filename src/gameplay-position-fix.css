@@ -21,15 +21,17 @@
 }
 
 /* Tap Tap Revenge-style circular hit receptors.
-   Keep the lane-wide touch target forgiving on mobile, while replacing the
-   visible horizontal judgment line with a centered ring. */
+   The gameplay renderer defines the judgment point at 89% of arena height.
+   Anchor the visible receptor to that same coordinate so note overlap and
+   timing judgment cannot drift apart on different viewport heights. */
 .game .lane:after{
   left:50%;
   right:auto;
-  bottom:78px;
+  top:89%;
+  bottom:auto;
   width:56px;
   height:56px;
-  transform:translateX(-50%) perspective(220px) rotateX(-10deg);
+  transform:translate(-50%,-50%) perspective(220px) rotateX(-10deg);
   border:4px solid color-mix(in srgb,var(--lane) 82%,white);
   border-radius:50%;
   background:radial-gradient(circle,rgba(255,255,255,.12) 0 31%,color-mix(in srgb,var(--lane) 20%,transparent) 32% 54%,transparent 55%);
@@ -37,13 +39,14 @@
   pointer-events:none;
 }
 
-/* The visible receptor center sits around 106px from the bottom. The original
-   62px-high pad ended around 97px, so tapping the middle of the circle could
-   miss the actual button. Extend the invisible hit surface vertically so the
-   full receptor and a forgiving area around it are tappable without changing
-   any timing or judgment logic. */
+/* Keep a generous invisible lane-wide touch surface centered on the exact
+   judgment coordinate. This preserves easy mobile tapping while making the
+   visible circle the truthful 'tap now' location. */
 .game .pad{
-  bottom:24px;
+  left:4%;
+  width:92%;
+  top:calc(89% - 66px);
+  bottom:auto;
   height:132px;
   border-color:transparent;
   background:transparent;
@@ -58,14 +61,15 @@
   box-shadow:none;
 }
 
-/* Hit/hold feedback blooms from the circular receptor instead of a line. */
+/* Hit/hold feedback blooms from the same 89% judgment coordinate. */
 .game .lane.holding:before{
   left:50%;
   right:auto;
-  bottom:76px;
+  top:89%;
+  bottom:auto;
   width:60px;
   height:60px;
-  transform:translateX(-50%);
+  transform:translate(-50%,-50%);
   border-radius:50%;
   background:var(--lane);
   filter:blur(16px);
@@ -73,6 +77,6 @@
 }
 
 @media(max-width:420px){
-  .game .lane:after{width:52px;height:52px;bottom:80px}
-  .game .lane.holding:before{width:56px;height:56px;bottom:78px}
+  .game .lane:after{width:52px;height:52px}
+  .game .lane.holding:before{width:56px;height:56px}
 }
