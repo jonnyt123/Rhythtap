@@ -19,3 +19,55 @@
   transform:translateX(-50%) scale(var(--note-scale,1));
   transform-origin:50% 0;
 }
+
+/* Tap Tap Revenge-style circular hit receptors.
+   Keep the existing full-width .pad touch target for forgiving mobile input,
+   but replace the visible horizontal judgment line with a centered ring. */
+.game .lane:after{
+  left:50%;
+  right:auto;
+  bottom:78px;
+  width:56px;
+  height:56px;
+  transform:translateX(-50%) perspective(220px) rotateX(-10deg);
+  border:4px solid color-mix(in srgb,var(--lane) 82%,white);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.12) 0 31%,color-mix(in srgb,var(--lane) 20%,transparent) 32% 54%,transparent 55%);
+  box-shadow:0 0 7px #fff,0 0 18px var(--lane),inset 0 0 13px color-mix(in srgb,var(--lane) 46%,transparent);
+  pointer-events:none;
+}
+
+/* The actual button still spans most of the lane, but is visually transparent;
+   the receptor ring above communicates the judgment point. */
+.game .pad{
+  border-color:transparent;
+  background:transparent;
+  box-shadow:none;
+  color:transparent;
+}
+.game .pad:before{display:none}
+.game .pad:active,
+.game .lane.holding .pad{
+  background:transparent;
+  color:transparent;
+  box-shadow:none;
+}
+
+/* Hit/hold feedback blooms from the circular receptor instead of a line. */
+.game .lane.holding:before{
+  left:50%;
+  right:auto;
+  bottom:76px;
+  width:60px;
+  height:60px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:var(--lane);
+  filter:blur(16px);
+  opacity:.38;
+}
+
+@media(max-width:420px){
+  .game .lane:after{width:52px;height:52px;bottom:80px}
+  .game .lane.holding:before{width:56px;height:56px;bottom:78px}
+}
