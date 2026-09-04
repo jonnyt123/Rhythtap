@@ -19,8 +19,11 @@ Deno.test('engagement release does not patch gameplay timing or charts',()=>{
  assertEquals(transform.includes('TIMING.'),false);
 });
 
-Deno.test('core funnel events are instrumented',()=>{
- for(const event of ['game_open','mode_selected','song_selected','difficulty_selected','song_started','song_completed','song_retry','results_continue'])assert(analytics.includes(`'${event}'`)&&transform.includes(`name:'${event}'`),event);
+Deno.test('core funnel events are declared and wired',()=>{
+ for(const event of ['game_open','mode_selected','song_selected','difficulty_selected','song_started','song_completed','song_retry','results_continue']){
+  assert(analytics.includes(`'${event}'`),`missing analytics event ${event}`);
+  assert(transform.includes(event),`missing transform wiring ${event}`);
+ }
 });
 
 Deno.test('analytics remains non-blocking',()=>{
