@@ -1,6 +1,7 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,Check,ChevronRight,Gamepad2,Medal,Music2,Star,Swords,Trophy,User,Users,Zap} from 'lucide-react';
 import './rhythmtap-tutorial.css';
+import './receptor-tutorial.css';
 
 export const TUTORIAL_KEY='rhythmtap-tutorial-complete-v1';
 export const tutorialComplete=()=>localStorage.getItem(TUTORIAL_KEY)==='1';
