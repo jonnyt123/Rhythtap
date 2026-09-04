@@ -26,6 +26,23 @@ Deno.test('core funnel events are declared and wired',()=>{
  }
 });
 
+Deno.test('gameplay starts are tracked at the mounted Game boundary',()=>{
+ assert(transform.includes('engagementStartSent'));
+ assert(transform.includes('engagementReady={!playerAccount.loading}'));
+ assert(transform.includes("source:multiplayerSession.enabled?'battle':song.id.startsWith('tap-')?'library':'game'"));
+ assertEquals(transform.includes('solo song start analytics'),false);
+ assertEquals(transform.includes('tour song start analytics'),false);
+ assertEquals(transform.includes('battle song start analytics'),false);
+});
+
+Deno.test('completion waits for authoritative result and locks navigation',()=>{
+ assert(transform.includes("completionPending=Boolean(result.progressPending)||(battle&&!verifiedBattle)"));
+ assert(transform.includes("verifiedBattle={multiplayerSession.verifiedLocal}"));
+ assert(transform.includes("validation:battle?verifiedBattle?.validation:'solo'"));
+ assert(transform.includes('disabled={completionPending} onClick={done}'));
+ assert(transform.includes('disabled={completionPending||tourActionDisabled}'));
+});
+
 Deno.test('analytics remains non-blocking',()=>{
  assert(analytics.includes("console.warn('[engagement] event skipped"));
  assert(transform.includes('void trackEngagement'));
