@@ -40,6 +40,8 @@ jobs:
         run: deno test --node-modules-dir=auto --allow-read tests/chart-quality-v4.test.ts
       - name: Run engagement UI regression guards
         run: deno test --allow-read tests/engagement-ui.test.ts
+      - name: Run mobile layout regression guards
+        run: deno test --allow-read tests/mobile-layout.test.ts
       - name: Check versioned chart selector
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/chart-validator.ts
       - name: Check validate-match Edge Function
