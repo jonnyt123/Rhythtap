@@ -21,8 +21,8 @@
 }
 
 /* Tap Tap Revenge-style circular hit receptors.
-   Keep the existing full-width .pad touch target for forgiving mobile input,
-   but replace the visible horizontal judgment line with a centered ring. */
+   Keep the lane-wide touch target forgiving on mobile, while replacing the
+   visible horizontal judgment line with a centered ring. */
 .game .lane:after{
   left:50%;
   right:auto;
@@ -37,9 +37,14 @@
   pointer-events:none;
 }
 
-/* The actual button still spans most of the lane, but is visually transparent;
-   the receptor ring above communicates the judgment point. */
+/* The visible receptor center sits around 106px from the bottom. The original
+   62px-high pad ended around 97px, so tapping the middle of the circle could
+   miss the actual button. Extend the invisible hit surface vertically so the
+   full receptor and a forgiving area around it are tappable without changing
+   any timing or judgment logic. */
 .game .pad{
+  bottom:24px;
+  height:132px;
   border-color:transparent;
   background:transparent;
   box-shadow:none;
