@@ -31,3 +31,17 @@ Deno.test('gameplay note translation regression protection remains active',()=>{
  assert(gameplay.includes('.game.theme-diamond .note:not(.hold)'));
  assert(gameplay.includes('.game.theme-hex .note:not(.hold)'));
 });
+
+Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent judgment coordinate',()=>{
+ assert(gameplay.includes('.game .lane:after'));
+ assert(gameplay.includes('top:89%'));
+ assert(gameplay.includes('transform:translate(-50%,-50%)'));
+ assert(gameplay.includes('border-radius:50%'));
+ assert(gameplay.includes('.game .pad{'));
+ assert(gameplay.includes('top:calc(89% - 66px)'));
+ assert(gameplay.includes('height:132px'));
+ assert(gameplay.includes('width:92%'));
+ assert(gameplay.includes('.game .lane.holding:before'));
+ assert(gameplay.includes('background:transparent'));
+ assert(!gameplay.includes('bottom:78px'));
+});
