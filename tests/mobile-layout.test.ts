@@ -32,11 +32,13 @@ Deno.test('gameplay note translation regression protection remains active',()=>{
  assert(gameplay.includes('.game.theme-hex .note:not(.hold)'));
 });
 
-Deno.test('gameplay uses circular receptors without shrinking touch targets',()=>{
+Deno.test('gameplay uses circular receptors with tappable receptor centers',()=>{
  assert(gameplay.includes('.game .lane:after'));
  assert(gameplay.includes('border-radius:50%'));
  assert(gameplay.includes('width:56px'));
  assert(gameplay.includes('.game .pad{'));
+ assert(gameplay.includes('bottom:24px'));
+ assert(gameplay.includes('height:132px'));
  assert(gameplay.includes('background:transparent'));
  assert(!gameplay.includes('.game .pad{width:56px'));
 });
