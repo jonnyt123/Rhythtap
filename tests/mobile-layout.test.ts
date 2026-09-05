@@ -2,6 +2,7 @@ import {assert} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
 const engagement=await Deno.readTextFile('src/engagement-ui.css');
 const tutorial=await Deno.readTextFile('src/rhythmtap-tutorial.css');
+const tutorialReceptors=await Deno.readTextFile('src/receptor-tutorial.css');
 const base=await Deno.readTextFile('src/styles.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
 
@@ -24,6 +25,14 @@ Deno.test('tutorial controls remain mobile input safe',()=>{
  assert(tutorial.includes('touch-action:none'));
  assert(tutorial.includes('position:fixed'));
  assert(tutorial.includes('env(safe-area-inset-bottom)'));
+});
+
+Deno.test('tutorial receptor is covered by the lane touch target',()=>{
+ assert(tutorialReceptors.includes('.demo-receptors{'));
+ assert(tutorialReceptors.includes('bottom:122px'));
+ assert(tutorialReceptors.includes('.demo-pads{z-index:6;height:190px'));
+ assert(tutorialReceptors.includes('.demo-note{z-index:5;pointer-events:none}'));
+ assert(!tutorialReceptors.includes('.demo-pads{z-index:2}'));
 });
 
 Deno.test('gameplay note translation regression protection remains active',()=>{
