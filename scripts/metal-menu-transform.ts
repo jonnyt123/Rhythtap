@@ -36,7 +36,7 @@ export function metalMenuTransform():Plugin{
   let code=source.slice(0,start)+METAL_HOME+source.slice(end);
   const styleAnchor="import './ux.css';";
   if(!code.includes(styleAnchor))throw new Error('[metal-menu] Unable to locate the UI stylesheet import.');
-  code=code.replace(styleAnchor,styleAnchor+"\nimport './metal-menu.css';");
+  code=code.replace(styleAnchor,styleAnchor+"\nimport './metal-menu.css';\nimport './death-metal-theme.css';");
   return {code,map:null};
  }};
 }
