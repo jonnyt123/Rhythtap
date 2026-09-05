@@ -12,4 +12,5 @@ export function gameplayQualityTransform():Plugin{return{name:'rhythmtap-gamepla
  code=required(code,'hit timing helper',"const hitTime=transport.current.now()+offset+(song.chartOffset||0)","const hitTime=effectiveHitTime(transport.current.now(),offset,song.chartOffset||0)");
  code=required(code,'frame timing helper',"const t=transport.current.now()+offset+(song.chartOffset||0)","const t=effectiveHitTime(transport.current.now(),offset,song.chartOffset||0)");
  code=required(code,'judgement helper',"const hitJudge:Judge=dist<=TIMING.perfect?'PERFECT':dist<=TIMING.great?'GREAT':'GOOD';","const measuredJudge=judgeDistance(dist),hitJudge:Judge=measuredJudge==='MISS'?'GOOD':measuredJudge;");
+ code=required(code,'hard mobile graphics fallback',"const effectiveGraphicsMode:GraphicsMode=adaptiveLow?'LOW':graphicsMode;","const effectiveGraphicsMode:GraphicsMode=adaptiveLow||(phoneGameplay&&difficulty==='HARD')?'LOW':graphicsMode;");
  return{code,map:null}}}}
