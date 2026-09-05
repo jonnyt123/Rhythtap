@@ -1,7 +1,7 @@
 import {makeWeightedBeatChart as makeV4Beat,makeWeightedOnsetChart as makeV4Onset,type WeightedDifficulty,type WeightedNote,type WeightedOnsetEvent} from './weighted-chart-v4.ts';
 
-const HARD_MIN_EVENT_GAP=105;
-const HARD_MAX_NOTES_PER_SECOND=7;
+const HARD_MIN_EVENT_GAP=125;
+const HARD_MAX_NOTES_PER_SECOND=6;
 const HARD_MAX_CHORD=2;
 
 export const capHardDensity=(notes:WeightedNote[],difficulty:WeightedDifficulty):WeightedNote[]=>{
