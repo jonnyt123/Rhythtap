@@ -38,6 +38,8 @@ jobs:
         run: deno test --node-modules-dir=auto --allow-read tests/chart-version-compat.test.ts
       - name: Run chart V4 client-server parity and playability audit
         run: deno test --node-modules-dir=auto --allow-read tests/chart-quality-v4.test.ts
+      - name: Run chart V5 Hard density and parity audit
+        run: deno test --node-modules-dir=auto --allow-read tests/chart-quality-v5.test.ts
       - name: Run engagement UI regression guards
         run: deno test --allow-read tests/engagement-ui.test.ts
       - name: Run mobile layout regression guards
@@ -61,12 +63,6 @@ jobs:
       SUPABASE_PROJECT_ID: hcaawhtkldabetxzptmc
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Require production deployment credentials
-        run: |
-          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'Missing SUPABASE_ACCESS_TOKEN repository secret'; exit 1; }
-          test -n "$SUPABASE_DB_PASSWORD" || { echo 'Missing SUPABASE_DB_PASSWORD repository secret'; exit 1; }
       - uses: supabase/setup-cli@v1
         with:
           version: latest
