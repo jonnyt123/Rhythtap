@@ -1,0 +1,174 @@
+/* RhythmTap global hard-rock / death-metal visual system.
+   Presentation only: no gameplay timing, scoring, charts, hit windows, or input behavior. */
+:root{
+  --cyan:#c52b30;
+  --pink:#76151a;
+  --violet:#686e75;
+  --metal-blood:#b51f25;
+  --metal-blood-hot:#df3a35;
+  --metal-bone:#e7e1d6;
+  --metal-steel:#8e959d;
+  --metal-iron:#3d4248;
+  --metal-black:#050607;
+  --metal-panel:#111317;
+  --metal-panel-2:#090a0c;
+  --metal-amber:#b8762c;
+  color:#eeeae3;
+  background:#030405;
+}
+body{background:#020304;color:#eeeae3}
+.screen{
+  color:#eeeae3;
+  background:
+    radial-gradient(ellipse at 50% -12%,#6e151b35 0 17%,transparent 46%),
+    radial-gradient(ellipse at 50% 112%,#53101525 0 18%,transparent 52%),
+    repeating-linear-gradient(117deg,transparent 0 51px,#ffffff05 52px,#0000 54px 91px),
+    linear-gradient(165deg,#121519 0,#08090b 48%,#030405 100%)!important;
+}
+.screen:after{
+  background:
+    repeating-linear-gradient(0deg,transparent 0 5px,#ffffff04 6px,transparent 7px 13px),
+    repeating-linear-gradient(101deg,transparent 0 73px,#c9c9c908 74px,transparent 76px 121px)!important;
+  opacity:.42!important;
+}
+.brandmark,.level,.profile-chip{color:var(--metal-bone)!important}
+.brandmark svg,.setting svg,.modal>svg{color:var(--metal-blood-hot)!important;filter:drop-shadow(0 0 5px #8d1115aa)!important}
+.eyebrow,.section-label small,.songmeta>span,.songmeta div span,.hint,.footerline,.setting small,.how p{color:#8d9094!important}
+header h2,.section-label,.songmeta h3,.results h2,.modal h2{font-family:Impact,'Arial Black','Arial Narrow',system-ui,sans-serif;letter-spacing:.035em;text-transform:uppercase}
+.icon{
+  border-radius:4px!important;
+  border-color:#747a825c!important;
+  background:linear-gradient(180deg,#24282e,#0b0d10)!important;
+  box-shadow:inset 0 1px #ffffff19,inset 0 -2px #000a,0 5px 13px #0007!important;
+}
+.icon:hover,.preview:hover{border-color:#b8bdc466!important;filter:brightness(1.1)}
+.primary,.secondary{
+  border-radius:3px!important;
+  text-transform:uppercase;
+  font-family:'Arial Narrow',Impact,system-ui,sans-serif;
+  letter-spacing:.08em;
+  clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);
+}
+.primary{
+  color:#f5eee7!important;
+  background:linear-gradient(180deg,#d83b37 0,#9c171d 58%,#681015 100%)!important;
+  border:1px solid #e46b6259!important;
+  box-shadow:inset 0 1px #ffaaa23b,inset 0 -2px #390509,0 8px 20px #0009,0 0 13px #9a141a42!important;
+}
+.secondary{
+  color:#e4e1db!important;
+  background:linear-gradient(180deg,#262b31,#0d0f12)!important;
+  border:1px solid #747b845c!important;
+  box-shadow:inset 0 1px #ffffff17,inset 0 -2px #000b,0 7px 17px #0007!important;
+}
+button:focus-visible,input:focus-visible{outline-color:#d94b44!important}
+.wallet{border-color:#86632d55!important;background:#15120c!important;color:#d9b36e!important}
+.wallet svg{color:#c3913c!important}
+.player-card,.setting,.how,.engagement-strip>div,.engagement-results-banner{
+  border-radius:4px!important;
+  border-color:#6f757d48!important;
+  background:
+    linear-gradient(125deg,#ffffff07 0 1px,transparent 1px 34%),
+    linear-gradient(180deg,#1b1e23,#0b0d10)!important;
+  background-size:17px 17px,auto!important;
+  box-shadow:inset 0 1px #ffffff15,inset 0 -2px #0008,0 8px 22px #0008!important;
+}
+.avatar{border-radius:50%!important;background:radial-gradient(circle at 50% 34%,#393e45,#08090b 70%)!important;border-color:#767d85!important;color:#e2ded7!important}
+.xp-track,.profile-chip>div,.xp-award>div{border-radius:1px!important;background:#050607!important;border:1px solid #4f545b!important}
+.xp-track i,.profile-chip i,.xp-award i{background:linear-gradient(90deg,#701116,#b51f25 62%,#db493f)!important;box-shadow:0 0 7px #9d171c80!important}
+
+/* Existing metal home: remove the remaining blue/neon language. */
+.metal-home.screen{--metal-red:#b51f25;--metal-red-hot:#df3a35;--metal-blue:#8e959d;--metal-silver:#d6d2ca;--metal-steel:#676e76!important}
+.metal-home.screen{background:radial-gradient(circle at 14% 13%,#80151a38,transparent 31%),radial-gradient(circle at 86% 16%,#ffffff0a,transparent 29%),radial-gradient(ellipse at 50% 112%,#6c111728,transparent 55%),linear-gradient(165deg,#121519,#07090b 48%,#020304)!important}
+.metal-stage-bg>i:nth-child(1){background:radial-gradient(circle,#d9363155 0 4%,#79111624 24%,transparent 65%)!important}
+.metal-stage-bg>i:nth-child(2){background:radial-gradient(circle,#d7d9dc31 0 4%,#747b8317 24%,transparent 65%)!important}
+.metal-menu-online{--edge:#8e959d!important;--glow:#aeb4bb24!important;background:linear-gradient(100deg,#7b818827,transparent 48%),repeating-linear-gradient(0deg,#ffffff03 0 1px,transparent 2px 5px),linear-gradient(180deg,#22262b,#0d0f12 58%,#08090b)!important}
+.metal-menu-button{box-shadow:inset 0 1px #ffffff1a,inset 0 -2px #000b,0 7px 18px #0009,0 0 8px var(--glow)!important}
+.metal-menu-button:before{box-shadow:none!important}
+.metal-logo svg,.metal-mini-brand svg{filter:drop-shadow(0 0 5px #8f1116a8)!important}
+
+/* Song select: road-case / amplifier faceplate rather than glass cards. */
+.song{
+  border-radius:3px!important;
+  border-color:#676d7445!important;
+  background:
+    repeating-linear-gradient(135deg,#ffffff05 0 1px,transparent 1px 13px),
+    linear-gradient(180deg,#1b1e22,#0a0c0e)!important;
+  box-shadow:inset 0 1px #ffffff12,inset 0 -2px #0009,0 8px 19px #0008!important;
+}
+.song.active{
+  border-color:#b83a3f!important;
+  background:linear-gradient(90deg,#6e10162e,transparent 38%),linear-gradient(180deg,#201b1d,#0b0b0d)!important;
+  box-shadow:inset 4px 0 #b51f25,0 9px 22px #000a!important;
+}
+.cover{border-radius:2px!important;border:1px solid #6a70784f!important;box-shadow:inset 0 0 25px #0009!important;filter:saturate(.62) contrast(1.08)}
+.covergrid{opacity:.45!important;background:repeating-linear-gradient(72deg,transparent 0 11px,#ffffff12 12px 13px)!important}
+.rank{color:#777d84!important}
+.preview{border-color:#686e7655!important;background:#15181c!important}
+.difficulty{
+  border-radius:4px!important;
+  border-color:#646a724f!important;
+  background:#08090bf2!important;
+  box-shadow:0 -10px 28px #000b!important;
+}
+.difficulty button{border-radius:2px!important;background:linear-gradient(180deg,#1e2227,#0c0e11)!important;border-color:#5f656d50!important;color:#969b9f!important}
+.difficulty button.active{color:#f4eee8!important;background:linear-gradient(180deg,#c43535,#7d1117)!important;border-color:#d1514d!important;box-shadow:inset 0 1px #ffaca540,0 0 10px #7d101542!important}
+.difficulty button.active small{color:#e5cbc7!important}
+.playdock{border-radius:4px!important;border-color:#656b734f!important;background:linear-gradient(180deg,#171a1e,#08090beF)!important;box-shadow:inset 0 1px #ffffff11,0 -10px 28px #000c!important}
+.engagement-select-summary{border-radius:3px!important;background:linear-gradient(120deg,#70111624,#15171a)!important;border-color:#7a3d404f!important}
+.engagement-select-summary span b{color:#bbb7b0}
+
+/* Gameplay: stage, lanes and notes use metal concert colors instead of RGB neon. */
+.game{background:radial-gradient(ellipse at 50% 5%,#64101526,transparent 35%),linear-gradient(180deg,#0d0f12,#030405)!important}
+.gamehud{border-bottom:1px solid #696f7630}
+.arena{
+  background:
+    repeating-linear-gradient(90deg,transparent 0 24%,#ffffff05 24.5%,transparent 25%),
+    linear-gradient(180deg,#101216a8,#050608f2)!important;
+  filter:drop-shadow(0 0 18px #000)!important;
+}
+.lane:nth-child(1){--lane:#d04a45!important}
+.lane:nth-child(2){--lane:#bd762e!important}
+.lane:nth-child(3){--lane:#aab0b6!important}
+.lane{border-left-color:#8b91972e!important;background:linear-gradient(180deg,transparent 32%,color-mix(in srgb,var(--lane) 6%,transparent))!important}
+.lane:last-child{border-right-color:#8b91972e!important}
+.game .lane:after{
+  border-color:color-mix(in srgb,var(--lane) 72%,#d8d8d8)!important;
+  background:radial-gradient(circle,#ffffff0d 0 31%,color-mix(in srgb,var(--lane) 15%,transparent) 32% 54%,transparent 55%)!important;
+  box-shadow:0 0 4px #fff8,0 0 9px color-mix(in srgb,var(--lane) 45%,transparent),inset 0 0 8px #0006!important;
+}
+.note:not(.hold){
+  border-color:#ddd6cc!important;
+  background:linear-gradient(180deg,#ebe5dc 0 9%,color-mix(in srgb,var(--lane) 70%,#6d6d6d) 10% 55%,#202225 100%)!important;
+  box-shadow:0 0 5px #fff7,0 0 10px color-mix(in srgb,var(--lane) 55%,transparent),inset 0 -4px 7px #0008!important;
+}
+.note:before{border-color:color-mix(in srgb,var(--lane) 45%,#c7c7c7)!important;opacity:.48!important}
+.note i{background:#e7e1d6!important;box-shadow:0 0 5px #fff8!important}
+.note.hold{background:linear-gradient(180deg,#e8e1d7 0 5px,var(--lane) 6px 22px,color-mix(in srgb,var(--lane) 19%,transparent) 23px)!important;box-shadow:0 0 9px color-mix(in srgb,var(--lane) 55%,transparent),inset 0 0 12px #0007!important}
+.lane.holding{box-shadow:inset 0 0 20px color-mix(in srgb,var(--lane) 16%,transparent)!important}
+.lane.holding:before{filter:blur(14px)!important;opacity:.27!important}
+.feedback strong,.feedback>span{text-shadow:0 2px 5px #000,0 0 8px currentColor!important}
+.feedback .perfect{color:#f0ebe3!important}.feedback .great{color:#d04a45!important}.feedback .good{color:#bd762e!important}.feedback .miss{color:#8f1c22!important}.feedback .hold{color:#b9bec3!important}
+.energy,.pulse{border-radius:1px!important;background:#050607!important;border:1px solid #4b5056!important}
+.energy span{background:linear-gradient(90deg,#741116,#c33131)!important;box-shadow:none!important}
+.pulse span{background:#b8762c!important;box-shadow:none!important}.pulse svg{color:#b8762c!important}
+
+/* Results, progression and generic modal surfaces. */
+.modal{background:#040506e8!important;backdrop-filter:blur(7px)!important}
+.results>small,.results .grade,.breakdown strong,.xp-award strong,.setting output{color:#d13b38!important}
+.grade{color:#dedad2!important;text-shadow:5px 5px 0 #7c1117,0 9px 28px #000!important;filter:none!important}
+.breakdown{border-radius:3px!important;border-color:#656b734b!important;background:#090a0c!important}
+.breakdown div{border-color:#5e646b35!important;background:linear-gradient(180deg,#15181c,#0b0d0f)!important}
+.xp-award{border-radius:3px!important;border-color:#7c30344d!important;background:#5e0e141c!important}
+.engagement-results-banner,.engagement-next{border-radius:3px!important}
+.engagement-next{background:#5e0e1419!important;border-color:#7b2c304a!important}
+.engagement-pb{color:#d0a24d!important}.engagement-near{color:#c94a46!important}
+.setting input{accent-color:#b51f25!important}
+.settingsPage header{background:linear-gradient(#0c0e11 76%,transparent)!important}
+
+/* Broad transformed surfaces (Tour, account, social and battle) inherit the same material language. */
+[class*="tour-"] button,[class*="battle-"] button,[class*="account-"] button,[class*="social-"] button{border-radius:3px}
+[class*="tour-"][class*="card"],[class*="battle-"][class*="card"],[class*="account-"][class*="card"],[class*="social-"][class*="card"]{border-radius:4px!important}
+
+@media(min-width:700px){body{background:#010203!important}.screen{box-shadow:0 0 70px #000!important;border-left:1px solid #363a3f!important;border-right:1px solid #363a3f!important}}
+@media(prefers-reduced-motion:reduce){.screen,.song,.results .grade{animation:none!important}}
