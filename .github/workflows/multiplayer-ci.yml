@@ -63,6 +63,12 @@ jobs:
       SUPABASE_PROJECT_ID: hcaawhtkldabetxzptmc
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require production deployment credentials
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'Missing SUPABASE_ACCESS_TOKEN repository secret'; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo 'Missing SUPABASE_DB_PASSWORD repository secret'; exit 1; }
       - uses: supabase/setup-cli@v1
         with:
           version: latest
