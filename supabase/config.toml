@@ -3,3 +3,12 @@ verify_jwt = true
 
 [functions.record-solo]
 verify_jwt = true
+
+[functions.stripe-checkout]
+verify_jwt = true
+
+[functions.stripe-portal]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
