@@ -17,6 +17,13 @@ Deno.test('remaining major routes are explicitly metal-themed',()=>{
  assert(metalTransform.includes("import './death-metal-polish.css';"));
 });
 
+Deno.test('tutorial metal theme preserves the invisible touch surface',()=>{
+ assert(polish.includes('.demo-pads{background:transparent!important}'));
+ assert(polish.includes('.demo-pads button:before{'));
+ assert(polish.includes('.demo-receptors i{'));
+ assert(!polish.includes('.demo-pads{background:#050607f5!important}'));
+});
+
 Deno.test('gameplay readability survives the theme',()=>{
  assert(polish.includes('.note.hold:before{opacity:1!important}'));
  assert(polish.includes('.feedback .miss{color:#f05b55!important}'));
@@ -33,6 +40,7 @@ Deno.test('Hard V5 density keeps two-note chords atomic',()=>{
 Deno.test('V5 result plumbing is complete',()=>{
  assert(validateMatch.includes(".in('validation_version',[2,3,4,5])"));
  assert(recordSolo.includes('p_chart_version:chartVersion'));
+ assert(scoreVersion.includes("const highScoreFor=(songId:string,difficulty:Difficulty)=>Number(localStorage.getItem(`ntr-high-${songId}-${difficulty}${difficulty==='HARD'?'-v5':''}`)||0);"));
  assert(scoreVersion.includes("difficulty==='HARD'?'-v5':''"));
  assert(scoreVersion.includes("or('difficulty.neq.HARD,chart_version.eq.5')"));
  assert(scoreVersion.includes("eq('chart_version',difficulty==='HARD'?5:4)"));
