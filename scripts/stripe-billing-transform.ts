@@ -11,8 +11,8 @@ export function stripeBillingTransform():Plugin{
   if(!path.endsWith('/src/player-account.tsx'))return null;
   let code=source;
   code=required(code,'billing component import',
-   "import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL} from './multiplayer-common';",
-   "import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL} from './multiplayer-common';\nimport {BillingCard} from './stripe-billing';");
+   "import './player-account.css';",
+   "import './player-account.css';\nimport {BillingCard} from './stripe-billing';");
   code=required(code,'profile billing card',
    '<div className="players-panel">',
    '<BillingCard userId={account.userId}/><div className="players-panel">');
