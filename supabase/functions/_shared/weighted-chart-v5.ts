@@ -14,8 +14,8 @@ export const capHardDensity=(notes:WeightedNote[],difficulty:WeightedDifficulty)
   while(recentTimes.length&&recentTimes[0]<=time-1000)recentTimes.shift();
   const room=HARD_MAX_NOTES_PER_SECOND-recentTimes.length;
   if(room<=0)continue;
-  const chosen=group.slice(0,Math.min(HARD_MAX_CHORD,room));
-  if(!chosen.length)continue;
+  const chosen=group.slice(0,HARD_MAX_CHORD);
+  if(!chosen.length||chosen.length>room)continue;
   out.push(...chosen);for(let i=0;i<chosen.length;i++)recentTimes.push(time);lastEvent=time;
  }
  return out.map((note,index)=>({...note,id:index}));
