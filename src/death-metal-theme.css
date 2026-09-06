@@ -170,5 +170,91 @@ button:focus-visible,input:focus-visible{outline-color:#d94b44!important}
 [class*="tour-"] button,[class*="battle-"] button,[class*="account-"] button,[class*="social-"] button{border-radius:3px}
 [class*="tour-"][class*="card"],[class*="battle-"][class*="card"],[class*="account-"][class*="card"],[class*="social-"][class*="card"]{border-radius:4px!important}
 
+/* Phone is the product target. Desktop remains compatible, but these dimensions drive layout decisions. */
+@media(max-width:699px){
+  .screen{max-width:none;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+  .topbar,header,.gamehud{gap:10px}
+  .icon{width:42px;height:42px;min-width:42px}
+  header h2{font-size:20px;margin:2px 0}
+  header small{font-size:7px}
+  .primary,.secondary{min-height:52px;padding-inline:20px}
+
+  /* Song selection is optimized for one-handed scrolling and a thumb-reachable play dock. */
+  .select .songlist{margin-top:10px;gap:8px;padding-right:2px;padding-bottom:126px;max-height:calc(100dvh - 218px)}
+  .engagement-select-summary{margin:7px 0 0!important;padding:9px 11px!important}
+  .engagement-select-summary~.songlist{margin-top:6px!important;max-height:calc(100dvh - 250px)!important}
+  .song{height:88px;padding:8px;grid-template-columns:1fr 38px;gap:4px}
+  .songpick{grid-template-columns:68px minmax(0,1fr);gap:10px}
+  .cover{height:68px}
+  .cover b{font-size:21px}
+  .songmeta>span{font-size:7px}
+  .songmeta h3{font-size:14px;margin:3px 0 6px}
+  .songmeta div{gap:8px}
+  .songmeta em,.songmeta div span{font-size:7px}
+  .preview{width:38px;height:38px}
+  .difficulty{left:12px;right:12px;bottom:94px;gap:5px}
+  .difficulty button{height:43px;gap:5px;font-size:8px}
+  .difficulty button small{font-size:6px}
+  .playdock{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));padding:9px 10px;gap:8px}
+  .playdock .primary{min-height:48px;padding-inline:18px}
+
+  /* During play, reserve almost the entire viewport for the lanes. */
+  .game{padding-left:6px;padding-right:6px}
+  .gamehud{min-height:42px}
+  .gamehud .icon{width:38px;height:38px;min-width:38px}
+  .score strong{font-size:19px}
+  .meters{grid-template-columns:1fr 92px;gap:7px;margin:6px 2px}
+  .arena{top:68px;width:100%;filter:none!important}
+  .feedback{left:10%;right:10%;bottom:145px}
+  .feedback strong{font-size:21px}
+  .feedback>span{font-size:34px}
+  .game.graphics-low .note,.game.graphics-low .game .lane:after{will-change:transform}
+
+  /* Results should fit without forcing awkward thumb travel on shorter iPhones. */
+  .results{padding-top:2vh}
+  .results h2{font-size:22px}
+  .grade{font-size:82px;margin:1.5vh 0 0}
+  .bigscore{font-size:27px;margin-top:8px}
+  .breakdown{margin:10px auto 8px}
+  .breakdown div{padding:11px}
+  .xp-award{margin:8px auto 2px;padding:9px 11px}
+  .results button{margin:6px auto;min-height:50px}
+  .engagement-results-banner{margin:4px 0 7px!important;padding:8px 10px!important}
+  .engagement-result-actions{gap:7px!important}
+
+  /* Settings and secondary screens must scroll rather than clip behind browser chrome. */
+  .settingsPage{overflow-y:auto;overscroll-behavior:contain;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+  .settingsPage .setting,.settingsPage .how{margin-top:14px;padding:14px}
+  .setting output{margin:-28px 0 20px;font-size:16px}
+  .how p{font-size:12px;line-height:1.55}
+  .modal{padding:20px max(18px,env(safe-area-inset-left))}
+  .modal h2{font-size:25px;margin:16px 0 7px}
+  .modal p{line-height:1.45}
+}
+
+/* Small-height phones such as 320x568 and 375x667 get an even tighter chrome budget. */
+@media(max-width:699px) and (max-height:667px){
+  .screen{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(8px,env(safe-area-inset-bottom))}
+  .icon{width:38px;height:38px;min-width:38px}
+  .select .songlist{margin-top:5px;gap:6px;max-height:calc(100dvh - 196px)}
+  .engagement-select-summary{padding:7px 9px!important}
+  .engagement-select-summary~.songlist{max-height:calc(100dvh - 226px)!important}
+  .song{height:80px;padding:6px}
+  .songpick{grid-template-columns:60px minmax(0,1fr);gap:8px}
+  .cover{height:60px}
+  .difficulty{bottom:88px}
+  .difficulty button{height:40px}
+  .playdock{padding:7px 8px}
+  .playdock .primary{min-height:44px}
+  .gamehud{min-height:38px}
+  .meters{margin:4px 2px}
+  .arena{top:61px}
+  .feedback{bottom:132px}
+  .grade{font-size:68px}
+  .bigscore{font-size:23px}
+  .breakdown div{padding:9px}
+  .results button{min-height:46px;margin:4px auto}
+}
+
 @media(min-width:700px){body{background:#010203!important}.screen{box-shadow:0 0 70px #000!important;border-left:1px solid #363a3f!important;border-right:1px solid #363a3f!important}}
 @media(prefers-reduced-motion:reduce){.screen,.song,.results .grade{animation:none!important}}
