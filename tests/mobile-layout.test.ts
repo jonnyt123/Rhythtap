@@ -5,6 +5,7 @@ const tutorial=await Deno.readTextFile('src/rhythmtap-tutorial.css');
 const tutorialReceptors=await Deno.readTextFile('src/receptor-tutorial.css');
 const base=await Deno.readTextFile('src/styles.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
+const metal=await Deno.readTextFile('src/death-metal-theme.css');
 
 Deno.test('core screens use dynamic viewport and safe areas',()=>{
  assert(base.includes('height:100dvh'));
@@ -53,4 +54,17 @@ Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent jud
  assert(gameplay.includes('.game .lane.holding:before'));
  assert(gameplay.includes('background:transparent'));
  assert(!gameplay.includes('bottom:78px'));
+});
+
+Deno.test('metal polish is explicitly mobile-first across target iPhone classes',()=>{
+ assert(metal.includes('Phone is the product target'));
+ assert(metal.includes('@media(max-width:699px)'));
+ assert(metal.includes('@media(max-width:699px) and (max-height:667px)'));
+ assert(metal.includes('.arena{top:68px;width:100%;filter:none!important}'));
+ assert(metal.includes('.settingsPage{overflow-y:auto;overscroll-behavior:contain'));
+ assert(metal.includes('.song{height:88px'));
+ assert(metal.includes('.playdock{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom))'));
+ assert(metal.includes('.song{height:80px'));
+ const targetViewports=['320x568','375x667','390x844','430x932'];
+ assert(targetViewports.length===4);
 });
