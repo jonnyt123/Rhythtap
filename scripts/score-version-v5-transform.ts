@@ -10,6 +10,9 @@ export function scoreVersionV5Transform():Plugin{
   const path=id.replaceAll('\\','/');
   let code=source;
   if(path.endsWith('/src/main.tsx')){
+   code=required(code,'local Hard personal best reader',
+    "const highScoreFor=(songId:string,difficulty:Difficulty)=>Number(localStorage.getItem(`ntr-high-${songId}-${difficulty}`)||0);",
+    "const highScoreFor=(songId:string,difficulty:Difficulty)=>Number(localStorage.getItem(`ntr-high-${songId}-${difficulty}${difficulty==='HARD'?'-v5':''}`)||0);");
    code=required(code,'local Hard personal best bucket',
     "const key=`ntr-high-${song.id}-${difficulty}`;",
     "const key=`ntr-high-${song.id}-${difficulty}${difficulty==='HARD'?'-v5':''}`;");
