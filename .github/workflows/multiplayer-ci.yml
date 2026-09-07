@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, codex/multiplayer-score-battle, codex/authoritative-multiplayer, 'release/**']
   pull_request:
-    branches: [main]
+    branches: [main, ui/hard-rock-death-metal-theme]
   workflow_dispatch:
 
 permissions:
@@ -23,6 +23,7 @@ jobs:
       - run: npm run build
         env:
           VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
       - name: Compile authoritative validator
         run: npx tsc supabase/functions/validate-match/validator.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck --outDir .validator-ci
       - name: Run authoritative validator attacks
@@ -48,12 +49,20 @@ jobs:
         run: deno test --allow-read tests/death-metal-theme.test.ts
       - name: Run PR21 commercial release hardening guards
         run: deno test --allow-read tests/pr21-release-hardening.test.ts
+      - name: Run Stripe billing regression guards
+        run: deno test --allow-read tests/stripe-billing.test.ts
       - name: Check versioned chart selector
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/chart-validator.ts
       - name: Check validate-match Edge Function
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/index.ts
       - name: Check record-solo Edge Function
         run: deno check --node-modules-dir=auto supabase/functions/record-solo/index.ts
+      - name: Check Stripe Checkout Edge Function
+        run: deno check --node-modules-dir=auto supabase/functions/stripe-checkout/index.ts
+      - name: Check Stripe Portal Edge Function
+        run: deno check --node-modules-dir=auto supabase/functions/stripe-portal/index.ts
+      - name: Check Stripe Webhook Edge Function
+        run: deno check --node-modules-dir=auto supabase/functions/stripe-webhook/index.ts
 
   deploy-supabase:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy-supabase]'))
@@ -82,3 +91,9 @@ jobs:
         run: supabase functions deploy validate-match --project-ref "$SUPABASE_PROJECT_ID" --use-api
       - name: Deploy record-solo Edge Function
         run: supabase functions deploy record-solo --project-ref "$SUPABASE_PROJECT_ID" --use-api
+      - name: Deploy Stripe Checkout Edge Function
+        run: supabase functions deploy stripe-checkout --project-ref "$SUPABASE_PROJECT_ID" --use-api
+      - name: Deploy Stripe Portal Edge Function
+        run: supabase functions deploy stripe-portal --project-ref "$SUPABASE_PROJECT_ID" --use-api
+      - name: Deploy Stripe Webhook Edge Function
+        run: supabase functions deploy stripe-webhook --project-ref "$SUPABASE_PROJECT_ID" --use-api

@@ -19,10 +19,11 @@ import { gameplayQualityTransform } from './scripts/gameplay-quality-transform';
 import { chartV4RolloutTransform } from './scripts/chart-v4-rollout-transform';
 import { scoreVersionV5Transform } from './scripts/score-version-v5-transform';
 import { engagementUiTransform } from './scripts/engagement-ui-transform';
+import { stripeBillingTransform } from './scripts/stripe-billing-transform';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), chartV4RolloutTransform(), scoreVersionV5Transform(), engagementUiTransform(), react()],
+  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), gameplayPositionFixTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), chartV4RolloutTransform(), scoreVersionV5Transform(), engagementUiTransform(), stripeBillingTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });
