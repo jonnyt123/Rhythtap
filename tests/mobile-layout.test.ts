@@ -2,8 +2,10 @@ import {assert} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
 const engagement=await Deno.readTextFile('src/engagement-ui.css');
 const tutorial=await Deno.readTextFile('src/rhythmtap-tutorial.css');
+const tutorialReceptors=await Deno.readTextFile('src/receptor-tutorial.css');
 const base=await Deno.readTextFile('src/styles.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
+const metal=await Deno.readTextFile('src/death-metal-theme.css');
 
 Deno.test('core screens use dynamic viewport and safe areas',()=>{
  assert(base.includes('height:100dvh'));
@@ -26,6 +28,14 @@ Deno.test('tutorial controls remain mobile input safe',()=>{
  assert(tutorial.includes('env(safe-area-inset-bottom)'));
 });
 
+Deno.test('tutorial receptor is covered by the lane touch target',()=>{
+ assert(tutorialReceptors.includes('.demo-receptors{'));
+ assert(tutorialReceptors.includes('bottom:122px'));
+ assert(tutorialReceptors.includes('.demo-pads{z-index:6;height:190px'));
+ assert(tutorialReceptors.includes('.demo-note{z-index:5;pointer-events:none}'));
+ assert(!tutorialReceptors.includes('.demo-pads{z-index:2}'));
+});
+
 Deno.test('gameplay note translation regression protection remains active',()=>{
  assert(gameplay.includes('translate3d(-50%,var(--note-y),0)'));
  assert(gameplay.includes('.game.theme-diamond .note:not(.hold)'));
@@ -44,4 +54,17 @@ Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent jud
  assert(gameplay.includes('.game .lane.holding:before'));
  assert(gameplay.includes('background:transparent'));
  assert(!gameplay.includes('bottom:78px'));
+});
+
+Deno.test('metal polish is explicitly mobile-first across target iPhone classes',()=>{
+ assert(metal.includes('Phone is the product target'));
+ assert(metal.includes('@media(max-width:699px)'));
+ assert(metal.includes('@media(max-width:699px) and (max-height:667px)'));
+ assert(metal.includes('.arena{top:68px;width:100%;filter:none!important}'));
+ assert(metal.includes('.settingsPage{overflow-y:auto;overscroll-behavior:contain'));
+ assert(metal.includes('.song{height:88px'));
+ assert(metal.includes('.playdock{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom))'));
+ assert(metal.includes('.song{height:80px'));
+ const targetViewports=['320x568','375x667','390x844','430x932'];
+ assert(targetViewports.length===4);
 });

@@ -8,7 +8,7 @@ const METAL_HOME=String.raw`function Home({profile:localProfile,stats:localStats
  <header className="topbar metal-status"><span className="brandmark metal-mini-brand"><Zap fill="currentColor"/> RHYTHMTAP</span><div className="wallet metal-wallet" title="Progress credits"><Coins/><span><small>XP CREDITS</small><strong>{Math.floor(profile.xp/10).toLocaleString()}</strong></span></div><button className="icon metal-icon" onClick={onSettings} aria-label="Settings"><Settings/></button></header>
  <div className="home-content metal-home-content">
   <div className="metal-logo-block" aria-label="RhythmTap"><small>THREE-LANE RHYTHM ACTION</small><div className="metal-logo"><Zap fill="currentColor"/><span>RHYTHM</span><b>TAP</b></div><p>TAP THE BEAT <i/> OWN THE STAGE</p></div>
-  <button type="button" className="player-card metal-player-card" onClick={onAccount} aria-label={account.profile?'Open RhythmTap profile':'Sign in to RhythmTap ID'}><div className="avatar metal-avatar"><User/></div><div className="player-copy"><small>{account.profile?'RHYTHMTAP ID · CLOUD SAVE':'GUEST SESSION · LOCAL SAVE'}</small><strong>{displayName}</strong><div className="metal-rank-row"><span>LV {profile.level}</span><em>{rankLabel}</em></div><div className="xp-line"><span>LEVEL {profile.level}</span><span>{xpCurrent} / {xpNeeded} XP</span></div><div className="xp-track"><i style={{width:progress+'%'}}/></div></div><ChevronRight className="metal-card-chevron"/></button>
+  <button type="button" className="player-card metal-player-card" onClick={onAccount} aria-label={account.profile?'Open RhythmTap profile':'Sign in to RhythmTap ID'}><div className="avatar metal-avatar"><User/></div><div className="player-copy"><small>{account.profile?'RHYTHTAP ID · CLOUD SAVE':'GUEST SESSION · LOCAL SAVE'}</small><strong>{displayName}</strong><div className="metal-rank-row"><span>LV {profile.level}</span><em>{rankLabel}</em></div><div className="xp-line"><span>LEVEL {profile.level}</span><span>{xpCurrent} / {xpNeeded} XP</span></div><div className="xp-track"><i style={{width:progress+'%'}}/></div></div><ChevronRight className="metal-card-chevron"/></button>
   <nav className="metal-menu-stack" aria-label="Main menu">
    <button className="metal-menu-button metal-menu-solo" onClick={onPlay}><span className="metal-menu-icon"><Play fill="currentColor"/></span><span className="metal-menu-copy"><small>START A SET</small><strong>SOLO PLAY</strong><em>Choose a song and difficulty</em></span><ChevronRight/></button>
    <button className="metal-menu-button metal-menu-online" onClick={onMultiplayer}><span className="metal-menu-icon"><User/></span><span className="metal-menu-copy"><small>LIVE CONNECTION</small><strong>ONLINE BATTLE</strong><em>2-player realtime score battle</em></span><ChevronRight/></button>
@@ -36,7 +36,7 @@ export function metalMenuTransform():Plugin{
   let code=source.slice(0,start)+METAL_HOME+source.slice(end);
   const styleAnchor="import './ux.css';";
   if(!code.includes(styleAnchor))throw new Error('[metal-menu] Unable to locate the UI stylesheet import.');
-  code=code.replace(styleAnchor,styleAnchor+"\nimport './metal-menu.css';");
+  code=code.replace(styleAnchor,styleAnchor+"\nimport './metal-menu.css';\nimport './death-metal-theme.css';\nimport './death-metal-polish.css';");
   return {code,map:null};
  }};
 }

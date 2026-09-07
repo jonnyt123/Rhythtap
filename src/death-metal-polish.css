@@ -1,0 +1,52 @@
+/* Final PR21 metal-theme hardening.
+   This file intentionally loads after the legacy route styles and the base metal theme. */
+
+/* Tutorial: replace the remaining synthwave palette with worn stage materials. */
+.tutorial-screen{background:radial-gradient(circle at 50% -10%,#74151b33,transparent 36%),radial-gradient(circle at 88% 24%,#a5abb010,transparent 30%),linear-gradient(180deg,#111418,#08090b 58%,#030405)!important;color:#eeeae3!important}
+.tutorial-top,.tutorial-footer{background:#080a0def!important;border-color:#696f7638!important}
+.tutorial-progress{background:#050607!important}.tutorial-progress i{background:linear-gradient(90deg,#681015,#bd292c 62%,#9da3a9)!important}
+.tutorial-top>span,.tutorial-feedback span,.three-rules b{color:#ef6b63!important}
+.tutorial-card,.tutorial-play-card,.three-rules span,.judgment-demo span,.feature-item{background:linear-gradient(180deg,#1a1d21,#0a0c0f)!important;border-color:#676e7540!important;border-radius:5px!important;box-shadow:inset 0 1px #ffffff10,0 14px 34px #0009!important}
+.tutorial-card h1 i,.tutorial-copy h1 i,.tour-main-copy strong{background:linear-gradient(90deg,#f0ebe3,#d24843 48%,#9ba1a7)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+.tutorial-logo,.story-badge{border-radius:50%!important;background:radial-gradient(circle,#8f171d4d,#15181c 68%)!important;border-color:#787f8650!important;box-shadow:0 0 24px #000!important}
+.demo-stage{border-radius:5px!important;background:linear-gradient(180deg,#15181c,#050608)!important;border-color:#676d7445!important}
+.demo-receptors i{border-color:#a9afb5!important;background:radial-gradient(circle,#ffffff0d 0 30%,#7d151a35 31% 54%,transparent 55%)!important;box-shadow:0 0 6px #fff7,0 0 11px #8f171d80,inset 0 0 8px #0007!important}
+.demo-note{background:radial-gradient(circle at 38% 30%,#fff 0 8%,#df4d46 16%,#8f171d 58%,#25282c 100%)!important;box-shadow:0 0 8px #fff6,0 0 12px #a4171c80!important}
+.demo-note.hold{background:linear-gradient(180deg,#e9e3da 0 8px,#c33230 9px 38px,#5f11164f 39px 100%)!important}.demo-note.hold:after{background:#d94a43!important}
+.demo-hit-line{background:linear-gradient(90deg,transparent,#8b171c 12%,#d8d5cf 50%,#8f959b 88%,transparent)!important;box-shadow:0 0 8px #fff5!important}
+/* The 190px demo-pads layer is the invisible touch surface. Keep it transparent and theme only the 68px visual pad pseudo-element. */
+.demo-pads{background:transparent!important}.demo-pads button{border-radius:4px!important;background:transparent!important;border-color:transparent!important}.demo-pads button:before{border-radius:4px!important;background:#101317!important;border-color:#656c7344!important}.demo-pads button:active,.demo-pads button.pressed{background:transparent!important;border-color:transparent!important}.demo-pads button:active:before,.demo-pads button.pressed:before{background:#78121742!important;border-color:#d44a4459!important}.demo-pads button:active span,.demo-pads button.pressed span{border-color:#e65a53!important;box-shadow:0 0 12px #a51a1f80!important}
+.story-route span i{background:linear-gradient(135deg,#bd2a2e,#565d64)!important}.story-route>em{background:linear-gradient(90deg,#7d151a,#8e959d)!important}.feature-item>span{background:#73121730!important;color:#e1635c!important}
+.home-learn-strip button{border-color:#7e33364d!important;background:#6510151c!important;color:#e2ded7!important}.home-learn-strip button>svg:first-child{color:#e45b54!important}
+
+/* Account/profile: map cosmetic accents into metal-family colors without removing choice. */
+.account-screen{background:radial-gradient(circle at 50% 0,#6f141a28,transparent 34%),linear-gradient(180deg,#101317,#050607)!important;color:#eeeae3!important}
+.account-screen .screen-top{background:#090b0ef2!important;border-color:#676d7438!important}
+.auth-card,.profile-hero,.profile-editor,.players-panel,.score-showcase,.account-stat,.player-result{border-radius:5px!important;border-color:#686f7645!important;background:linear-gradient(180deg,#191c20,#0a0c0f)!important;box-shadow:inset 0 1px #ffffff10,0 10px 26px #0008!important}
+.auth-icon{border-radius:50%!important;background:#73121738!important;color:#e45c55!important}.auth-switch,.panel-title svg{color:#e96860!important}
+.auth-card input,.profile-editor input,.profile-editor textarea,.profile-editor select,.player-search input{border-radius:4px!important;background:#07090b!important;border-color:#666d754f!important}.auth-card input:focus,.profile-editor input:focus,.profile-editor textarea:focus,.profile-editor select:focus,.player-search input:focus{border-color:#d3534d!important;box-shadow:0 0 0 2px #84141a42!important}
+.account-notice,.share-card{background:#65101520!important;border-color:#83353a4f!important;color:#e9b7b2!important}.player-search button{border-color:#88404455!important;background:#71131833!important;color:#efa29b!important}
+.accent-cyan{--account-accent:#aab0b6!important}.accent-violet{--account-accent:#9b474c!important}.accent-pink{--account-accent:#df5a53!important}.accent-lime{--account-accent:#b8762c!important}.accent-gold{--account-accent:#d5c7a5!important}
+
+/* Tour, social and ranked: road-case panels instead of violet/cyan cards. */
+.tsr-screen{background:radial-gradient(circle at 50% -10%,#7113192d,transparent 35%),linear-gradient(180deg,#101317,#050607)!important;color:#eeeae3!important}.tsr-top{background:#090b0ef2!important;border-color:#676d7438!important}
+.tour-hero,.rank-hero,.tsr-panel,.tour-stop{border-radius:5px!important;border-color:#686f7645!important;background:linear-gradient(180deg,#191c20,#090b0e)!important;box-shadow:inset 0 1px #ffffff0e,0 9px 22px #0008!important}
+.tour-index{border-radius:50%!important;background:#68101538!important;color:#e6635c!important}.tsr-panel-title svg,.tsr-empty svg{color:#e6635c!important}.tsr-notice{border-color:#81323852!important;background:#68101529!important;color:#ec9b95!important}
+.social-row button,.tsr-search button{border-color:#87404455!important;background:#70121730!important;color:#eca099!important}.leader-filters button.active{border-color:#a64c505f!important;background:#77131838!important;color:#efada6!important}.rank-row.mine{background:#6e111628!important}
+
+/* Battle HUD keeps both players distinct without returning to pink/cyan neon. */
+.mp-game-hud-v2{background:linear-gradient(100deg,#7a151a2b,#080a0def 35% 65%,#8e959d1d)!important;border-color:#777e8542!important;box-shadow:0 8px 22px #0009!important}.mp-racer.you strong{color:#e9625b!important}.mp-racer.rival strong{color:#c5c9cd!important}.mp-game-hud-v2.even .mp-lead-chip{color:#c7cbd0!important}.mp-race-track{background:linear-gradient(90deg,#7f151b47,#ffffff13 50%,#9ba1a73d)!important}.mp-race-track i{background:linear-gradient(90deg,#751318,#c43a37)!important;box-shadow:none!important}.mp-result-overlay-v2{border-radius:5px!important;background:linear-gradient(120deg,#15181cf7,#07090bf7)!important}.mp-result-icon{background:radial-gradient(circle,#73121745,#292d32 70%)!important}.mp-result-copy span{color:#d9a09b!important}
+
+/* Gameplay readability/performance overrides. */
+.note:not(.hold):before{opacity:.48!important}.note.hold:before{opacity:1!important}
+.feedback .miss{color:#f05b55!important}
+.graphics-low .note:not(.hold){box-shadow:0 2px 0 #020205,0 3px 5px #0009,inset 3px 4px 5px #ffffff38,inset -4px -5px 7px #0008!important}
+.graphics-low .note.hold{box-shadow:0 2px 6px #0008!important}
+.xp-line span:first-child,.graphics-options button.active small,.theme-options button.active small{color:#ef766e!important}
+.results>small,.results .grade,.breakdown strong,.xp-award strong,.setting output{color:#e8645c!important}
+
+@media(max-width:430px){
+ .tutorial-card,.tutorial-play-card,.auth-card,.profile-hero,.profile-editor,.players-panel,.tsr-panel,.tour-stop{box-shadow:inset 0 1px #ffffff0c,0 6px 15px #0008!important}
+ .tutorial-top,.tutorial-footer,.account-screen .screen-top,.tsr-top{backdrop-filter:none!important}
+ .mp-game-hud-v2{backdrop-filter:none!important}
+}

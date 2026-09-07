@@ -87,8 +87,8 @@ const finalize=async(body:any,authenticatedId:string)=>{
 
 const history=async(authenticatedId:string)=>{
  const admin=adminClient(),playerId=authenticatedId;
- const {data:mine,error}=await admin.from('multiplayer_results').select('*').eq('player_id',playerId).in('validation_version',[2,3,4]).order('created_at',{ascending:false}).limit(10);if(error)throw error;if(!mine?.length)return json({history:[]});
- const ids=mine.map((row:any)=>row.match_id),{data:all,error:allError}=await admin.from('multiplayer_results').select('*').in('match_id',ids).in('validation_version',[2,3,4]);if(allError)throw allError;
+ const {data:mine,error}=await admin.from('multiplayer_results').select('*').eq('player_id',playerId).in('validation_version',[2,3,4,5]).order('created_at',{ascending:false}).limit(10);if(error)throw error;if(!mine?.length)return json({history:[]});
+ const ids=mine.map((row:any)=>row.match_id),{data:all,error:allError}=await admin.from('multiplayer_results').select('*').in('match_id',ids).in('validation_version',[2,3,4,5]);if(allError)throw allError;
  const rows=mine.map((row:any)=>{const opponent=all?.find((other:any)=>other.match_id===row.match_id&&other.player_id!==row.player_id),opponentScore=opponent?.score??null,outcome=opponentScore===null?'UNKNOWN':row.score>opponentScore?'WIN':row.score<opponentScore?'LOSS':'DRAW';return{matchId:row.match_id,songId:row.song_id,difficulty:row.difficulty,createdAt:row.created_at,score:row.score,opponentName:opponent?.display_name??'Waiting for opponent',opponentScore,outcome,validationVersion:row.validation_version}});
  return json({history:rows});
 };

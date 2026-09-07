@@ -39,7 +39,7 @@ Deno.serve(async req=>{
   const userId=await authenticatedUserId(req),body=await req.json(),songId=String(body?.songId||'').slice(0,80),difficulty=String(body?.difficulty||'') as Difficulty,chartVersion=normalizeChartVersion(body?.chartVersion);
   if(!songId||!['EASY','NORMAL','HARD'].includes(difficulty))return json({error:'Invalid solo result metadata'},400);
   const chart=await loadChart(songId,difficulty,chartVersion),result=validateAgainstChart(body?.events,chart),admin=adminClient();
-  const {data,error}=await admin.rpc('record_validated_player_game',{p_user_id:userId,p_song_id:songId,p_difficulty:difficulty,p_score:result.score,p_accuracy:result.accuracy,p_max_combo:result.maxCombo,p_perfect_hits:result.perfect});
+  const {data,error}=await admin.rpc('record_validated_player_game',{p_user_id:userId,p_song_id:songId,p_difficulty:difficulty,p_score:result.score,p_accuracy:result.accuracy,p_max_combo:result.maxCombo,p_perfect_hits:result.perfect,p_chart_version:chartVersion});
   if(error)throw error;
   const row=Array.isArray(data)?data[0]:data;
   if(!row)throw new Error('Progress update returned no data');

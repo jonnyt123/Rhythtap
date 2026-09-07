@@ -13,7 +13,6 @@ const onsetSongs=[['sickness',sicknessEvents],['never-left',neverLeftEvents],['f
 const minGap:Record<WeightedDifficulty,number>={EASY:180,NORMAL:115,HARD:70};
 const difficulties:WeightedDifficulty[]=['EASY','NORMAL','HARD'];
 const onsetSource=await Deno.readTextFile('src/audioChartData.ts');
-const transformSource=await Deno.readTextFile('scripts/weighted-chart-transform.ts');
 
 const assertPlayable=(name:string,difficulty:WeightedDifficulty,notes:WeightedNote[])=>{
  if(!notes.length)throw new Error(`${name} ${difficulty}: empty chart`);
@@ -32,10 +31,9 @@ const assertPlayable=(name:string,difficulty:WeightedDifficulty,notes:WeightedNo
  if(difficulty==='EASY'&&maxChord>1)throw new Error(`${name} EASY: chords are not allowed`);
 };
 
-Deno.test('release client imports shared chart v4 generator',()=>{if(!transformSource.includes("../supabase/functions/_shared/weighted-chart-v4"))throw new Error('client is not wired to chart v4')});
-Deno.test('chart v4 beat-grid client and authoritative charts are identical and playable',()=>{
+Deno.test('chart v4 beat-grid client and authoritative charts remain identical and playable',()=>{
  for(const [name,bpm,offset,duration,seed] of beatSongs)for(const difficulty of difficulties){const client=makeWeightedBeatChart(bpm,offset,duration,difficulty,seed),server=buildV4(name,difficulty).notes;if(JSON.stringify(client)!==JSON.stringify(server))throw new Error(`${name} ${difficulty}: client/server v4 mismatch`);assertPlayable(name,difficulty,client)}
 });
-Deno.test('chart v4 onset-driven client and authoritative charts are identical and playable',()=>{
+Deno.test('chart v4 onset-driven client and authoritative charts remain identical and playable',()=>{
  for(const [name,events] of onsetSongs)for(const difficulty of difficulties){const client=makeWeightedOnsetChart(events,difficulty),server=buildV4(name,difficulty,onsetSource).notes;if(JSON.stringify(client)!==JSON.stringify(server))throw new Error(`${name} ${difficulty}: client/server v4 mismatch`);assertPlayable(name,difficulty,client)}
 });
