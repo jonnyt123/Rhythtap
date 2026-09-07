@@ -40,8 +40,12 @@ Deno.test('sandbox and live billing data cannot overwrite each other',()=>{
  assert(ui.includes('VITE_STRIPE_BILLING_ENV'));
 });
 
-Deno.test('customer self-service uses Stripe Customer Portal',()=>{
+Deno.test('customer self-service uses an explicit Stripe Customer Portal configuration',()=>{
  assert(portal.includes('billingPortal.sessions.create'));
+ assert(portal.includes("configuration:portalConfiguration()"));
+ assert(portal.includes("if(billingEnvironment()==='test')return 'bpc_1UCrexCJXJkpIFuErSGWIHxI'"));
+ assert(portal.includes("throw new Error('Stripe Customer Portal is not configured for live billing')"));
+ assert(portal.includes("Deno.env.get('STRIPE_PORTAL_CONFIGURATION_ID')"));
  assert(ui.includes('MANAGE SUBSCRIPTION'));
 });
 
