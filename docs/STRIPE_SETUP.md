@@ -19,7 +19,7 @@ These are sandbox objects. Never reuse their IDs in live mode.
 Set secrets/config in **Supabase → Edge Functions → Secrets**. Never commit secret values.
 
 - `STRIPE_SECRET_KEY` — restricted Stripe API key (`rk_`) with only the permissions RhythmTap needs.
-- `STRIPE_WEBHOOK_SECRET` — preferred exact variable name for the Stripe webhook signing secret.
+- `STRIPE_WEBHOOK_SECRET` — required exact variable name for the signing secret of the matching Stripe endpoint.
 - `STRIPE_BILLING_ENV=test`
 - `STRIPE_PRICE_PRO_MONTHLY=price_1UCZb6CJXJkpIFuEP85ED9as`
 - `STRIPE_PRICE_PRO_ANNUAL=price_1UCZbDCJXJkpIFuESGS61NeB`
@@ -28,11 +28,9 @@ Set secrets/config in **Supabase → Edge Functions → Secrets**. Never commit 
 
 The web build must use `VITE_STRIPE_BILLING_ENV=test` until all separate live objects are ready.
 
-### Webhook-secret compatibility
+### Webhook-secret requirement
 
-The webhook prefers `STRIPE_WEBHOOK_SECRET`. For the current sandbox only, if that exact variable is absent it may use the single server-side environment value whose value starts with Stripe's `whsec_` prefix. This fallback fails closed unless exactly one candidate exists, and secret values are never logged or returned.
-
-Before live launch, configure the live webhook secret under the exact `STRIPE_WEBHOOK_SECRET` name and do not rely on fallback discovery.
+The webhook reads only `STRIPE_WEBHOOK_SECRET` and fails closed when that exact variable is absent. Its value must be the `whsec_...` signing secret issued for the matching Stripe Dashboard endpoint—not a Stripe CLI forwarding secret or a secret from another sandbox/live endpoint. Secret values are never logged or returned.
 
 ## Verified sandbox behavior
 
