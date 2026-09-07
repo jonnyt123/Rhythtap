@@ -27,6 +27,7 @@ jobs:
       - run: npm run build
         env:
           VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: live
       - uses: actions/configure-pages@v5
         with:
           enablement: true
