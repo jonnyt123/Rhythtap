@@ -4,6 +4,7 @@ const checkout=await Deno.readTextFile('supabase/functions/stripe-checkout/index
 const portal=await Deno.readTextFile('supabase/functions/stripe-portal/index.ts');
 const webhook=await Deno.readTextFile('supabase/functions/stripe-webhook/index.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260906062000_stripe_pro_billing.sql');
+const webhookHealthMigration=await Deno.readTextFile('supabase/migrations/20260907002000_fix_stripe_webhook_health_access.sql');
 const transform=await Deno.readTextFile('scripts/stripe-billing-transform.ts');
 const ui=await Deno.readTextFile('src/stripe-billing.tsx');
 const config=await Deno.readTextFile('supabase/config.toml');
@@ -47,4 +48,16 @@ Deno.test('Stripe webhook bypasses Supabase JWT only because Stripe signature is
  assert(config.includes('[functions.stripe-webhook]'));
  assert(config.includes('verify_jwt = false'));
  assert(webhook.includes("req.headers.get('stripe-signature')"));
+ assert(webhook.includes('constructEventAsync'));
+});
+
+Deno.test('webhook health telemetry is service-only and records safe failure classes',()=>{
+ assert(webhookHealthMigration.includes('enable row level security'));
+ assert(webhookHealthMigration.includes('revoke all on table public.stripe_webhook_health from public, anon, authenticated'));
+ assert(webhookHealthMigration.includes('to service_role'));
+ assert(webhook.includes("last_error_code:'signature_verification_failed'"));
+ assert(webhook.includes("'webhook_secret_missing'"));
+ assert(webhook.includes("'webhook_and_stripe_keys_missing'"));
+ assert(!webhook.includes('STRIPE_WEBHOOK_SECRET}'));
+ assert(!webhook.includes('STRIPE_SECRET_KEY}'));
 });
