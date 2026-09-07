@@ -44,8 +44,12 @@ Deno.serve(async req=>{
  let admin:any;
  try{admin=adminClient()}catch(error){return json({error:errorMessage(error)},500)}
  await updateHealth(admin,{last_received_at:new Date().toISOString(),last_outcome:'received',last_error_code:null,last_error_message:null});
- const secret=Deno.env.get('STRIPE_WEBHOOK_SECRET')||'',signature=req.headers.get('stripe-signature')||'';
- if(!secret){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'webhook_secret_missing',last_error_message:'STRIPE_WEBHOOK_SECRET is not configured'});return json({error:'Webhook verification is not configured'},503)}
+ const secret=Deno.env.get('STRIPE_WEBHOOK_SECRET')||'',signature=req.headers.get('stripe-signature')||'',stripeKeyConfigured=Boolean(Deno.env.get('STRIPE_SECRET_KEY'));
+ if(!secret){
+  const code=stripeKeyConfigured?'webhook_secret_missing':'webhook_and_stripe_keys_missing';
+  await updateHealth(admin,{last_outcome:'rejected',last_error_code:code,last_error_message:stripeKeyConfigured?'STRIPE_WEBHOOK_SECRET is not configured':'STRIPE_WEBHOOK_SECRET and STRIPE_SECRET_KEY are not configured'});
+  return json({error:'Webhook verification is not configured'},503)
+ }
  if(!signature){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_header_missing',last_error_message:'Stripe-Signature header is missing'});return json({error:'Webhook verification is not configured'},503)}
  let stripe:Stripe;
  try{stripe=stripeClient()}catch(error){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'stripe_key_missing',last_error_message:errorMessage(error)});return json({error:errorMessage(error)},503)}
