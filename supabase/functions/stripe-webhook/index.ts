@@ -9,6 +9,12 @@ const idOf=(value:any)=>typeof value==='string'?value:String(value?.id||'');
 const activeFor=(status:string)=>['active','trialing','past_due'].includes(status);
 const errorCode=(error:unknown)=>String((error as any)?.code||(error as any)?.type||'processing_failed').slice(0,100);
 const errorMessage=(error:unknown)=>String(error instanceof Error?error.message:error||'processing failed').slice(0,300);
+const webhookSecret=()=>{
+ const exact=Deno.env.get('STRIPE_WEBHOOK_SECRET')||'';
+ if(exact)return exact;
+ const matches=Object.values(Deno.env.toObject()).filter(value=>typeof value==='string'&&value.startsWith('whsec_'));
+ return matches.length===1?matches[0]:'';
+};
 
 async function updateHealth(admin:any,patch:Record<string,unknown>){
  try{await admin.from('stripe_webhook_health').upsert({id:1,...patch,updated_at:new Date().toISOString()},{onConflict:'id'})}catch{}
@@ -44,10 +50,10 @@ Deno.serve(async req=>{
  let admin:any;
  try{admin=adminClient()}catch(error){return json({error:errorMessage(error)},500)}
  await updateHealth(admin,{last_received_at:new Date().toISOString(),last_outcome:'received',last_error_code:null,last_error_message:null});
- const secret=Deno.env.get('STRIPE_WEBHOOK_SECRET')||'',signature=req.headers.get('stripe-signature')||'',stripeKeyConfigured=Boolean(Deno.env.get('STRIPE_SECRET_KEY'));
+ const secret=webhookSecret(),signature=req.headers.get('stripe-signature')||'',stripeKeyConfigured=Boolean(Deno.env.get('STRIPE_SECRET_KEY'));
  if(!secret){
   const code=stripeKeyConfigured?'webhook_secret_missing':'webhook_and_stripe_keys_missing';
-  await updateHealth(admin,{last_outcome:'rejected',last_error_code:code,last_error_message:stripeKeyConfigured?'STRIPE_WEBHOOK_SECRET is not configured':'STRIPE_WEBHOOK_SECRET and STRIPE_SECRET_KEY are not configured'});
+  await updateHealth(admin,{last_outcome:'rejected',last_error_code:code,last_error_message:stripeKeyConfigured?'No unique Stripe webhook signing secret was found in the Edge Function runtime':'Stripe webhook signing secret and STRIPE_SECRET_KEY are not configured'});
   return json({error:'Webhook verification is not configured'},503)
  }
  if(!signature){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_header_missing',last_error_message:'Stripe-Signature header is missing'});return json({error:'Webhook verification is not configured'},503)}
