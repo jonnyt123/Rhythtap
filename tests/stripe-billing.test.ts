@@ -61,10 +61,10 @@ Deno.test('Stripe webhook bypasses Supabase JWT only because Stripe signature is
  assert(webhook.includes('constructEventAsync'));
 });
 
-Deno.test('webhook secret compatibility fallback fails closed unless exactly one whsec secret exists',()=>{
- assert(webhook.includes("const exact=Deno.env.get('STRIPE_WEBHOOK_SECRET')||''"));
- assert(webhook.includes("value.startsWith('whsec_')"));
- assert(webhook.includes("matches.length===1?matches[0]:''"));
+Deno.test('webhook requires the exact STRIPE_WEBHOOK_SECRET variable name',()=>{
+ assert(webhook.includes("const webhookSecret=()=>Deno.env.get('STRIPE_WEBHOOK_SECRET')||''"));
+ assert(!webhook.includes('Deno.env.toObject()'));
+ assert(!webhook.includes("value.startsWith('whsec_')"));
 });
 
 Deno.test('webhook health telemetry is service-only and records safe failure classes',()=>{
