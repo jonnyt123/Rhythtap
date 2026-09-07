@@ -11,7 +11,7 @@ const errorCode=(error:unknown)=>String((error as any)?.code||(error as any)?.ty
 const errorMessage=(error:unknown)=>String(error instanceof Error?error.message:error||'processing failed').slice(0,300);
 
 async function updateHealth(admin:any,patch:Record<string,unknown>){
- try{await admin.schema('private').from('stripe_webhook_health').upsert({id:1,...patch,updated_at:new Date().toISOString()},{onConflict:'id'})}catch{}
+ try{await admin.from('stripe_webhook_health').upsert({id:1,...patch,updated_at:new Date().toISOString()},{onConflict:'id'})}catch{}
 }
 
 async function resolveUserId(admin:any,subscription:any,environment:'test'|'live'){
