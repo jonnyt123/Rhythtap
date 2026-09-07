@@ -27,6 +27,12 @@ Deno.test('billing entitlements are webhook-driven and client read-only',()=>{
  assert(migration.includes('(select auth.uid()) = user_id'));
 });
 
+Deno.test('only paid or payment-recovery grace statuses enable Pro',()=>{
+ assert(webhook.includes("const activeFor=(status:string)=>['active','trialing','past_due'].includes(status)"));
+ assert(!webhook.includes("['active','trialing','past_due','incomplete']"));
+ assert(!webhook.includes("['active','trialing','past_due','incomplete_expired']"));
+});
+
 Deno.test('sandbox and live billing data cannot overwrite each other',()=>{
  assert(migration.includes("environment in ('test','live')"));
  assert(migration.includes('primary key (user_id, environment)'));
@@ -49,6 +55,12 @@ Deno.test('Stripe webhook bypasses Supabase JWT only because Stripe signature is
  assert(config.includes('verify_jwt = false'));
  assert(webhook.includes("req.headers.get('stripe-signature')"));
  assert(webhook.includes('constructEventAsync'));
+});
+
+Deno.test('webhook secret compatibility fallback fails closed unless exactly one whsec secret exists',()=>{
+ assert(webhook.includes("const exact=Deno.env.get('STRIPE_WEBHOOK_SECRET')||''"));
+ assert(webhook.includes("value.startsWith('whsec_')"));
+ assert(webhook.includes("matches.length===1?matches[0]:''"));
 });
 
 Deno.test('webhook health telemetry is service-only and records safe failure classes',()=>{
