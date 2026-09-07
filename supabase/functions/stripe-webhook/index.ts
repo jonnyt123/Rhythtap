@@ -7,6 +7,12 @@ const adminClient=()=>{const url=Deno.env.get('SUPABASE_URL')||'',secretKeys=JSO
 const environmentFor=(livemode:boolean)=>livemode?'live':'test';
 const idOf=(value:any)=>typeof value==='string'?value:String(value?.id||'');
 const activeFor=(status:string)=>['active','trialing','past_due'].includes(status);
+const errorCode=(error:unknown)=>String((error as any)?.code||(error as any)?.type||'processing_failed').slice(0,100);
+const errorMessage=(error:unknown)=>String(error instanceof Error?error.message:error||'processing failed').slice(0,300);
+
+async function updateHealth(admin:any,patch:Record<string,unknown>){
+ try{await admin.schema('private').from('stripe_webhook_health').upsert({id:1,...patch,updated_at:new Date().toISOString()},{onConflict:'id'})}catch{}
+}
 
 async function resolveUserId(admin:any,subscription:any,environment:'test'|'live'){
  const metadataId=String(subscription?.metadata?.user_id||'');
@@ -35,10 +41,24 @@ async function syncSubscriptionId(stripe:Stripe,admin:any,subscriptionId:string,
 
 Deno.serve(async req=>{
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
+ let admin:any;
+ try{admin=adminClient()}catch(error){return json({error:errorMessage(error)},500)}
+ await updateHealth(admin,{last_received_at:new Date().toISOString(),last_outcome:'received',last_error_code:null,last_error_message:null});
+ const secret=Deno.env.get('STRIPE_WEBHOOK_SECRET')||'',signature=req.headers.get('stripe-signature')||'';
+ if(!secret){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'webhook_secret_missing',last_error_message:'STRIPE_WEBHOOK_SECRET is not configured'});return json({error:'Webhook verification is not configured'},503)}
+ if(!signature){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_header_missing',last_error_message:'Stripe-Signature header is missing'});return json({error:'Webhook verification is not configured'},503)}
+ let stripe:Stripe;
+ try{stripe=stripeClient()}catch(error){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'stripe_key_missing',last_error_message:errorMessage(error)});return json({error:errorMessage(error)},503)}
+ let event:Stripe.Event;
  try{
-  const secret=Deno.env.get('STRIPE_WEBHOOK_SECRET')||'',signature=req.headers.get('stripe-signature')||'';
-  if(!secret||!signature)return json({error:'Webhook verification is not configured'},503);
-  const stripe=stripeClient(),body=await req.text(),cryptoProvider=Stripe.createSubtleCryptoProvider(),event=await stripe.webhooks.constructEventAsync(body,signature,secret,undefined,cryptoProvider),admin=adminClient();
+  const body=await req.text(),cryptoProvider=Stripe.createSubtleCryptoProvider();
+  event=await stripe.webhooks.constructEventAsync(body,signature,secret,undefined,cryptoProvider);
+ }catch(error){
+  await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_verification_failed',last_error_message:errorMessage(error)});
+  return json({error:'Invalid Stripe webhook signature'},400);
+ }
+ await updateHealth(admin,{last_verified_at:new Date().toISOString(),last_event_id:event.id,last_event_type:event.type,last_outcome:'verified',last_error_code:null,last_error_message:null});
+ try{
   if(event.type==='checkout.session.completed'){
    const session=event.data.object as any,subscriptionId=idOf(session.subscription);
    if(subscriptionId){
@@ -52,9 +72,10 @@ Deno.serve(async req=>{
    const invoice:any=event.data.object,subscriptionId=idOf(invoice?.parent?.subscription_details?.subscription)||idOf(invoice?.subscription);
    await syncSubscriptionId(stripe,admin,subscriptionId,event);
   }
+  await updateHealth(admin,{last_outcome:'processed',last_error_code:null,last_error_message:null});
   return json({received:true});
  }catch(error){
-  const message=error instanceof Error?error.message:'Stripe webhook failed';
-  return json({error:message},400);
+  await updateHealth(admin,{last_outcome:'processing_failed',last_error_code:errorCode(error),last_error_message:errorMessage(error)});
+  return json({error:'Stripe webhook processing failed'},400);
  }
 });
