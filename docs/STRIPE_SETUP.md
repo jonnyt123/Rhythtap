@@ -18,13 +18,24 @@ These are sandbox objects. Create separate live-mode Product/Price objects befor
 Set these in **Supabase → Edge Functions → Secrets**. Never commit them.
 
 - `STRIPE_SECRET_KEY` — use a Stripe **restricted API key (`rk_`)** rather than a broad secret key where possible. It needs the minimum permissions required for Checkout Sessions, Billing Portal Sessions, Customers/Subscriptions reads, and Prices reads.
-- `STRIPE_WEBHOOK_SECRET` — signing secret for the `stripe-webhook` endpoint.
+- `STRIPE_WEBHOOK_SECRET` — signing secret for the `stripe-webhook` endpoint. **The name must match exactly.**
 - `STRIPE_BILLING_ENV=test`
 - `STRIPE_PRICE_PRO_MONTHLY=price_1UCZb6CJXJkpIFuEP85ED9as`
 - `STRIPE_PRICE_PRO_ANNUAL=price_1UCZbDCJXJkpIFuESGS61NeB`
 - `RHYTHTAP_APP_URL=https://jonnyt123.github.io/Rhythtap/`
 
 The web build should use `VITE_STRIPE_BILLING_ENV=test` until the live catalog and live webhook are ready.
+
+### Current sandbox verification
+
+A real sandbox subscription probe confirmed:
+
+- Stripe can deliver subscription events to the Supabase Edge Function URL.
+- `STRIPE_SECRET_KEY` is present in the Edge Function runtime.
+- `STRIPE_WEBHOOK_SECRET` is currently **not visible under that exact runtime variable name**, so deliveries are rejected before signature verification.
+- The disposable probe was canceled and created no player entitlement row.
+
+No secret values are logged or stored in the health telemetry. `public.stripe_webhook_health` is RLS-enabled, has no browser-role privileges, and is writable/readable only by the service role.
 
 ## Stripe webhook
 
@@ -64,6 +75,10 @@ Access is removed when the current Stripe subscription state no longer qualifies
 - Customer identity linked to the signed-in Supabase user through Checkout and Subscription metadata
 - No card data passes through RhythmTap
 
+## Customer Portal
+
+A default sandbox Customer Portal configuration must be enabled in Stripe before the in-game **Manage Subscription** action can work. Configure payment-method updates, invoice/history access, and cancellation at period end. The current Stripe API connection exposes portal configuration reads but not portal configuration creation, so activation is a Dashboard step.
+
 ## Tax
 
 Automatic Stripe Tax is deliberately **not enabled** in this branch. Before enabling `automatic_tax`, confirm RhythmTap has the appropriate active tax registration(s), head-office settings, and a confirmed product tax code. Enabling Stripe Tax without active registrations can result in zero tax being collected without an error. Sandbox transactions also do not count toward Stripe Tax threshold monitoring.
@@ -71,12 +86,13 @@ Automatic Stripe Tax is deliberately **not enabled** in this branch. Before enab
 ## Go-live sequence
 
 1. Finish PR21 mobile/theme verification and merge it.
-2. Merge the Stripe billing PR only after its CI, review, and preview gates are green.
-3. Set the sandbox restricted key + webhook signing secret in Supabase.
-4. Deploy the three Stripe Edge Functions and the billing migration.
-5. Run sandbox Checkout, renewal/failure, cancellation-at-period-end, and Customer Portal tests.
-6. Create live Product/Price objects; do **not** reuse sandbox IDs.
-7. Configure live restricted key and a separate live webhook signing secret.
-8. Switch `STRIPE_BILLING_ENV` and `VITE_STRIPE_BILLING_ENV` to `live`.
-9. Confirm tax registrations/settings before enabling automatic tax.
-10. Run one low-value live subscription and verify webhook-driven Pro entitlement before public launch.
+2. Keep the Stripe billing PR stacked until PR21 is merged; require exact-head CI/review/preview gates.
+3. Confirm `STRIPE_SECRET_KEY` and exact-name `STRIPE_WEBHOOK_SECRET` are visible to the Supabase Edge Function runtime.
+4. Re-run a signed sandbox Checkout and confirm webhook health reaches `processed` and the correct Pro entitlement is written.
+5. Enable/configure the sandbox Customer Portal and verify cancel-at-period-end/payment-method management.
+6. Test failed-payment/recovery behavior.
+7. Create live Product/Price objects; do **not** reuse sandbox IDs.
+8. Configure a live restricted key and a separate live webhook endpoint/signing secret.
+9. Switch `STRIPE_BILLING_ENV` and `VITE_STRIPE_BILLING_ENV` to `live` only after live infrastructure is ready.
+10. Confirm tax registrations/settings before enabling automatic tax.
+11. Run one low-value live subscription and verify webhook-driven Pro entitlement before public launch.
