@@ -5,6 +5,7 @@ const portal=await Deno.readTextFile('supabase/functions/stripe-portal/index.ts'
 const webhook=await Deno.readTextFile('supabase/functions/stripe-webhook/index.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260906062000_stripe_pro_billing.sql');
 const webhookHealthMigration=await Deno.readTextFile('supabase/migrations/20260907002000_fix_stripe_webhook_health_access.sql');
+const subscriptionProjectionMigration=await Deno.readTextFile('supabase/migrations/20260908081500_stripe_subscription_projection.sql');
 const transform=await Deno.readTextFile('scripts/stripe-billing-transform.ts');
 const ui=await Deno.readTextFile('src/stripe-billing.tsx');
 const config=await Deno.readTextFile('supabase/config.toml');
@@ -15,6 +16,8 @@ Deno.test('Checkout uses hosted subscription Billing without hard-coded payment 
  assert(!checkout.includes('payment_method_types'));
  assert(checkout.includes("subscription_data:{metadata:"));
  assert(checkout.includes("allow_promotion_codes:true"));
+ assert(checkout.includes('if(billingError)throw'));
+ assert(!checkout.includes("||'price_"));
 });
 
 Deno.test('billing entitlements are webhook-driven and client read-only',()=>{
@@ -22,6 +25,9 @@ Deno.test('billing entitlements are webhook-driven and client read-only',()=>{
  assert(webhook.includes("event.type==='customer.subscription.updated'"));
  assert(webhook.includes("event.type==='customer.subscription.deleted'"));
  assert(webhook.includes("event.type==='invoice.payment_failed'"));
+ assert(webhook.includes("admin.rpc('sync_player_billing_subscription'"));
+ assert(subscriptionProjectionMigration.includes('last_event_created'));
+ assert(subscriptionProjectionMigration.includes('excluded.last_event_created >= existing_row.last_event_created'));
  assert(migration.includes('enable row level security'));
  assert(migration.includes('revoke insert, update, delete'));
  assert(migration.includes('(select auth.uid()) = user_id'));
@@ -62,7 +68,9 @@ Deno.test('Stripe webhook bypasses Supabase JWT only because Stripe signature is
 });
 
 Deno.test('webhook requires the exact STRIPE_WEBHOOK_SECRET variable name',()=>{
- assert(webhook.includes("const webhookSecret=()=>Deno.env.get('STRIPE_WEBHOOK_SECRET')||''"));
+ assert(webhook.includes("configuredValue('STRIPE_WEBHOOK_SECRET',environment)"));
+ assert(webhook.includes('STRIPE_WEBHOOK_SECRET_${environment.toUpperCase()}')===false);
+ assert(webhook.includes('`${name}_${environment.toUpperCase()}`'));
  assert(!webhook.includes('Deno.env.toObject()'));
  assert(!webhook.includes("value.startsWith('whsec_')"));
 });
@@ -76,4 +84,18 @@ Deno.test('webhook health telemetry is service-only and records safe failure cla
  assert(webhook.includes("'webhook_and_stripe_keys_missing'"));
  assert(!webhook.includes('STRIPE_WEBHOOK_SECRET}'));
  assert(!webhook.includes('STRIPE_SECRET_KEY}'));
+});
+
+Deno.test('one webhook function safely supports separate test and live endpoints',()=>{
+ assert(webhook.includes("(['test','live'] as const)"));
+ assert(webhook.includes("environmentFor(verified.livemode)!==environment"));
+ assert(webhook.includes("stripeClient(environment)"));
+});
+
+Deno.test('browser features share one persistent Supabase auth client',async()=>{
+ const shared=await Deno.readTextFile('src/supabase-account-client.ts');
+ const sources=await Promise.all(['player-account.tsx','stripe-billing.tsx','engagement-analytics.ts','tour-set-career.tsx','tour-social-ranked.tsx'].map(name=>Deno.readTextFile(`src/${name}`)));
+ assert(shared.includes("storageKey:'rhythtap-account-auth'"));
+ for(const source of sources)assert(source.includes("from './supabase-account-client'"));
+ assert(sources.every(source=>!source.includes('module.createClient(')));
 });

@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,Check,Crown,Lock,Music2,Play,Star,Trophy} from 'lucide-react';
-import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL} from './multiplayer-common';
+import {getAccountSupabaseClient} from './supabase-account-client';
 import './tour-set-career.css';
 
 export type TourDifficulty='EASY'|'NORMAL'|'HARD';
@@ -28,8 +28,7 @@ const tourSets:TourSet[]=[
  {id:'headliner',venue:'FINAL HEADLINER',city:'TOUR FINALE',subtitle:'ONE LAST THREE-SONG SET. ALL HARD.',reward:'RHYTHTAP TOUR COMPLETE',headliner:true,songs:[{songId:'kryptonite',difficulty:'HARD'},{songId:'kill-you',difficulty:'HARD'},{songId:'through-fire-flames',difficulty:'HARD'}]},
 ];
 
-let clientPromise:Promise<SupabaseClient>|null=null;
-const getClient=()=>{if(clientPromise)return clientPromise;clientPromise=(async()=>{const importer=new Function('url','return import(url)') as (url:string)=>Promise<any>;const module=await importer(SUPABASE_ESM);return module.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'rhythtap-account-auth'}})})();return clientPromise};
+const getClient=getAccountSupabaseClient;
 const storageKey=(userId:string|null)=>`${TOUR_KEY}:${userId||'guest'}`;
 const performanceId=(gigId:string,slot:number)=>`tourset:${gigId}:${slot}`;
 const starsFor=(accuracy:number)=>accuracy>=95?3:accuracy>=85?2:accuracy>=70?1:0;

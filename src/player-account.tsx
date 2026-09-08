@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,Check,Copy,LogIn,LogOut,Search,ShieldCheck,Trophy,User,UserPlus,Users,Zap} from 'lucide-react';
 import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL} from './multiplayer-common';
+import {getAccountSupabaseClient} from './supabase-account-client';
 import './player-account.css';
 
 export type CloudPlayerProfile={
@@ -18,8 +19,7 @@ export type PlayerAccountController={
 };
 
 type SupabaseClient=any;
-let accountClientPromise:Promise<SupabaseClient>|null=null;
-const getAccountClient=()=>{if(accountClientPromise)return accountClientPromise;accountClientPromise=(async()=>{const importer=new Function('url','return import(url)') as (url:string)=>Promise<any>;const module=await importer(SUPABASE_ESM);return module.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'rhythtap-account-auth'}})})();return accountClientPromise};
+const getAccountClient=getAccountSupabaseClient;
 const normalizeProfile=(row:any):CloudPlayerProfile=>({userId:String(row.user_id),username:String(row.username),displayName:String(row.display_name||row.username),bio:String(row.bio||''),accent:(['cyan','violet','pink','lime','gold'].includes(row.accent)?row.accent:'cyan') as CloudPlayerProfile['accent'],isPublic:Boolean(row.is_public),xp:Number(row.xp)||0,level:Number(row.level)||1,songsCompleted:Number(row.songs_completed)||0,perfectHits:Number(row.perfect_hits)||0,bestCombo:Number(row.best_combo)||0,createdAt:String(row.created_at||'')});
 const normalizeScore=(row:any):CloudSongScore=>({songId:String(row.song_id),difficulty:String(row.difficulty) as CloudSongScore['difficulty'],highScore:Number(row.high_score)||0,bestAccuracy:Number(row.best_accuracy)||0,bestCombo:Number(row.best_combo)||0,plays:Number(row.plays)||0});
 const publicProfileUrl=(username:string)=>`${location.origin}${import.meta.env.BASE_URL}#player/${encodeURIComponent(username)}`;

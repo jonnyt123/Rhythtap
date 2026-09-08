@@ -30,10 +30,12 @@ Deno.serve(async req=>{
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
  try{
   const user=await authenticatedUser(req),body=await req.json().catch(()=>({})),interval=body?.interval==='monthly'?'monthly':'annual',environment=billingEnvironment();
-  const monthly=Deno.env.get('STRIPE_PRICE_PRO_MONTHLY')||'price_1UCZb6CJXJkpIFuEP85ED9as',annual=Deno.env.get('STRIPE_PRICE_PRO_ANNUAL')||'price_1UCZbDCJXJkpIFuESGS61NeB',price=interval==='monthly'?monthly:annual;
+  const monthly=Deno.env.get('STRIPE_PRICE_PRO_MONTHLY')||'',annual=Deno.env.get('STRIPE_PRICE_PRO_ANNUAL')||'',price=interval==='monthly'?monthly:annual;
   if(!price)throw new Error('Stripe price is not configured');
-  const admin=adminClient(),{data:billing}=await admin.from('player_billing_entitlements').select('stripe_customer_id,pro_enabled,status').eq('user_id',user.id).eq('environment',environment).maybeSingle();
-  if(billing?.pro_enabled&&['active','trialing','past_due'].includes(String(billing.status)))return json({error:'RhythmTap Pro is already active. Manage it from your profile.'},409);
+  const admin=adminClient(),{data:subscriptions,error:billingError}=await admin.from('player_billing_subscriptions').select('stripe_customer_id,status,last_event_created').eq('user_id',user.id).eq('environment',environment).order('last_event_created',{ascending:false});
+  if(billingError)throw new Error('Unable to verify existing subscriptions');
+  const active=(subscriptions||[]).find((row:any)=>['active','trialing','past_due'].includes(String(row.status))),billing=active||(subscriptions||[])[0]||null;
+  if(active)return json({error:'RhythmTap Pro is already active. Manage it from your profile.'},409);
   const stripe=stripeClient(),params:any={
    mode:'subscription',
    line_items:[{price,quantity:1}],

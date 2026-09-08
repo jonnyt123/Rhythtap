@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,Check,Crown,Gamepad2,Lock,Medal,Play,Search,Star,Swords,Trophy,UserPlus,Users,X} from 'lucide-react';
-import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL,flattenPresence,makeCode} from './multiplayer-common';
+import {flattenPresence,makeCode} from './multiplayer-common';
+import {getAccountSupabaseClient} from './supabase-account-client';
 import './tour-social-ranked.css';
 
 export type TourDifficulty='EASY'|'NORMAL'|'HARD';
@@ -13,8 +14,7 @@ type InviteRow={id:string,sender_id:string,recipient_id:string,room_code:string,
 type RankedRow={user_id:string,rating:number,wins:number,losses:number,draws:number,matches_played:number,best_rating:number};
 
 type SupabaseClient=any;
-let appClientPromise:Promise<SupabaseClient>|null=null;
-const getAppClient=()=>{if(appClientPromise)return appClientPromise;appClientPromise=(async()=>{const importer=new Function('url','return import(url)') as (url:string)=>Promise<any>;const module=await importer(SUPABASE_ESM);return module.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'rhythtap-account-auth'},realtime:{params:{eventsPerSecond:10}}})})();return appClientPromise};
+const getAppClient=getAccountSupabaseClient;
 
 const TOUR_KEY='rhythtap-tour-progress-v1';
 const tours=[

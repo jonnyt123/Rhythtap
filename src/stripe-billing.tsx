@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import {Check,Crown,ExternalLink,RefreshCw,ShieldCheck,Sparkles} from 'lucide-react';
-import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL} from './multiplayer-common';
+import {SUPABASE_ANON_KEY,SUPABASE_URL} from './multiplayer-common';
+import {getAccountSupabaseClient} from './supabase-account-client';
 import './stripe-billing.css';
 
 type BillingEnvironment='test'|'live';
@@ -18,19 +19,8 @@ type BillingRow={
  current_period_end:string|null;
  updated_at:string;
 };
-type SupabaseClient=any;
-
 const billingEnvironment:BillingEnvironment=String(import.meta.env.VITE_STRIPE_BILLING_ENV||'test').toLowerCase()==='live'?'live':'test';
-let billingClientPromise:Promise<SupabaseClient>|null=null;
-const getBillingClient=()=>{
- if(billingClientPromise)return billingClientPromise;
- billingClientPromise=(async()=>{
-  const importer=new Function('url','return import(url)') as (url:string)=>Promise<any>;
-  const module=await importer(SUPABASE_ESM);
-  return module.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'rhythtap-account-auth'}});
- })();
- return billingClientPromise;
-};
+const getBillingClient=getAccountSupabaseClient;
 
 const formatDate=(value:string|null)=>value?new Intl.DateTimeFormat(undefined,{year:'numeric',month:'short',day:'numeric'}).format(new Date(value)):'—';
 const activeStatus=(status:string)=>['active','trialing','past_due'].includes(status);
@@ -54,9 +44,9 @@ export function BillingCard({userId}:{userId:string|null}){
  const interval=row?.billing_interval;
  const statusLabel=useMemo(()=>{
   if(!row)return'FREE';
+  if(row.status==='past_due')return'PRO · PAYMENT ISSUE';
   if(pro&&row.cancel_at_period_end)return'PRO · ENDS THIS PERIOD';
   if(pro)return`PRO · ${(interval||'ACTIVE').toUpperCase()}`;
-  if(row.status==='past_due')return'PRO · PAYMENT ISSUE';
   return'FREE';
  },[row,pro,interval]);
 
@@ -73,6 +63,12 @@ export function BillingCard({userId}:{userId:string|null}){
 
  useEffect(()=>{void refresh()},[refresh]);
  useEffect(()=>{const onFocus=()=>void refresh();window.addEventListener('focus',onFocus);return()=>window.removeEventListener('focus',onFocus)},[refresh]);
+ useEffect(()=>{
+  if(new URLSearchParams(location.search).get('billing')!=='success')return;
+  let attempts=0;
+  const timer=window.setInterval(()=>{attempts+=1;void refresh();if(attempts>=10)window.clearInterval(timer)},1500);
+  return()=>window.clearInterval(timer);
+ },[refresh]);
 
  const checkout=async(intervalChoice:BillingInterval)=>{
   setAction(intervalChoice);setError('');

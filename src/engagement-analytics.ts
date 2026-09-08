@@ -1,4 +1,4 @@
-import {SUPABASE_ANON_KEY,SUPABASE_ESM,SUPABASE_URL} from './multiplayer-common';
+import {getAccountSupabaseClient} from './supabase-account-client';
 
 export type EngagementEventName=
  |'game_open'
@@ -20,9 +20,7 @@ export type EngagementEvent={
  metadata?:Record<string,unknown>;
 };
 
-type SupabaseClient=any;
-let clientPromise:Promise<SupabaseClient>|null=null;
-const getClient=()=>{if(clientPromise)return clientPromise;clientPromise=(async()=>{const importer=new Function('url','return import(url)') as (url:string)=>Promise<any>;const module=await importer(SUPABASE_ESM);return module.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'rhythtap-account-auth'}})})();return clientPromise};
+const getClient=getAccountSupabaseClient;
 
 const SESSION_KEY='rhythtap-engagement-session-v1';
 const sessionId=()=>{let value=sessionStorage.getItem(SESSION_KEY);if(value)return value;value=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;sessionStorage.setItem(SESSION_KEY,value);return value};
