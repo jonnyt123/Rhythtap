@@ -7,6 +7,9 @@ const base=await Deno.readTextFile('src/styles.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
 const metal=await Deno.readTextFile('src/death-metal-theme.css');
 const profile=await Deno.readTextFile('src/player-profile-console.css');
+const mobilePerf=await Deno.readTextFile('src/mobile-gameplay-performance.css');
+const tour=await Deno.readTextFile('src/tour-social-ranked.tsx');
+const tourDifficulty=await Deno.readTextFile('src/tour-difficulty.css');
 
 Deno.test('core screens use dynamic viewport and safe areas',()=>{
  assert(base.includes('height:100dvh'));
@@ -81,4 +84,27 @@ Deno.test('console-style player profile stays compact and metal-themed on iPhone
  assert(profile.includes('@media(max-width:380px)'));
  assert(profile.includes('env(safe-area-inset-left)'));
  assert(profile.includes('prefers-reduced-motion:reduce'));
+});
+
+Deno.test('mobile gameplay cuts paint cost without moving the timing geometry',()=>{
+ assert(mobilePerf.includes('@media (pointer:coarse) and (max-width:768px)'));
+ assert(mobilePerf.includes('contain:layout paint style'));
+ assert(mobilePerf.includes('will-change:transform'));
+ assert(mobilePerf.includes('.game .hit-burst{display:none!important}'));
+ assert(mobilePerf.includes('.game .lane.holding:before{filter:none!important'));
+ assert(mobilePerf.includes('.game .note.active-hold{animation:none!important'));
+ assert(gameplay.includes('top:89%'));
+ assert(gameplay.includes('translate3d(-50%,var(--note-y),0)'));
+});
+
+Deno.test('Tour exposes Easy Normal and Hard before starting each unlocked gig',()=>{
+ assert(tour.includes("const DIFFICULTIES=['EASY','NORMAL','HARD'] as TourDifficulty[]"));
+ assert(tour.includes('selectedDifficulty'));
+ assert(tour.includes('className="tour-difficulty"'));
+ assert(tour.includes('aria-pressed={difficulty===d}'));
+ assert(tour.includes('onPlay(song.id,difficulty,{gigId:gig.id})'));
+ assert(!tour.includes('onPlay(song.id,gig.min'));
+ assert(tour.includes('PLAY {difficulty}'));
+ assert(tourDifficulty.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
+ assert(tourDifficulty.includes('@media(max-width:620px)'));
 });
