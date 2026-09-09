@@ -2,6 +2,8 @@ import {assert} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
 const badge=await Deno.readTextFile('src/pro-badge.tsx');
 const css=await Deno.readTextFile('src/pro-badge.css');
+const playerAccount=await Deno.readTextFile('src/player-account.tsx');
+const socialRanked=await Deno.readTextFile('src/tour-social-ranked.tsx');
 const migration=await Deno.readTextFile('supabase/migrations/20260909103500_public_pro_badge_lookup.sql');
 const asset=await Deno.readFile('public/assets/pro-badge.png');
 
@@ -38,4 +40,32 @@ Deno.test('public badge authority remains live-only and fail-closed',()=>{
  assert(badge.includes("client.rpc('get_visible_player_pro_badges'"));
  assert(badge.includes('pro_badge:false'));
  assert(!badge.includes('pro_badge:true'));
+});
+
+Deno.test('public player identity is username-only with no at-prefix',()=>{
+ assert(playerAccount.includes('<span className="rt-username-text">{account.profile.username}</span>'));
+ assert(playerAccount.includes('<span className="rt-username-text">{p.username}</span>'));
+ assert(playerAccount.includes('<span className="rt-username-text">{player.username}</span>'));
+ assert(!playerAccount.includes('<h1>{account.profile.displayName}</h1>'));
+ assert(!playerAccount.includes('<h1>{p.displayName}</h1>'));
+ assert(!playerAccount.includes('@{account.profile.username}'));
+ assert(!playerAccount.includes('@{p.username}'));
+ assert(!playerAccount.includes('@{player.username}'));
+ assert(socialRanked.includes('profile?.username||fallback'));
+ assert(!socialRanked.includes('profile?.displayName||fallback'));
+ assert(!socialRanked.includes('`@${p.username}`'));
+ assert(!socialRanked.includes('<small>@{p.username}'));
+});
+
+Deno.test('username plate is a compact hard-rock metal rectangle',()=>{
+ assert(css.includes('.rt-username-plate{'));
+ assert(css.includes('border:1px solid rgba(190,198,210,.42)'));
+ assert(css.includes('border-radius:3px'));
+ assert(css.includes('linear-gradient(180deg,rgba(49,51,58,.98)'));
+ assert(css.includes('rgba(255,70,70,.58)'));
+ assert(css.includes('clip-path:polygon('));
+ assert(css.includes('.rt-username-plate.compact'));
+ assert(css.includes('max-width:180px'));
+ assert(css.includes('max-width:138px'));
+ assert(css.includes('overflow:hidden;text-overflow:ellipsis;white-space:nowrap'));
 });
