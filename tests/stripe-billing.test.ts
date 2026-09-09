@@ -80,6 +80,22 @@ Deno.test('webhook subscription lookup does not shadow the event subscription',(
  assert(!webhook.includes('const{data:subscription}='));
 });
 
+Deno.test('verified subscription events are projected without a second Stripe account lookup',()=>{
+ assert(webhook.includes("event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'"));
+ assert(webhook.includes('await syncSubscription(admin,event.data.object as any,event)'));
+ assert(!webhook.includes('await syncSubscriptionId(stripe,admin,idOf(event.data.object),event)'));
+});
+
+Deno.test('webhook projections never refetch signed Stripe event objects',()=>{
+ assert(!webhook.includes('subscriptions.retrieve'));
+ assert(!webhook.includes('async function syncSubscriptionId'));
+});
+
+Deno.test('verified recurring price data can classify billing when an environment price ID is stale',()=>{
+ assert(webhook.includes("recurringInterval==='year'?'annual'"));
+ assert(webhook.includes("recurringInterval==='month'?'monthly'"));
+});
+
 Deno.test('webhook health telemetry is service-only and records safe failure classes',()=>{
  assert(webhookHealthMigration.includes('enable row level security'));
  assert(webhookHealthMigration.includes('revoke all on table public.stripe_webhook_health from public, anon, authenticated'));

@@ -28,19 +28,13 @@ async function resolveUserId(admin:any,subscription:any,environment:'test'|'live
  return String(entitlement?.user_id||'');
 }
 
-async function syncSubscription(stripe:Stripe,admin:any,subscription:any,event:Stripe.Event){
+async function syncSubscription(admin:any,subscription:any,event:Stripe.Event){
  const environment=environmentFor(event.livemode),userId=await resolveUserId(admin,subscription,environment);
  if(!userId)return;
- const item=subscription?.items?.data?.[0],priceId=idOf(item?.price),monthly=configuredValue('STRIPE_PRICE_PRO_MONTHLY',environment),annual=configuredValue('STRIPE_PRICE_PRO_ANNUAL',environment),billingInterval=priceId===annual?'annual':priceId===monthly?'monthly':null,status=String(subscription?.status||'inactive'),periodEnd=Number(item?.current_period_end||0),customerId=idOf(subscription?.customer),subscriptionId=idOf(subscription);
+ const item=subscription?.items?.data?.[0],priceId=idOf(item?.price),monthly=configuredValue('STRIPE_PRICE_PRO_MONTHLY',environment),annual=configuredValue('STRIPE_PRICE_PRO_ANNUAL',environment),recurringInterval=String(item?.price?.recurring?.interval||item?.plan?.interval||''),billingInterval=priceId===annual||recurringInterval==='year'?'annual':priceId===monthly||recurringInterval==='month'?'monthly':null,status=String(subscription?.status||'inactive'),periodEnd=Number(item?.current_period_end||0),customerId=idOf(subscription?.customer),subscriptionId=idOf(subscription);
  if(!customerId||!subscriptionId)throw new Error('Stripe subscription identity missing');
  const{error}=await admin.rpc('sync_player_billing_subscription',{p_environment:environment,p_subscription_id:subscriptionId,p_user_id:userId,p_customer_id:customerId,p_status:status,p_price_id:priceId||null,p_billing_interval:billingInterval,p_cancel_at_period_end:Boolean(subscription?.cancel_at_period_end),p_current_period_end:periodEnd?new Date(periodEnd*1000).toISOString():null,p_event_id:event.id,p_event_created:event.created});
  if(error)throw error;
-}
-
-async function syncSubscriptionId(stripe:Stripe,admin:any,subscriptionId:string,event:Stripe.Event){
- if(!subscriptionId)return;
- const subscription=await stripe.subscriptions.retrieve(subscriptionId,{expand:['items.data.price']});
- await syncSubscription(stripe,admin,subscription,event);
 }
 
 Deno.serve(async req=>{
@@ -54,35 +48,25 @@ Deno.serve(async req=>{
   return json({error:'Webhook verification is not configured'},503)
  }
  if(!signature){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_header_missing',last_error_message:'Stripe-Signature header is missing'});return json({error:'Webhook verification is not configured'},503)}
- let event:Stripe.Event|null=null,stripe:Stripe|null=null,lastVerificationError:unknown=null;
+ let event:Stripe.Event|null=null,lastVerificationError:unknown=null;
  const body=await req.text(),cryptoProvider=Stripe.createSubtleCryptoProvider();
  for(const environment of environments){
   try{
    const candidate=stripeClient(environment),verified=await candidate.webhooks.constructEventAsync(body,signature,webhookSecret(environment),undefined,cryptoProvider);
    if(environmentFor(verified.livemode)!==environment)throw new Error('Webhook mode does not match its configured signing secret');
-   stripe=candidate;event=verified;break;
+   event=verified;break;
   }catch(error){lastVerificationError=error}
  }
- if(!event||!stripe){
+ if(!event){
   await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_verification_failed',last_error_message:errorMessage(lastVerificationError)});
   return json({error:'Invalid Stripe webhook signature'},400);
  }
  await updateHealth(admin,{last_verified_at:new Date().toISOString(),last_event_id:event.id,last_event_type:event.type,last_outcome:'verified',last_error_code:null,last_error_message:null});
  try{
-  if(event.type==='checkout.session.completed'){
-   const session=event.data.object as any,subscriptionId=idOf(session.subscription);
-   if(subscriptionId){
-    const subscription=await stripe.subscriptions.retrieve(subscriptionId,{expand:['items.data.price']});
-    const enriched:any=session.client_reference_id?{...subscription,metadata:{...subscription.metadata,user_id:String(session.client_reference_id)}}:subscription;
-    await syncSubscription(stripe,admin,enriched,event);
-   }
-  }else if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'){
-   await syncSubscriptionId(stripe,admin,idOf(event.data.object),event);
+  if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'){
+   await syncSubscription(admin,event.data.object as any,event);
   }else if(event.type==='customer.subscription.deleted'){
-   await syncSubscription(stripe,admin,event.data.object as any,event);
-  }else if(event.type==='invoice.payment_failed'||event.type==='invoice.paid'){
-   const invoice:any=event.data.object,subscriptionId=idOf(invoice?.parent?.subscription_details?.subscription)||idOf(invoice?.subscription);
-   await syncSubscriptionId(stripe,admin,subscriptionId,event);
+   await syncSubscription(admin,event.data.object as any,event);
   }
   await updateHealth(admin,{last_outcome:'processed',last_error_code:null,last_error_message:null});
   return json({received:true});
