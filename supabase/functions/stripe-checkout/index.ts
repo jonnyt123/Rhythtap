@@ -6,11 +6,21 @@ const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,
 const billingEnvironment=()=>String(Deno.env.get('STRIPE_BILLING_ENV')||'test').toLowerCase()==='live'?'live':'test';
 const configuredValue=(name:string)=>Deno.env.get(`${name}_${billingEnvironment().toUpperCase()}`)||Deno.env.get(name)||'';
 const appUrl=()=>Deno.env.get('RHYTHTAP_APP_URL')||'https://jonnyt123.github.io/Rhythtap/';
-const stripeClient=()=>{
- const key=configuredValue('STRIPE_SECRET_KEY');
- if(!key)throw new Error('Stripe billing is not configured');
- return new Stripe(key,{apiVersion:'2026-07-29.dahlia'});
+const stripeSecretKey=()=>{
+ const environment=billingEnvironment();
+ const explicit=String(Deno.env.get(`STRIPE_SECRET_KEY_${environment.toUpperCase()}`)||'').trim();
+ if(environment==='live'){
+  if(!explicit)throw new Error('STRIPE_SECRET_KEY_LIVE is missing from Supabase Edge Function secrets');
+  if(!/^(rk|sk)_live_/.test(explicit))throw new Error('STRIPE_SECRET_KEY_LIVE is not a live-mode Stripe key');
+  return explicit;
+ }
+ const fallback=String(Deno.env.get('STRIPE_SECRET_KEY')||'').trim();
+ const key=explicit||fallback;
+ if(!key)throw new Error('Stripe test billing is not configured');
+ if(/^(rk|sk)_live_/.test(key))throw new Error('Test billing cannot use a live-mode Stripe key');
+ return key;
 };
+const stripeClient=()=>new Stripe(stripeSecretKey(),{apiVersion:'2026-07-29.dahlia'});
 const adminClient=()=>{
  const url=Deno.env.get('SUPABASE_URL')||'',secretKeys=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}'),key=String(secretKeys?.default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'');
  if(!url||!key)throw new Error('Server configuration missing');
@@ -25,6 +35,10 @@ const authenticatedUser=async(req:Request)=>{
  return data.user;
 };
 const returnUrl=(state:'success'|'cancelled')=>{const url=new URL(appUrl());url.searchParams.set('billing',state);return url.toString()};
+const isMissingCustomerError=(error:unknown)=>{
+ const message=error instanceof Error?error.message:String(error||'');
+ return /No such customer/i.test(message);
+};
 
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
@@ -37,7 +51,8 @@ Deno.serve(async req=>{
   if(billingError)throw new Error('Unable to verify existing subscriptions');
   const active=(subscriptions||[]).find((row:any)=>['active','trialing','past_due'].includes(String(row.status))),billing=active||(subscriptions||[])[0]||null;
   if(active)return json({error:'RhythmTap Pro is already active. Manage it from your profile.'},409);
-  const stripe=stripeClient(),params:any={
+  const stripe=stripeClient();
+  const baseParams:any={
    mode:'subscription',
    line_items:[{price,quantity:1}],
    success_url:returnUrl('success'),
@@ -48,13 +63,25 @@ Deno.serve(async req=>{
    allow_promotion_codes:true,
    integration_identifier:'rhythmtap_web_kqrmvexz',
   };
-  if(billing?.stripe_customer_id)params.customer=billing.stripe_customer_id;
-  else if(user.email)params.customer_email=user.email;
-  const session=await stripe.checkout.sessions.create(params);
+  if(user.email)baseParams.customer_email=user.email;
+  let session;
+  if(billing?.stripe_customer_id){
+   const withCustomer={...baseParams,customer:billing.stripe_customer_id};
+   delete withCustomer.customer_email;
+   try{
+    session=await stripe.checkout.sessions.create(withCustomer);
+   }catch(error){
+    if(!isMissingCustomerError(error))throw error;
+    session=await stripe.checkout.sessions.create(baseParams);
+   }
+  }else{
+   session=await stripe.checkout.sessions.create(baseParams);
+  }
   if(!session.url)throw new Error('Stripe Checkout URL unavailable');
   return json({url:session.url,sessionId:session.id});
  }catch(error){
-  const message=error instanceof Error?error.message:'Unable to start Stripe Checkout',status=/Authentication required/i.test(message)?401:/already active/i.test(message)?409:/not configured|configuration/i.test(message)?503:400;
+  const message=error instanceof Error?error.message:'Unable to start Stripe Checkout';
+  const status=/Authentication required/i.test(message)?401:/already active/i.test(message)?409:/not configured|configuration|STRIPE_SECRET_KEY_LIVE|live-mode Stripe key|missing from Supabase/i.test(message)?503:400;
   return json({error:message},status);
  }
 });
