@@ -51,6 +51,8 @@ jobs:
         run: deno test --allow-read tests/pr21-release-hardening.test.ts
       - name: Run Stripe billing regression guards
         run: deno test --allow-read tests/stripe-billing.test.ts
+      - name: Run Pro badge regression guards
+        run: deno test --allow-read tests/pro-badge.test.ts
       - name: Check versioned chart selector
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/chart-validator.ts
       - name: Check validate-match Edge Function

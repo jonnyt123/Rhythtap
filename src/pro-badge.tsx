@@ -1,11 +1,13 @@
 import React from 'react';
-import {Crown} from 'lucide-react';
 import './pro-badge.css';
 
 type SupabaseClient=any;
+export type ProBadgeSize='small'|'profile';
 
-export function ProBadge(){
- return <span className="rt-pro-badge" title="RhythmTap Pro" aria-label="RhythmTap Pro"><Crown fill="currentColor"/><span>PRO</span></span>;
+const badgeSrc=`${import.meta.env.BASE_URL}assets/pro-badge.png`;
+
+export function ProBadge({size='small'}:{size?:ProBadgeSize}){
+ return <img src={badgeSrc} alt="RhythmTap Pro" title="RhythmTap Pro" draggable={false} className={`rt-pro-badge${size==='profile'?' profile':''}`}/>;
 }
 
 export async function attachProBadges<T extends Record<string,any>>(client:SupabaseClient,rows:T[]):Promise<Array<T&{pro_badge:boolean}>>{
