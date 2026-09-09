@@ -75,6 +75,11 @@ Deno.test('webhook requires the exact STRIPE_WEBHOOK_SECRET variable name',()=>{
  assert(!webhook.includes("value.startsWith('whsec_')"));
 });
 
+Deno.test('webhook subscription lookup does not shadow the event subscription',()=>{
+ assert(webhook.includes('data:storedSubscription'));
+ assert(!webhook.includes('const{data:subscription}='));
+});
+
 Deno.test('webhook health telemetry is service-only and records safe failure classes',()=>{
  assert(webhookHealthMigration.includes('enable row level security'));
  assert(webhookHealthMigration.includes('revoke all on table public.stripe_webhook_health from public, anon, authenticated'));

@@ -22,8 +22,8 @@ async function resolveUserId(admin:any,subscription:any,environment:'test'|'live
  if(metadataId)return metadataId;
  const customerId=idOf(subscription?.customer);
  if(!customerId)return'';
- const{data:subscription}=await admin.from('player_billing_subscriptions').select('user_id').eq('environment',environment).eq('stripe_customer_id',customerId).limit(1).maybeSingle();
- if(subscription?.user_id)return String(subscription.user_id);
+ const{data:storedSubscription}=await admin.from('player_billing_subscriptions').select('user_id').eq('environment',environment).eq('stripe_customer_id',customerId).limit(1).maybeSingle();
+ if(storedSubscription?.user_id)return String(storedSubscription.user_id);
  const{data:entitlement}=await admin.from('player_billing_entitlements').select('user_id').eq('environment',environment).eq('stripe_customer_id',customerId).maybeSingle();
  return String(entitlement?.user_id||'');
 }
