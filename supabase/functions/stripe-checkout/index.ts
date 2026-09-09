@@ -35,9 +35,17 @@ const authenticatedUser=async(req:Request)=>{
  return data.user;
 };
 const returnUrl=(state:'success'|'cancelled')=>{const url=new URL(appUrl());url.searchParams.set('billing',state);return url.toString()};
-const isMissingCustomerError=(error:unknown)=>{
- const message=error instanceof Error?error.message:String(error||'');
- return /No such customer/i.test(message);
+const isMissingCustomerError=(error:unknown)=>{const message=error instanceof Error?error.message:String(error||'');return /No such customer/i.test(message)};
+const verifyPriceMode=async(stripe:Stripe,price:string,environment:'test'|'live')=>{
+ try{
+  const verified=await stripe.prices.retrieve(price);
+  if(environment==='live'&&!verified.livemode)throw new Error('STRIPE_SECRET_KEY_LIVE authenticated to Stripe test mode. Replace it with a restricted key created while the Stripe Dashboard is in live mode.');
+  if(environment==='test'&&verified.livemode)throw new Error('Stripe test billing authenticated to live mode.');
+ }catch(error){
+  const message=error instanceof Error?error.message:String(error||'');
+  if(/test mode key was used|similar object exists in live mode/i.test(message))throw new Error('STRIPE_SECRET_KEY_LIVE authenticated to Stripe test mode. Replace it with a restricted key created while the Stripe Dashboard is in live mode.');
+  throw error;
+ }
 };
 
 Deno.serve(async req=>{
@@ -47,41 +55,28 @@ Deno.serve(async req=>{
   const user=await authenticatedUser(req),body=await req.json().catch(()=>({})),interval=body?.interval==='monthly'?'monthly':'annual',environment=billingEnvironment();
   const monthly=configuredValue('STRIPE_PRICE_PRO_MONTHLY'),annual=configuredValue('STRIPE_PRICE_PRO_ANNUAL'),price=interval==='monthly'?monthly:annual;
   if(!price)throw new Error('Stripe price is not configured');
+  const stripe=stripeClient();
+  await verifyPriceMode(stripe,price,environment);
   const admin=adminClient(),{data:subscriptions,error:billingError}=await admin.from('player_billing_subscriptions').select('stripe_customer_id,status,last_event_created').eq('user_id',user.id).eq('environment',environment).order('last_event_created',{ascending:false});
   if(billingError)throw new Error('Unable to verify existing subscriptions');
   const active=(subscriptions||[]).find((row:any)=>['active','trialing','past_due'].includes(String(row.status))),billing=active||(subscriptions||[])[0]||null;
   if(active)return json({error:'RhythmTap Pro is already active. Manage it from your profile.'},409);
-  const stripe=stripeClient();
   const baseParams:any={
-   mode:'subscription',
-   line_items:[{price,quantity:1}],
-   success_url:returnUrl('success'),
-   cancel_url:returnUrl('cancelled'),
-   client_reference_id:user.id,
-   metadata:{app:'rhythmtap',user_id:user.id,billing_environment:environment},
-   subscription_data:{metadata:{app:'rhythmtap',user_id:user.id,billing_environment:environment}},
-   allow_promotion_codes:true,
-   integration_identifier:'rhythmtap_web_kqrmvexz',
+   mode:'subscription',line_items:[{price,quantity:1}],success_url:returnUrl('success'),cancel_url:returnUrl('cancelled'),client_reference_id:user.id,
+   metadata:{app:'rhythmtap',user_id:user.id,billing_environment:environment},subscription_data:{metadata:{app:'rhythmtap',user_id:user.id,billing_environment:environment}},
+   allow_promotion_codes:true,integration_identifier:'rhythmtap_web_kqrmvexz',
   };
   if(user.email)baseParams.customer_email=user.email;
   let session;
   if(billing?.stripe_customer_id){
-   const withCustomer={...baseParams,customer:billing.stripe_customer_id};
-   delete withCustomer.customer_email;
-   try{
-    session=await stripe.checkout.sessions.create(withCustomer);
-   }catch(error){
-    if(!isMissingCustomerError(error))throw error;
-    session=await stripe.checkout.sessions.create(baseParams);
-   }
-  }else{
-   session=await stripe.checkout.sessions.create(baseParams);
-  }
+   const withCustomer={...baseParams,customer:billing.stripe_customer_id};delete withCustomer.customer_email;
+   try{session=await stripe.checkout.sessions.create(withCustomer)}catch(error){if(!isMissingCustomerError(error))throw error;session=await stripe.checkout.sessions.create(baseParams)}
+  }else session=await stripe.checkout.sessions.create(baseParams);
   if(!session.url)throw new Error('Stripe Checkout URL unavailable');
   return json({url:session.url,sessionId:session.id});
  }catch(error){
   const message=error instanceof Error?error.message:'Unable to start Stripe Checkout';
-  const status=/Authentication required/i.test(message)?401:/already active/i.test(message)?409:/not configured|configuration|STRIPE_SECRET_KEY_LIVE|live-mode Stripe key|missing from Supabase/i.test(message)?503:400;
+  const status=/Authentication required/i.test(message)?401:/already active/i.test(message)?409:/not configured|configuration|STRIPE_SECRET_KEY_LIVE|live-mode Stripe key|authenticated to Stripe test mode|missing from Supabase/i.test(message)?503:400;
   return json({error:message},status);
  }
 });
