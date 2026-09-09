@@ -1,20 +1,51 @@
 /* Mobile gameplay performance budget: preserve timing and chart density while cutting paint/compositing cost. */
 @media (pointer:coarse) and (max-width:768px){
-  .game .arena{contain:layout paint style;isolation:isolate;filter:none!important;backdrop-filter:none!important}
-  .game .lane{contain:layout paint style;box-shadow:none!important;filter:none!important}
+  .game{touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  .game .arena{contain:paint style;isolation:isolate;filter:none!important;backdrop-filter:none!important}
+
+  /* Keep the interactive lane out of layout containment. Safari/iOS hit-testing is
+     more reliable when the large invisible receptor target is not inside a
+     layout-contained ancestor. Paint/style containment still keeps this cheap. */
+  .game .lane{contain:paint style;box-shadow:none!important;filter:none!important}
+
   .game .note{contain:layout paint style;will-change:transform;backface-visibility:hidden;filter:none!important;box-shadow:0 0 7px color-mix(in srgb,var(--lane) 55%,transparent)!important}
   .game .note>i{display:none!important}
   .game .note.hold{box-shadow:0 0 5px color-mix(in srgb,var(--lane) 46%,transparent)!important}
   .game .note.active-hold{animation:none!important;filter:none!important;box-shadow:0 0 8px var(--lane)!important}
-  .game .lane:after{filter:none!important;box-shadow:0 0 6px var(--lane),inset 0 0 5px color-mix(in srgb,var(--lane) 28%,transparent)!important}
+
+  .game .lane:after{filter:none!important;box-shadow:0 0 6px var(--lane),inset 0 0 5px color-mix(in srgb,var(--lane) 28%,transparent)!important;transition:border-color 45ms linear,background-color 45ms linear,box-shadow 45ms linear!important}
   .game .lane.holding:before{filter:none!important;opacity:.18!important;box-shadow:0 0 8px var(--lane)!important}
   .game .hit-burst{display:none!important}
-  .game .pad{transition:none!important;filter:none!important;box-shadow:none!important}
-  .game .feedback strong{animation:none!important;text-shadow:0 0 7px currentColor!important}
+
+  /* The pad is intentionally visually transparent, but it must remain a stable,
+     lane-wide physical touch target. Prevent Safari from treating quick taps as
+     gestures/selection and avoid delayed tap-highlight feedback. */
+  .game .pad{touch-action:none!important;pointer-events:auto!important;-webkit-tap-highlight-color:transparent!important;-webkit-user-select:none!important;user-select:none!important;transition:none!important;filter:none!important;box-shadow:none!important}
+
+  /* Browser-level physical-touch feedback. This fires immediately from :active,
+     independent of React state, so every finger-down has a visible response even
+     on dense HARD charts without bringing particles/blur back. */
+  .game .lane:has(.pad:active):after{
+    border-color:#fff!important;
+    background:radial-gradient(circle,rgba(255,255,255,.42) 0 31%,color-mix(in srgb,var(--lane) 38%,transparent) 32% 58%,transparent 59%)!important;
+    box-shadow:0 0 4px #fff,0 0 10px var(--lane),inset 0 0 7px color-mix(in srgb,var(--lane) 45%,transparent)!important;
+  }
+
+  /* Keep judgment feedback lightweight, but restore a short tactile pop so a
+     registered hit never looks visually identical to an ignored tap. */
+  .game .feedback strong{animation:mobileTapFeedback 120ms ease-out!important;text-shadow:0 0 7px currentColor!important}
   .game .screen:before,.game.screen:before{display:none!important}
 }
+
+@keyframes mobileTapFeedback{
+  from{transform:scale(.86);opacity:.55}
+  to{transform:scale(1);opacity:1}
+}
+
 @media (pointer:coarse) and (max-width:430px){
   .game .note{box-shadow:0 0 4px color-mix(in srgb,var(--lane) 45%,transparent)!important}
   .game .lane:after{box-shadow:0 0 4px var(--lane)!important}
+  .game .lane:has(.pad:active):after{box-shadow:0 0 3px #fff,0 0 8px var(--lane)!important}
 }
+
 @media (prefers-reduced-motion:reduce){.game .note,.game .feedback strong,.game .note.active-hold{animation:none!important;transition:none!important}}
