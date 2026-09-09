@@ -4,6 +4,8 @@ import {createClient} from 'npm:@supabase/supabase-js@2';
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json','cache-control':'no-store'}});
 const billingEnvironment=()=>String(Deno.env.get('STRIPE_BILLING_ENV')||'test').toLowerCase()==='live'?'live':'test';
 const configuredValue=(name:string,environment:'test'|'live')=>Deno.env.get(`${name}_${environment.toUpperCase()}`)||(billingEnvironment()===environment?Deno.env.get(name):'')||'';
+const LIVE_PRICES={monthly:'price_1UCsUxFvBMeYT96gps3F5wvu',annual:'price_1UCsUwFvBMeYT96ggNBbPsGE'} as const;
+const priceIds=(environment:'test'|'live')=>environment==='live'?LIVE_PRICES:{monthly:configuredValue('STRIPE_PRICE_PRO_MONTHLY','test'),annual:configuredValue('STRIPE_PRICE_PRO_ANNUAL','test')};
 const adminClient=()=>{const url=Deno.env.get('SUPABASE_URL')||'',secretKeys=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}'),key=String(secretKeys?.default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'');if(!url||!key)throw new Error('Server configuration missing');return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})};
 const environmentFor=(livemode:boolean)=>livemode?'live':'test';
 const idOf=(value:any)=>typeof value==='string'?value:String(value?.id||'');
@@ -33,9 +35,9 @@ async function syncCheckoutSession(admin:any,session:any,event:Stripe.Event){
  if(metadata?.billing_environment&&String(metadata.billing_environment)!==environment)throw new Error('Checkout billing environment mismatch');
  const userId=String(session?.client_reference_id||'').trim(),customerId=idOf(session?.customer),subscriptionId=idOf(session?.subscription);
  if(!userId||!customerId||!subscriptionId)throw new Error('Checkout session is missing RhythmTap billing identity');
- const monthly=configuredValue('STRIPE_PRICE_PRO_MONTHLY',environment),annual=configuredValue('STRIPE_PRICE_PRO_ANNUAL',environment),priceId=String(metadata?.price_id||'');
- const metadataInterval=String(metadata?.billing_interval||''),billingInterval=metadataInterval==='annual'||priceId===annual?'annual':metadataInterval==='monthly'||priceId===monthly?'monthly':null;
- if(!billingInterval||!priceId||(priceId!==monthly&&priceId!==annual))throw new Error('Checkout session price is not an approved RhythmTap Pro price');
+ const approved=priceIds(environment),priceId=String(metadata?.price_id||'');
+ const metadataInterval=String(metadata?.billing_interval||''),billingInterval=metadataInterval==='annual'||priceId===approved.annual?'annual':metadataInterval==='monthly'||priceId===approved.monthly?'monthly':null;
+ if(!billingInterval||!priceId||(priceId!==approved.monthly&&priceId!==approved.annual))throw new Error('Checkout session price is not an approved RhythmTap Pro price');
  const paymentStatus=String(session?.payment_status||''),status=paymentStatus==='paid'||paymentStatus==='no_payment_required'?'active':'incomplete';
  const{error}=await admin.rpc('sync_player_billing_subscription',{
   p_environment:environment,p_subscription_id:subscriptionId,p_user_id:userId,p_customer_id:customerId,p_status:status,p_price_id:priceId,p_billing_interval:billingInterval,p_cancel_at_period_end:false,p_current_period_end:null,p_event_id:event.id,p_event_created:Math.max(0,event.created-60)
@@ -46,7 +48,7 @@ async function syncCheckoutSession(admin:any,session:any,event:Stripe.Event){
 async function syncSubscription(admin:any,subscription:any,event:Stripe.Event){
  const environment=environmentFor(event.livemode),userId=await resolveUserId(admin,subscription,environment);
  if(!userId)return;
- const item=subscription?.items?.data?.[0],priceId=idOf(item?.price),monthly=configuredValue('STRIPE_PRICE_PRO_MONTHLY',environment),annual=configuredValue('STRIPE_PRICE_PRO_ANNUAL',environment),recurringInterval=String(item?.price?.recurring?.interval||item?.plan?.interval||''),billingInterval=priceId===annual||recurringInterval==='year'?'annual':priceId===monthly||recurringInterval==='month'?'monthly':null,status=String(subscription?.status||'inactive'),periodEnd=Number(item?.current_period_end||0),customerId=idOf(subscription?.customer),subscriptionId=idOf(subscription);
+ const item=subscription?.items?.data?.[0],priceId=idOf(item?.price),approved=priceIds(environment),recurringInterval=String(item?.price?.recurring?.interval||item?.plan?.interval||''),billingInterval=priceId===approved.annual||recurringInterval==='year'?'annual':priceId===approved.monthly||recurringInterval==='month'?'monthly':null,status=String(subscription?.status||'inactive'),periodEnd=Number(item?.current_period_end||0),customerId=idOf(subscription?.customer),subscriptionId=idOf(subscription);
  if(!customerId||!subscriptionId)throw new Error('Stripe subscription identity missing');
  const{error}=await admin.rpc('sync_player_billing_subscription',{p_environment:environment,p_subscription_id:subscriptionId,p_user_id:userId,p_customer_id:customerId,p_status:status,p_price_id:priceId||null,p_billing_interval:billingInterval,p_cancel_at_period_end:Boolean(subscription?.cancel_at_period_end),p_current_period_end:periodEnd?new Date(periodEnd*1000).toISOString():null,p_event_id:event.id,p_event_created:event.created});
  if(error)throw error;
