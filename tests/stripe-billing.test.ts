@@ -6,25 +6,31 @@ const webhook=await Deno.readTextFile('supabase/functions/stripe-webhook/index.t
 const migration=await Deno.readTextFile('supabase/migrations/20260906062000_stripe_pro_billing.sql');
 const webhookHealthMigration=await Deno.readTextFile('supabase/migrations/20260907002000_fix_stripe_webhook_health_access.sql');
 const subscriptionProjectionMigration=await Deno.readTextFile('supabase/migrations/20260908081500_stripe_subscription_projection.sql');
+const runtimeSecretMigration=await Deno.readTextFile('supabase/migrations/20260909103400_stripe_webhook_runtime_secret_store.sql');
+const publicBadgeMigration=await Deno.readTextFile('supabase/migrations/20260909103500_public_pro_badge_lookup.sql');
 const transform=await Deno.readTextFile('scripts/stripe-billing-transform.ts');
 const ui=await Deno.readTextFile('src/stripe-billing.tsx');
+const badge=await Deno.readTextFile('src/pro-badge.tsx');
+const playerAccount=await Deno.readTextFile('src/player-account.tsx');
+const socialRanked=await Deno.readTextFile('src/tour-social-ranked.tsx');
 const config=await Deno.readTextFile('supabase/config.toml');
 
-Deno.test('Checkout uses hosted subscription Billing without hard-coded payment methods',()=>{
- assert(checkout.includes("mode:'subscription'"));
- assert(checkout.includes("integration_identifier:'rhythmtap_web_kqrmvexz'"));
- assert(!checkout.includes('payment_method_types'));
- assert(checkout.includes("subscription_data:{metadata:"));
- assert(checkout.includes("allow_promotion_codes:true"));
+Deno.test('Checkout uses authenticated live Stripe Payment Links without a server Stripe API key',()=>{
+ assert(checkout.includes('const LIVE_LINKS='));
+ assert(checkout.includes("environment='live'"));
+ assert(checkout.includes("url.searchParams.set('client_reference_id',user.id)"));
+ assert(checkout.includes("['active','trialing','past_due']"));
  assert(checkout.includes('if(billingError)throw'));
- assert(!checkout.includes("||'price_"));
+ assert(!checkout.includes('new Stripe('));
+ assert(!checkout.includes('STRIPE_SECRET_KEY'));
+ assert(!checkout.includes('payment_method_types'));
 });
 
 Deno.test('billing entitlements are webhook-driven and client read-only',()=>{
  assert(webhook.includes('constructEventAsync'));
+ assert(webhook.includes("event.type==='checkout.session.completed'"));
  assert(webhook.includes("event.type==='customer.subscription.updated'"));
  assert(webhook.includes("event.type==='customer.subscription.deleted'"));
- assert(webhook.includes("event.type==='invoice.payment_failed'"));
  assert(webhook.includes("admin.rpc('sync_player_billing_subscription'"));
  assert(subscriptionProjectionMigration.includes('last_event_created'));
  assert(subscriptionProjectionMigration.includes('excluded.last_event_created >= existing_row.last_event_created'));
@@ -34,9 +40,8 @@ Deno.test('billing entitlements are webhook-driven and client read-only',()=>{
 });
 
 Deno.test('only paid or payment-recovery grace statuses enable Pro',()=>{
- assert(webhook.includes("const activeFor=(status:string)=>['active','trialing','past_due'].includes(status)"));
- assert(!webhook.includes("['active','trialing','past_due','incomplete']"));
- assert(!webhook.includes("['active','trialing','past_due','incomplete_expired']"));
+ assert(subscriptionProjectionMigration.includes("chosen.status in ('active','trialing','past_due')"));
+ assert(!subscriptionProjectionMigration.includes("chosen.status in ('active','trialing','past_due','incomplete')"));
 });
 
 Deno.test('sandbox and live billing data cannot overwrite each other',()=>{
@@ -46,22 +51,24 @@ Deno.test('sandbox and live billing data cannot overwrite each other',()=>{
  assert(ui.includes('VITE_STRIPE_BILLING_ENV'));
 });
 
-Deno.test('customer self-service uses an explicit Stripe Customer Portal configuration',()=>{
- assert(portal.includes('billingPortal.sessions.create'));
- assert(portal.includes("configuration:portalConfiguration()"));
- assert(portal.includes("if(billingEnvironment()==='test')return 'bpc_1UCrexCJXJkpIFuErSGWIHxI'"));
- assert(portal.includes("throw new Error('Stripe Customer Portal is not configured for live billing')"));
- assert(portal.includes("configuredValue('STRIPE_PORTAL_CONFIGURATION_ID')"));
+Deno.test('customer self-service uses the live no-code Stripe Customer Portal',()=>{
+ assert(portal.includes('const LIVE_PORTAL_LOGIN='));
+ assert(portal.includes("environment='live'"));
+ assert(portal.includes(".eq('environment',environment)"));
+ assert(portal.includes('noCodePortal:true'));
+ assert(!portal.includes('billingPortal.sessions.create'));
+ assert(!portal.includes('STRIPE_SECRET_KEY'));
  assert(ui.includes('MANAGE SUBSCRIPTION'));
 });
 
-Deno.test('Checkout and Portal select credentials for the active billing environment',()=>{
+Deno.test('Checkout and Portal cannot silently fall back to sandbox credentials',()=>{
  for(const source of [checkout,portal]){
-  assert(source.includes('`${name}_${billingEnvironment().toUpperCase()}`'));
-  assert(source.includes("configuredValue('STRIPE_SECRET_KEY')"));
+  assert(source.includes("environment='live'"));
+  assert(!source.includes('STRIPE_SECRET_KEY'));
+  assert(!source.includes('billingEnvironment()'));
  }
- assert(checkout.includes("configuredValue('STRIPE_PRICE_PRO_MONTHLY')"));
- assert(checkout.includes("configuredValue('STRIPE_PRICE_PRO_ANNUAL')"));
+ assert(checkout.includes('LIVE_LINKS'));
+ assert(portal.includes('LIVE_PORTAL_LOGIN'));
 });
 
 Deno.test('profile integration keeps core gameplay outside the paywall',()=>{
@@ -76,10 +83,12 @@ Deno.test('Stripe webhook bypasses Supabase JWT only because Stripe signature is
  assert(webhook.includes('constructEventAsync'));
 });
 
-Deno.test('webhook requires the exact STRIPE_WEBHOOK_SECRET variable name',()=>{
+Deno.test('live webhook secret is server-only and test secret keeps the exact configured name',()=>{
+ assert(webhook.includes("admin.from('stripe_webhook_runtime_secrets')"));
  assert(webhook.includes("configuredValue('STRIPE_WEBHOOK_SECRET',environment)"));
- assert(webhook.includes('STRIPE_WEBHOOK_SECRET_${environment.toUpperCase()}')===false);
- assert(webhook.includes('`${name}_${environment.toUpperCase()}`'));
+ assert(runtimeSecretMigration.includes('enable row level security'));
+ assert(runtimeSecretMigration.includes('revoke all on table public.stripe_webhook_runtime_secrets from anon, authenticated'));
+ assert(runtimeSecretMigration.includes('to service_role'));
  assert(!webhook.includes('Deno.env.toObject()'));
  assert(!webhook.includes("value.startsWith('whsec_')"));
 });
@@ -89,10 +98,11 @@ Deno.test('webhook subscription lookup does not shadow the event subscription',(
  assert(!webhook.includes('const{data:subscription}='));
 });
 
-Deno.test('verified subscription events are projected without a second Stripe account lookup',()=>{
- assert(webhook.includes("event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'"));
+Deno.test('verified subscription and Checkout events are projected without a second Stripe account lookup',()=>{
+ assert(webhook.includes("event.type==='checkout.session.completed'"));
+ assert(webhook.includes("event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'||event.type==='customer.subscription.deleted'"));
  assert(webhook.includes('await syncSubscription(admin,event.data.object as any,event)'));
- assert(!webhook.includes('await syncSubscriptionId(stripe,admin,idOf(event.data.object),event)'));
+ assert(!webhook.includes('subscriptions.retrieve'));
 });
 
 Deno.test('webhook projections never refetch signed Stripe event objects',()=>{
@@ -110,16 +120,28 @@ Deno.test('webhook health telemetry is service-only and records safe failure cla
  assert(webhookHealthMigration.includes('revoke all on table public.stripe_webhook_health from public, anon, authenticated'));
  assert(webhookHealthMigration.includes('to service_role'));
  assert(webhook.includes("last_error_code:'signature_verification_failed'"));
- assert(webhook.includes("'webhook_secret_missing'"));
- assert(webhook.includes("'webhook_and_stripe_keys_missing'"));
+ assert(webhook.includes("last_error_code:'webhook_secret_lookup_failed'"));
+ assert(webhook.includes("last_error_code:'webhook_secret_missing'"));
  assert(!webhook.includes('STRIPE_WEBHOOK_SECRET}'));
  assert(!webhook.includes('STRIPE_SECRET_KEY}'));
 });
 
 Deno.test('one webhook function safely supports separate test and live endpoints',()=>{
- assert(webhook.includes("(['test','live'] as const)"));
+ assert(webhook.includes("for(const environment of ['test','live'] as const)"));
  assert(webhook.includes("environmentFor(verified.livemode)!==environment"));
- assert(webhook.includes("stripeClient(environment)"));
+ assert(webhook.includes('configured.push({environment,secret})'));
+});
+
+Deno.test('public Pro badge is server-derived from live entitlements and cannot be profile-spoofed',()=>{
+ assert(publicBadgeMigration.includes('security definer'));
+ assert(publicBadgeMigration.includes("e.environment = 'live'"));
+ assert(publicBadgeMigration.includes('coalesce(e.pro_enabled, false)'));
+ assert(publicBadgeMigration.includes('(p.is_public or p.user_id = (select auth.uid()))'));
+ assert(publicBadgeMigration.includes('grant execute on function public.get_visible_player_pro_badges(uuid[]) to anon, authenticated'));
+ assert(badge.includes("client.rpc('get_visible_player_pro_badges'"));
+ assert(playerAccount.includes('proBadge:Boolean(row.pro_badge)'));
+ assert(socialRanked.includes('proBadge:Boolean(r.pro_badge)'));
+ assert(!playerAccount.includes('pro_badge:input'));
 });
 
 Deno.test('browser features share one persistent Supabase auth client',async()=>{
