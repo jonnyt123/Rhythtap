@@ -6,13 +6,27 @@ const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,
 const billingEnvironment=()=>String(Deno.env.get('STRIPE_BILLING_ENV')||'test').toLowerCase()==='live'?'live':'test';
 const configuredValue=(name:string)=>Deno.env.get(`${name}_${billingEnvironment().toUpperCase()}`)||Deno.env.get(name)||'';
 const appUrl=()=>Deno.env.get('RHYTHTAP_APP_URL')||'https://jonnyt123.github.io/Rhythtap/';
+const stripeSecretKey=()=>{
+ const environment=billingEnvironment();
+ const explicit=String(Deno.env.get(`STRIPE_SECRET_KEY_${environment.toUpperCase()}`)||'').trim();
+ if(environment==='live'){
+  if(!explicit)throw new Error('STRIPE_SECRET_KEY_LIVE is missing from Supabase Edge Function secrets');
+  if(!/^(rk|sk)_live_/.test(explicit))throw new Error('STRIPE_SECRET_KEY_LIVE is not a live-mode Stripe key');
+  return explicit;
+ }
+ const fallback=String(Deno.env.get('STRIPE_SECRET_KEY')||'').trim();
+ const key=explicit||fallback;
+ if(!key)throw new Error('Stripe test billing is not configured');
+ if(/^(rk|sk)_live_/.test(key))throw new Error('Test billing cannot use a live-mode Stripe key');
+ return key;
+};
 const portalConfiguration=()=>{
  const configured=configuredValue('STRIPE_PORTAL_CONFIGURATION_ID');
  if(configured)return configured;
  if(billingEnvironment()==='test')return 'bpc_1UCrexCJXJkpIFuErSGWIHxI';
  throw new Error('Stripe Customer Portal is not configured for live billing');
 };
-const stripeClient=()=>{const key=configuredValue('STRIPE_SECRET_KEY');if(!key)throw new Error('Stripe billing is not configured');return new Stripe(key,{apiVersion:'2026-07-29.dahlia'})};
+const stripeClient=()=>new Stripe(stripeSecretKey(),{apiVersion:'2026-07-29.dahlia'});
 const adminClient=()=>{const url=Deno.env.get('SUPABASE_URL')||'',secretKeys=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}'),key=String(secretKeys?.default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'');if(!url||!key)throw new Error('Server configuration missing');return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})};
 const authenticatedUserId=async(req:Request)=>{const url=Deno.env.get('SUPABASE_URL')||'',publishableKeys=JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')||'{}'),key=String(publishableKeys?.default||Deno.env.get('SUPABASE_ANON_KEY')||''),authorization=req.headers.get('authorization')||'',token=authorization.replace(/^Bearer\s+/i,'').trim();if(!url||!key)throw new Error('Server configuration missing');if(!token)throw new Error('Authentication required');const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:`Bearer ${token}`}}}),{data,error}=await client.auth.getUser(token);if(error||!data.user?.id)throw new Error('Authentication required');return data.user.id};
 
@@ -26,7 +40,8 @@ Deno.serve(async req=>{
   const session=await stripeClient().billingPortal.sessions.create({customer:billing.stripe_customer_id,return_url:appUrl(),configuration:portalConfiguration()});
   return json({url:session.url});
  }catch(error){
-  const message=error instanceof Error?error.message:'Unable to open Stripe Customer Portal',status=/Authentication required/i.test(message)?401:/No Stripe customer/i.test(message)?404:/not configured|configuration/i.test(message)?503:400;
+  const message=error instanceof Error?error.message:'Unable to open Stripe Customer Portal';
+  const status=/Authentication required/i.test(message)?401:/No Stripe customer/i.test(message)?404:/not configured|configuration|STRIPE_SECRET_KEY_LIVE|live-mode Stripe key|missing from Supabase/i.test(message)?503:400;
   return json({error:message},status);
  }
 });
