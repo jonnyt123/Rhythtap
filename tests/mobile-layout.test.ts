@@ -6,6 +6,7 @@ const tutorialReceptors=await Deno.readTextFile('src/receptor-tutorial.css');
 const base=await Deno.readTextFile('src/styles.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
 const metal=await Deno.readTextFile('src/death-metal-theme.css');
+const profile=await Deno.readTextFile('src/player-profile-console.css');
 
 Deno.test('core screens use dynamic viewport and safe areas',()=>{
  assert(base.includes('height:100dvh'));
@@ -67,4 +68,17 @@ Deno.test('metal polish is explicitly mobile-first across target iPhone classes'
  assert(metal.includes('.song{height:80px'));
  const targetViewports=['320x568','375x667','390x844','430x932'];
  assert(targetViewports.length===4);
+});
+
+Deno.test('console-style player profile stays compact and metal-themed on iPhone',()=>{
+ assert(profile.includes('.account-screen .profile-hero{'));
+ assert(profile.includes('clip-path:polygon(9px 0'));
+ assert(profile.includes('.account-screen .account-stats{grid-template-columns:repeat(4,minmax(0,1fr))'));
+ assert(profile.includes('@media(max-width:620px)'));
+ assert(profile.includes('grid-template-columns:58px minmax(0,1fr) auto'));
+ assert(profile.includes('.account-screen .account-stats{grid-template-columns:repeat(2,minmax(0,1fr))'));
+ assert(profile.includes('.account-screen .rt-username-plate{max-width:min(150px,46vw)'));
+ assert(profile.includes('@media(max-width:380px)'));
+ assert(profile.includes('env(safe-area-inset-left)'));
+ assert(profile.includes('prefers-reduced-motion:reduce'));
 });
