@@ -11,8 +11,16 @@ const environmentFor=(livemode:boolean)=>livemode?'live':'test';
 const idOf=(value:any)=>typeof value==='string'?value:String(value?.id||'');
 const errorCode=(error:unknown)=>String((error as any)?.code||(error as any)?.type||'processing_failed').slice(0,100);
 const errorMessage=(error:unknown)=>String(error instanceof Error?error.message:error||'processing failed').slice(0,300);
-const webhookSecret=(environment:'test'|'live')=>configuredValue('STRIPE_WEBHOOK_SECRET',environment);
 const verifier=new Stripe('sk_test_webhook_verification_only',{apiVersion:'2026-07-29.dahlia'});
+
+async function webhookSecret(admin:any,environment:'test'|'live'){
+ if(environment==='live'){
+  const{data,error}=await admin.from('stripe_webhook_runtime_secrets').select('signing_secret').eq('environment','live').maybeSingle();
+  if(error)throw error;
+  if(data?.signing_secret)return String(data.signing_secret);
+ }
+ return configuredValue('STRIPE_WEBHOOK_SECRET',environment);
+}
 
 async function updateHealth(admin:any,patch:Record<string,unknown>){
  try{await admin.from('stripe_webhook_health').upsert({id:1,...patch,updated_at:new Date().toISOString()},{onConflict:'id'})}catch{}
@@ -59,36 +67,27 @@ Deno.serve(async req=>{
  let admin:any;
  try{admin=adminClient()}catch(error){return json({error:errorMessage(error)},500)}
  await updateHealth(admin,{last_received_at:new Date().toISOString(),last_outcome:'received',last_error_code:null,last_error_message:null});
- const signature=req.headers.get('stripe-signature')||'',environments=(['test','live'] as const).filter(environment=>Boolean(webhookSecret(environment)));
- if(!environments.length){
-  await updateHealth(admin,{last_outcome:'rejected',last_error_code:'webhook_secret_missing',last_error_message:'No Stripe webhook signing secret is configured'});
-  return json({error:'Webhook verification is not configured'},503)
- }
+ const signature=req.headers.get('stripe-signature')||'';
  if(!signature){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_header_missing',last_error_message:'Stripe-Signature header is missing'});return json({error:'Webhook verification is not configured'},503)}
+ const configured:Array<{environment:'test'|'live';secret:string}>=[];
+ try{for(const environment of ['test','live'] as const){const secret=await webhookSecret(admin,environment);if(secret)configured.push({environment,secret})}}
+ catch(error){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'webhook_secret_lookup_failed',last_error_message:errorMessage(error)});return json({error:'Webhook verification is not configured'},503)}
+ if(!configured.length){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'webhook_secret_missing',last_error_message:'No Stripe webhook signing secret is configured'});return json({error:'Webhook verification is not configured'},503)}
  let event:Stripe.Event|null=null,lastVerificationError:unknown=null;
  const body=await req.text(),cryptoProvider=Stripe.createSubtleCryptoProvider();
- for(const environment of environments){
+ for(const{environment,secret}of configured){
   try{
-   const verified=await verifier.webhooks.constructEventAsync(body,signature,webhookSecret(environment),undefined,cryptoProvider);
+   const verified=await verifier.webhooks.constructEventAsync(body,signature,secret,undefined,cryptoProvider);
    if(environmentFor(verified.livemode)!==environment)throw new Error('Webhook mode does not match its configured signing secret');
    event=verified;break;
   }catch(error){lastVerificationError=error}
  }
- if(!event){
-  await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_verification_failed',last_error_message:errorMessage(lastVerificationError)});
-  return json({error:'Invalid Stripe webhook signature'},400);
- }
+ if(!event){await updateHealth(admin,{last_outcome:'rejected',last_error_code:'signature_verification_failed',last_error_message:errorMessage(lastVerificationError)});return json({error:'Invalid Stripe webhook signature'},400)}
  await updateHealth(admin,{last_verified_at:new Date().toISOString(),last_event_id:event.id,last_event_type:event.type,last_outcome:'verified',last_error_code:null,last_error_message:null});
  try{
-  if(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded'||event.type==='checkout.session.async_payment_failed'){
-   await syncCheckoutSession(admin,event.data.object as any,event);
-  }else if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'||event.type==='customer.subscription.deleted'){
-   await syncSubscription(admin,event.data.object as any,event);
-  }
+  if(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded'||event.type==='checkout.session.async_payment_failed')await syncCheckoutSession(admin,event.data.object as any,event);
+  else if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'||event.type==='customer.subscription.deleted')await syncSubscription(admin,event.data.object as any,event);
   await updateHealth(admin,{last_outcome:'processed',last_error_code:null,last_error_message:null});
   return json({received:true});
- }catch(error){
-  await updateHealth(admin,{last_outcome:'processing_failed',last_error_code:errorCode(error),last_error_message:errorMessage(error)});
-  return json({error:'Stripe webhook processing failed'},400);
- }
+ }catch(error){await updateHealth(admin,{last_outcome:'processing_failed',last_error_code:errorCode(error),last_error_message:errorMessage(error)});return json({error:'Stripe webhook processing failed'},400)}
 });
