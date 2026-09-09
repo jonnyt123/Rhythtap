@@ -19,15 +19,16 @@ Deno.test('Pro badge uses the optimized hard-rock crest artwork',()=>{
 });
 
 Deno.test('Pro crest stays compact and mobile-safe',()=>{
- assert(css.includes('width:22px;height:22px'));
- assert(css.includes('width:36px;height:36px'));
- assert(css.includes('@media(max-width:620px)'));
  assert(css.includes('width:20px;height:20px'));
- assert(css.includes('width:32px;height:32px'));
+ assert(css.includes('.rt-pro-badge.profile{width:28px;height:28px}'));
+ assert(css.includes('@media(max-width:620px)'));
+ assert(css.includes('width:18px;height:18px'));
+ assert(css.includes('.rt-pro-badge.profile{width:26px;height:26px}'));
  assert(css.includes('object-fit:contain'));
  assert(css.includes('flex:0 0 auto'));
- assert(css.includes('drop-shadow(0 0 3px rgba(255,40,40,.7))'));
+ assert(css.includes('drop-shadow(0 0 2px rgba(255,40,40,.58))'));
  assert(css.includes('text-overflow:ellipsis'));
+ assert(!css.includes('.profile-hero .rt-pro-badge'));
  assert(!css.includes('border-radius:999px'));
 });
 
