@@ -51,8 +51,17 @@ Deno.test('customer self-service uses an explicit Stripe Customer Portal configu
  assert(portal.includes("configuration:portalConfiguration()"));
  assert(portal.includes("if(billingEnvironment()==='test')return 'bpc_1UCrexCJXJkpIFuErSGWIHxI'"));
  assert(portal.includes("throw new Error('Stripe Customer Portal is not configured for live billing')"));
- assert(portal.includes("Deno.env.get('STRIPE_PORTAL_CONFIGURATION_ID')"));
+ assert(portal.includes("configuredValue('STRIPE_PORTAL_CONFIGURATION_ID')"));
  assert(ui.includes('MANAGE SUBSCRIPTION'));
+});
+
+Deno.test('Checkout and Portal select credentials for the active billing environment',()=>{
+ for(const source of [checkout,portal]){
+  assert(source.includes('`${name}_${billingEnvironment().toUpperCase()}`'));
+  assert(source.includes("configuredValue('STRIPE_SECRET_KEY')"));
+ }
+ assert(checkout.includes("configuredValue('STRIPE_PRICE_PRO_MONTHLY')"));
+ assert(checkout.includes("configuredValue('STRIPE_PRICE_PRO_ANNUAL')"));
 });
 
 Deno.test('profile integration keeps core gameplay outside the paywall',()=>{

@@ -4,9 +4,10 @@ import {createClient} from 'npm:@supabase/supabase-js@2';
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'authorization, x-client-info, apikey, content-type','access-control-allow-methods':'POST, OPTIONS'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'content-type':'application/json','cache-control':'no-store'}});
 const billingEnvironment=()=>String(Deno.env.get('STRIPE_BILLING_ENV')||'test').toLowerCase()==='live'?'live':'test';
+const configuredValue=(name:string)=>Deno.env.get(`${name}_${billingEnvironment().toUpperCase()}`)||Deno.env.get(name)||'';
 const appUrl=()=>Deno.env.get('RHYTHTAP_APP_URL')||'https://jonnyt123.github.io/Rhythtap/';
 const stripeClient=()=>{
- const key=Deno.env.get('STRIPE_SECRET_KEY')||'';
+ const key=configuredValue('STRIPE_SECRET_KEY');
  if(!key)throw new Error('Stripe billing is not configured');
  return new Stripe(key,{apiVersion:'2026-07-29.dahlia'});
 };
@@ -30,7 +31,7 @@ Deno.serve(async req=>{
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
  try{
   const user=await authenticatedUser(req),body=await req.json().catch(()=>({})),interval=body?.interval==='monthly'?'monthly':'annual',environment=billingEnvironment();
-  const monthly=Deno.env.get('STRIPE_PRICE_PRO_MONTHLY')||'',annual=Deno.env.get('STRIPE_PRICE_PRO_ANNUAL')||'',price=interval==='monthly'?monthly:annual;
+  const monthly=configuredValue('STRIPE_PRICE_PRO_MONTHLY'),annual=configuredValue('STRIPE_PRICE_PRO_ANNUAL'),price=interval==='monthly'?monthly:annual;
   if(!price)throw new Error('Stripe price is not configured');
   const admin=adminClient(),{data:subscriptions,error:billingError}=await admin.from('player_billing_subscriptions').select('stripe_customer_id,status,last_event_created').eq('user_id',user.id).eq('environment',environment).order('last_event_created',{ascending:false});
   if(billingError)throw new Error('Unable to verify existing subscriptions');

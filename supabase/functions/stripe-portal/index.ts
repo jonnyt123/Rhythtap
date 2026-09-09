@@ -4,14 +4,15 @@ import {createClient} from 'npm:@supabase/supabase-js@2';
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'authorization, x-client-info, apikey, content-type','access-control-allow-methods':'POST, OPTIONS'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'content-type':'application/json','cache-control':'no-store'}});
 const billingEnvironment=()=>String(Deno.env.get('STRIPE_BILLING_ENV')||'test').toLowerCase()==='live'?'live':'test';
+const configuredValue=(name:string)=>Deno.env.get(`${name}_${billingEnvironment().toUpperCase()}`)||Deno.env.get(name)||'';
 const appUrl=()=>Deno.env.get('RHYTHTAP_APP_URL')||'https://jonnyt123.github.io/Rhythtap/';
 const portalConfiguration=()=>{
- const configured=Deno.env.get('STRIPE_PORTAL_CONFIGURATION_ID')||'';
+ const configured=configuredValue('STRIPE_PORTAL_CONFIGURATION_ID');
  if(configured)return configured;
  if(billingEnvironment()==='test')return 'bpc_1UCrexCJXJkpIFuErSGWIHxI';
  throw new Error('Stripe Customer Portal is not configured for live billing');
 };
-const stripeClient=()=>{const key=Deno.env.get('STRIPE_SECRET_KEY')||'';if(!key)throw new Error('Stripe billing is not configured');return new Stripe(key,{apiVersion:'2026-07-29.dahlia'})};
+const stripeClient=()=>{const key=configuredValue('STRIPE_SECRET_KEY');if(!key)throw new Error('Stripe billing is not configured');return new Stripe(key,{apiVersion:'2026-07-29.dahlia'})};
 const adminClient=()=>{const url=Deno.env.get('SUPABASE_URL')||'',secretKeys=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}'),key=String(secretKeys?.default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'');if(!url||!key)throw new Error('Server configuration missing');return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})};
 const authenticatedUserId=async(req:Request)=>{const url=Deno.env.get('SUPABASE_URL')||'',publishableKeys=JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')||'{}'),key=String(publishableKeys?.default||Deno.env.get('SUPABASE_ANON_KEY')||''),authorization=req.headers.get('authorization')||'',token=authorization.replace(/^Bearer\s+/i,'').trim();if(!url||!key)throw new Error('Server configuration missing');if(!token)throw new Error('Authentication required');const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:`Bearer ${token}`}}}),{data,error}=await client.auth.getUser(token);if(error||!data.user?.id)throw new Error('Authentication required');return data.user.id};
 
