@@ -14,9 +14,9 @@ Deno.test('gameplay judges against the physical input event timestamp',()=>{
   assert(source.includes('release(i,e.timeStamp)'));
 });
 
-Deno.test('event timestamp compensation does not change judgment windows or chart offsets',()=>{
+Deno.test('event timestamp compensation keeps existing timing windows and chart offset ordering',()=>{
   assert(source.includes('const TIMING={perfect:55,great:110,good:220}'));
   assert(source.includes("dist<=TIMING.perfect?'PERFECT':dist<=TIMING.great?'GREAT':'GOOD'"));
-  assert(!source.includes('TIMING={perfect:'));
-  assert(!source.includes('chartOffset||0)-inputEventAgeMs'));
+  assert(source.includes('transport.current.now()-inputEventAgeMs(eventTimeStamp)+offset+(song.chartOffset||0)'));
+  assert(!source.includes('transport.current.now()+inputEventAgeMs(eventTimeStamp)'));
 });
