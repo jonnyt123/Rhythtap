@@ -1,0 +1,30 @@
+name: Apply input timing patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-input-timing-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Apply input timing patch
+        run: python scripts/apply-input-timing-patch.py
+      - name: Commit patched gameplay input
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.tsx
+          git commit -m "Use physical event timestamps for gameplay hits"
+          git push origin HEAD:main
