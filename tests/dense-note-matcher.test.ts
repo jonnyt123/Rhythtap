@@ -22,7 +22,7 @@ Deno.test('production matcher selects earliest valid unjudged candidate without 
 });
 
 Deno.test('dense matcher remains in production after temporary Tap Debug removal',()=>{
-  assert(vite.includes("import { denseNoteMatcherTransform } from './scripts/dense-note-matcher-transform';"));
+  assert(vite.includes("import { denseNoteMatcherTransform } from './scripts/dense-note-matcher-transform.ts';"));
   assert(vite.includes('denseNoteMatcherTransform()'));
   assert(!vite.includes('tapDebugJudgementTransform'));
 });
