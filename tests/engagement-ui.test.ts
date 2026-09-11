@@ -5,11 +5,13 @@ const vite=await Deno.readTextFile('vite.config.ts');
 const analytics=await Deno.readTextFile('src/engagement-analytics.ts');
 const css=await Deno.readTextFile('src/engagement-ui.css');
 
-Deno.test('engagement transform is last pre-react UI transform',()=>{
- const chart=vite.indexOf('chartV4RolloutTransform()');
+Deno.test('engagement transform keeps its required late pre-react ordering',()=>{
+ const scoreVersion=vite.indexOf('scoreVersionV5Transform()');
  const engagement=vite.indexOf('engagementUiTransform()');
+ const stripe=vite.indexOf('stripeBillingTransform()');
  const react=vite.indexOf('react()');
- assert(chart>=0&&engagement>chart&&react>engagement);
+ assert(scoreVersion>=0&&engagement>scoreVersion&&stripe>engagement&&react>stripe);
+ assertEquals(vite.includes('chartV4RolloutTransform()'),false);
 });
 
 Deno.test('engagement release does not patch gameplay timing or charts',()=>{
