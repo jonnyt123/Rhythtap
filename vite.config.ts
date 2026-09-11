@@ -19,11 +19,10 @@ import { denseNoteMatcherTransform } from './scripts/dense-note-matcher-transfor
 import { chartV4RolloutTransform } from './scripts/chart-v4-rollout-transform.ts';
 import { scoreVersionV5Transform } from './scripts/score-version-v5-transform.ts';
 import { engagementUiTransform } from './scripts/engagement-ui-transform.ts';
-import { stripeBillingTransform } from './scripts/stripe-billing-transform.ts';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), denseNoteMatcherTransform(), chartV4RolloutTransform(), scoreVersionV5Transform(), engagementUiTransform(), stripeBillingTransform(), react()],
+  plugins: [weightedChartTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), denseNoteMatcherTransform(), chartV4RolloutTransform(), scoreVersionV5Transform(), engagementUiTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });

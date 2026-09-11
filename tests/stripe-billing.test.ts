@@ -8,7 +8,6 @@ const webhookHealthMigration=await Deno.readTextFile('supabase/migrations/202609
 const subscriptionProjectionMigration=await Deno.readTextFile('supabase/migrations/20260908081500_stripe_subscription_projection.sql');
 const runtimeSecretMigration=await Deno.readTextFile('supabase/migrations/20260909103400_stripe_webhook_runtime_secret_store.sql');
 const publicBadgeMigration=await Deno.readTextFile('supabase/migrations/20260909103500_public_pro_badge_lookup.sql');
-const transform=await Deno.readTextFile('scripts/stripe-billing-transform.ts');
 const ui=await Deno.readTextFile('src/stripe-billing.tsx');
 const badge=await Deno.readTextFile('src/pro-badge.tsx');
 const playerAccount=await Deno.readTextFile('src/player-account.tsx');
@@ -72,7 +71,8 @@ Deno.test('Checkout and Portal cannot silently fall back to sandbox credentials'
 });
 
 Deno.test('profile integration keeps core gameplay outside the paywall',()=>{
- assert(transform.includes('<BillingCard userId={account.userId}/>'));
+ assert(playerAccount.includes("import {BillingCard} from './stripe-billing';"));
+ assert(playerAccount.includes('<BillingCard userId={account.userId}/>'));
  assert(ui.includes('Core songs, Tour, online battles, ranked scoring and standard progression stay free.'));
 });
 
