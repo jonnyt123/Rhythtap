@@ -17,7 +17,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Apply song fail mechanic
-        run: python3 scripts/apply-song-fail-mechanic.py
+        run: |
+          python3 scripts/apply-song-fail-mechanic.py
+          python3 scripts/fix-song-fail-stability.py
       - name: Verify production build
         run: npm ci && npm run build
         env:
