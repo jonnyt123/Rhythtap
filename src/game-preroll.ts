@@ -45,8 +45,16 @@ document.addEventListener('pointerdown',event=>{
   const button=(event.target as Element|null)?.closest('button');
   if(!button||!button.closest('.game.screen'))return;
   const label=(button.textContent||'').replace(/\s+/g,' ').trim().toUpperCase();
-  if(label.includes('TAP TO START')||label.includes('START PLAYING'))armPreroll();
+  if(label.includes('TAP TO START')||label.includes('START PLAYING')||label.includes('RETRY SONG'))armPreroll();
 },{capture:true,passive:true});
+
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Enter'&&event.key!==' ')return;
+  const button=(event.target as Element|null)?.closest('button');
+  if(!button||!button.closest('.game.screen'))return;
+  const label=(button.textContent||'').replace(/\s+/g,' ').trim().toUpperCase();
+  if(label.includes('TAP TO START')||label.includes('START PLAYING')||label.includes('RETRY SONG'))armPreroll();
+},{capture:true});
 
 const nativeMediaPlay=HTMLMediaElement.prototype.play;
 HTMLMediaElement.prototype.play=async function(){
