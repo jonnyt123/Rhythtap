@@ -8,6 +8,7 @@ const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
 const metal=await Deno.readTextFile('src/death-metal-theme.css');
 const profile=await Deno.readTextFile('src/player-profile-console.css');
 const mobilePerf=await Deno.readTextFile('src/mobile-gameplay-performance.css');
+const multiplayer=await Deno.readTextFile('src/multiplayer.css');
 const tour=await Deno.readTextFile('src/tour-social-ranked.tsx');
 const tourDifficulty=await Deno.readTextFile('src/tour-difficulty.css');
 
@@ -17,6 +18,14 @@ Deno.test('core screens use dynamic viewport and safe areas',()=>{
  assert(base.includes('env(safe-area-inset-bottom)'));
  assert(tutorial.includes('min-height:100dvh'));
  assert(tutorial.includes('safe-area-inset-bottom'));
+});
+
+Deno.test('multiplayer lobby can vertically scroll on mobile despite global screen clipping',()=>{
+ assert(multiplayer.includes('.multiplayer{height:100dvh;min-height:100dvh;overflow-y:auto;overflow-x:hidden'));
+ assert(multiplayer.includes('-webkit-overflow-scrolling:touch'));
+ assert(multiplayer.includes('overscroll-behavior-y:contain'));
+ assert(multiplayer.includes('touch-action:pan-y'));
+ assert(multiplayer.includes('env(safe-area-inset-bottom)'));
 });
 
 Deno.test('short mobile engagement layouts reserve controls space',()=>{
