@@ -39,6 +39,8 @@ jobs:
         run: deno test --allow-read tests/input-timing.test.ts
       - name: Run high-resolution media clock guard
         run: deno test --allow-read tests/media-clock.test.ts
+      - name: Run tap debug matched-note timing guard
+        run: deno test --allow-read tests/tap-debug-judgement.test.ts
       - name: Run gameplay preroll synchronization guard
         run: deno test --allow-read tests/game-preroll.test.ts
       - name: Run chart version backward compatibility checks
