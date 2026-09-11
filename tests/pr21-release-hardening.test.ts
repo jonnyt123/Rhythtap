@@ -5,7 +5,10 @@ const metalTransform=await Deno.readTextFile('scripts/metal-menu-transform.ts');
 const v5=await Deno.readTextFile('supabase/functions/_shared/weighted-chart-v5.ts');
 const validateMatch=await Deno.readTextFile('supabase/functions/validate-match/index.ts');
 const recordSolo=await Deno.readTextFile('supabase/functions/record-solo/index.ts');
-const scoreVersion=await Deno.readTextFile('scripts/score-version-v5-transform.ts');
+const main=await Deno.readTextFile('src/main.tsx');
+const account=await Deno.readTextFile('src/player-account.tsx');
+const ranked=await Deno.readTextFile('src/tour-social-ranked.tsx');
+const vite=await Deno.readTextFile('vite.config.ts');
 const gameplayQuality=await Deno.readTextFile('scripts/gameplay-quality-transform.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260906054059_complete_v5_score_versioning.sql');
 
@@ -40,10 +43,12 @@ Deno.test('Hard V5 density keeps two-note chords atomic',()=>{
 Deno.test('V5 result plumbing is complete',()=>{
  assert(validateMatch.includes(".in('validation_version',[2,3,4,5])"));
  assert(recordSolo.includes('p_chart_version:chartVersion'));
- assert(scoreVersion.includes("const highScoreFor=(songId:string,difficulty:Difficulty)=>Number(localStorage.getItem(`ntr-high-${songId}-${difficulty}${difficulty==='HARD'&&!songId.startsWith('tap-')?'-v5':''}`)||0);"));
- assert(scoreVersion.includes("difficulty==='HARD'&&!song.id.startsWith('tap-')?'-v5':''"));
- assert(scoreVersion.includes("or('difficulty.neq.HARD,chart_version.eq.5')"));
- assert(scoreVersion.includes("eq('chart_version',difficulty==='HARD'?5:4)"));
+ assert(main.includes("const highScoreFor=(songId:string,difficulty:Difficulty)=>Number(localStorage.getItem(`ntr-high-${songId}-${difficulty}${difficulty==='HARD'&&!songId.startsWith('tap-')?'-v5':''}`)||0);"));
+ assert(main.includes("difficulty==='HARD'&&!song.id.startsWith('tap-')?'-v5':''"));
+ assert(account.includes("or('difficulty.neq.HARD,chart_version.eq.5')"));
+ assert(ranked.includes("eq('chart_version',difficulty==='HARD'?5:4)"));
+ assert(!vite.includes('scoreVersionV5Transform'));
+ assert(!vite.includes('score-version-v5-transform'));
 });
 
 Deno.test('database migration versions V5 matches and scores',()=>{
