@@ -1,7 +1,7 @@
 from pathlib import Path
 
 replacements = {
-    Path('src/player-account.tsx'): [
+    Path('scripts/stability-transform.ts'): [
         (
             "body:JSON.stringify({songId:input.songId,difficulty:input.difficulty,events:input.events})",
             "body:JSON.stringify({songId:input.songId,difficulty:input.difficulty,chartVersion:5,events:input.events})",
