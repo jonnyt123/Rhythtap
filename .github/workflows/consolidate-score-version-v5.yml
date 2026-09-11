@@ -31,3 +31,4 @@ jobs:
           git add -A
           git commit -m 'Consolidate score versioning into source'
           git push
+# retry with the stability high-score dependency consolidated atomically
