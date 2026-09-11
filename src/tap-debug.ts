@@ -12,6 +12,11 @@ type JudgementDetail={
   noteTime:number|null;
   deltaMs:number|null;
   judge:string;
+  candidateCount?:number;
+  warning?:'AMBIGUOUS'|'FUTURE STEAL BLOCKED'|null;
+  nearestNoteId?:number|null;
+  nearestNoteTime?:number|null;
+  nearestDeltaMs?:number|null;
 };
 
 type PendingTap={
@@ -101,7 +106,7 @@ if(enabled){
     marker.classList.remove('is-down');
     marker.classList.add('is-up');
     active.delete(event.pointerId);
-    window.setTimeout(()=>{marker.remove();prunePending()},1200);
+    window.setTimeout(()=>{marker.remove();prunePending()},1400);
   };
 
   const judgement=(event:Event)=>{
@@ -121,13 +126,19 @@ if(enabled){
     if(bestIndex<0||bestGap>8)return;
     const tap=pending.splice(bestIndex,1)[0];
     const label=tap.marker.querySelector('span');
+    const warning=detail.warning?` • ⚠ ${detail.warning}${Number(detail.candidateCount)>1?` x${detail.candidateCount}`:''}`:'';
+    const nearest=detail.warning==='FUTURE STEAL BLOCKED'&&Number.isFinite(detail.nearestNoteId)
+      ?` • OLD→N${detail.nearestNoteId}${Number.isFinite(detail.nearestDeltaMs)?` ${Number(detail.nearestDeltaMs)>=0?'+':''}${Math.round(Number(detail.nearestDeltaMs))}ms`:''}`
+      :'';
     const diagnostic=detail.matched&&Number.isFinite(detail.deltaMs)
-      ?`${Number(detail.deltaMs)>=0?'+':''}${Math.round(Number(detail.deltaMs))}ms ${detail.judge} • N${detail.noteId} @${Math.round(Number(detail.noteTime))}ms`
+      ?`${Number(detail.deltaMs)>=0?'+':''}${Math.round(Number(detail.deltaMs))}ms ${detail.judge} • N${detail.noteId} @${Math.round(Number(detail.noteTime))}ms${warning}${nearest}`
       :'NO NOTE';
     tap.marker.dataset.judge=detail.matched?detail.judge:'NO_NOTE';
     tap.marker.classList.add(detail.matched?`judge-${detail.judge.toLowerCase()}`:'judge-no-note');
+    if(detail.warning)tap.marker.classList.add('has-warning');
     if(label)label.textContent=`#${tap.sequence} ${lane} q${tap.age}ms • ${diagnostic}`;
     status.textContent=`TAP DEBUG • #${tap.sequence} • ${lane} • q${tap.age}ms • ${diagnostic}`;
+    status.classList.toggle('has-warning',Boolean(detail.warning));
   };
 
   addEventListener('pointerdown',down,{capture:true,passive:true});
