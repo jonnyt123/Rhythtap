@@ -21,9 +21,6 @@ const patchMain=(source:string)=>{
   "const AUDIO_CACHE='rhythtap-audio-v2';\nconst AUDIO_BUILD=String(import.meta.env.VITE_RHYTHTAP_BUILD||'dev');\nconst versionedAudioPath=(path:string)=>import.meta.env.BASE_URL+path+'?v='+encodeURIComponent(AUDIO_BUILD);");
  code=replaceRequired(code,'game audio URL',"cachedAudioUrl(import.meta.env.BASE_URL+song.audioFile,this.onDownloadProgress)","cachedAudioUrl(versionedAudioPath(song.audioFile),this.onDownloadProgress)");
  code=replaceRequired(code,'preview audio URL',"cachedAudioUrl(import.meta.env.BASE_URL+song.previewFile)","cachedAudioUrl(versionedAudioPath(song.previewFile))");
- code=replaceRequired(code,'media end detection',
-  " now(){return this.media?this.media.currentTime*1000:this.ctx?(this.ctx.currentTime-this.startAt)*1000:this.pausedAt}",
-  " ended(){return Boolean(this.media?.ended)}\n now(){return this.media?this.media.currentTime*1000:this.ctx?(this.ctx.currentTime-this.startAt)*1000:this.pausedAt}");
  code=replaceRequired(code,'progress request guard'," const playerAccount=usePlayerAccount();"," const playerAccount=usePlayerAccount();\n const progressRequestRef=useRef(0);");
  const finishGame=` const finishGame=(r:Omit<GameResult,'xpEarned'|'dailyBonus'|'levelUp'|'previousLevel'>)=>{
   const previousLevel=profile.level,requestId=++progressRequestRef.current;
