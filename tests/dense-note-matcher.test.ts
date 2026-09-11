@@ -1,6 +1,6 @@
 import {assert,assertEquals} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
-const transform=await Deno.readTextFile('scripts/dense-note-matcher-transform.ts');
+const main=await Deno.readTextFile('src/main.tsx');
 const vite=await Deno.readTextFile('vite.config.ts');
 
 Deno.test('guarded chronological matcher blocks future-note stealing',()=>{
@@ -12,17 +12,17 @@ Deno.test('guarded chronological matcher blocks future-note stealing',()=>{
 });
 
 Deno.test('production matcher selects earliest valid unjudged candidate without widening timing windows',()=>{
-  assert(transform.includes('const candidates:Note[]=[]'));
-  assert(transform.includes('const best=candidates[0]'));
-  assert(transform.includes('hitTime+TIMING.good'));
-  assert(transform.includes('!judged.current.has(n.id)'));
-  assert(!transform.includes('TIMING.perfect='));
-  assert(!transform.includes('TIMING.great='));
-  assert(!transform.includes('TIMING.good='));
+  assert(main.includes('const candidates:Note[]=[]'));
+  assert(main.includes('const best=candidates[0]'));
+  assert(main.includes('hitTime+TIMING.good'));
+  assert(main.includes('!judged.current.has(n.id)'));
+  assert(!main.includes('TIMING.perfect='));
+  assert(!main.includes('TIMING.great='));
+  assert(!main.includes('TIMING.good='));
 });
 
 Deno.test('dense matcher remains in production after temporary Tap Debug removal',()=>{
-  assert(vite.includes("import { denseNoteMatcherTransform } from './scripts/dense-note-matcher-transform.ts';"));
-  assert(vite.includes('denseNoteMatcherTransform()'));
+  assert(main.includes('const candidates:Note[]=[]'));
+  assert(!vite.includes('denseNoteMatcherTransform'));
   assert(!vite.includes('tapDebugJudgementTransform'));
 });
