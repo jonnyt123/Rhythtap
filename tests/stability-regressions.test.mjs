@@ -46,11 +46,15 @@ assert.match(chartSelector,/chartVersion===4\?buildV4/,'the authoritative select
 const weightedTransform=await readFile('scripts/weighted-chart-transform.ts','utf8');
 assert.match(weightedTransform,/weighted-chart-v5/,'release client chart generation must use the shared v5 generator');
 
-const rolloutTransform=await readFile('scripts/chart-v4-rollout-transform.ts','utf8');
-assert.match(rolloutTransform,/player-account\.tsx/,'signed-in solo submissions must be patched in the actual TSX account module');
-assert.match(rolloutTransform,/chartVersion:5/,'release client requests must explicitly opt into authoritative chart v5');
-
+const stabilityTransform=await readFile('scripts/stability-transform.ts','utf8');
+const common=await readFile('src/multiplayer-common.ts','utf8');
 const session=await readFile('src/multiplayer-session.ts','utf8');
+const vite=await readFile('vite.config.ts','utf8');
+assert.match(stabilityTransform,/body:JSON\.stringify\(\{songId:input\.songId,difficulty:input\.difficulty,chartVersion:5,events:input\.events\}\)/,'signed-in solo submissions must explicitly opt into authoritative chart v5');
+assert.match(common,/functionRequest\(\{action:'register',chartVersion:5,\.\.\.input\}\)/,'match registration must explicitly opt into chart v5');
+assert.match(session,/functionRequest\(\{action:'finalize',chartVersion:5,/,'match finalization must explicitly opt into chart v5');
+assert.doesNotMatch(vite,/chartV4RolloutTransform|chart-v4-rollout-transform/,'chart version rollout must not depend on a Vite transform');
+
 assert.match(session,/payload\?\.matchId!==active\.matchId/,'multiplayer packets must be scoped to the active match');
 assert.match(session,/launchRef\.current\?\.matchId!==submittedMatchId/,'late validation responses must be discarded after a rematch');
 assert.match(session,/connectionState\.current==='connecting'/,'reconnects must have an in-flight guard');
