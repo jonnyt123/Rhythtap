@@ -9,7 +9,6 @@ import { weightedChartTransform } from './scripts/weighted-chart-transform.ts';
 import { battleExperienceTransform } from './scripts/battle-experience-transform.ts';
 import { accountRecoveryTransform } from './scripts/account-recovery-transform.ts';
 import { battleLobbyUsabilityTransform } from './scripts/battle-lobby-usability-transform.ts';
-import { accountSessionTransform } from './scripts/account-session-transform.ts';
 import { multiplayerSessionLoopTransform } from './scripts/multiplayer-session-loop-transform.ts';
 import { tourSocialRankedTransform } from './scripts/tour-social-ranked-transform.ts';
 import { pr13ReviewFixesTransform } from './scripts/pr13-review-fixes-transform.ts';
@@ -23,6 +22,6 @@ import { stripeBillingTransform } from './scripts/stripe-billing-transform.ts';
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), scoreVersionV5Transform(), engagementUiTransform(), stripeBillingTransform(), react()],
+  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), scoreVersionV5Transform(), engagementUiTransform(), stripeBillingTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });

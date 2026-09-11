@@ -59,7 +59,7 @@ assert.match(session,/payload\?\.matchId!==active\.matchId/,'multiplayer packets
 assert.match(session,/launchRef\.current\?\.matchId!==submittedMatchId/,'late validation responses must be discarded after a rematch');
 assert.match(session,/connectionState\.current==='connecting'/,'reconnects must have an in-flight guard');
 
-const accountSession=await readFile('scripts/account-session-transform.ts','utf8');
+const accountSession=await readFile('src/supabase-account-client.ts','utf8');
 assert.match(accountSession,/persistSession:true/,'RhythmTap ID sessions must persist across browser launches');
 assert.match(accountSession,/autoRefreshToken:true/,'persisted account sessions must automatically refresh access tokens');
 assert.match(accountSession,/window\.localStorage/,'account sessions must use durable same-origin browser storage');
