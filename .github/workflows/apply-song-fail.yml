@@ -32,8 +32,9 @@ jobs:
           deno test --allow-read tests/song-fail.test.ts tests/game-preroll.test.ts tests/input-timing.test.ts tests/dense-note-matcher.test.ts
       - name: Commit implementation
         run: |
+          rm -f deno.lock
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add src/main.tsx scripts/stability-transform.ts src/game-preroll.ts src/styles.css tests/song-fail.test.ts
           git commit -m 'Add Tap Tap style song failure mechanic'
           git push
