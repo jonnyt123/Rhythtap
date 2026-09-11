@@ -32,3 +32,4 @@ jobs:
           git add -A
           git commit -m 'Consolidate chart version rollout into source'
           git push
+# retry after resolving generated solo-submission anchor
