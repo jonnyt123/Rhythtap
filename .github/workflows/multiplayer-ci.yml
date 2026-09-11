@@ -43,6 +43,8 @@ jobs:
         run: deno test --allow-read tests/dense-note-matcher.test.ts
       - name: Run gameplay preroll synchronization guard
         run: deno test --allow-read tests/game-preroll.test.ts
+      - name: Run song failure regression guard
+        run: deno test --allow-read tests/song-fail.test.ts
       - name: Run chart version backward compatibility checks
         run: deno test --node-modules-dir=auto --allow-read tests/chart-version-compat.test.ts
       - name: Run chart V4 client-server parity and playability audit
