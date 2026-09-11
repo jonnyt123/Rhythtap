@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { songPackTransform } from './scripts/song-pack-transform.ts';
 import { multiplayerTransform } from './scripts/multiplayer-transform.ts';
 import { accountTransform } from './scripts/account-transform.ts';
 import { metalMenuTransform } from './scripts/metal-menu-transform.ts';
@@ -25,6 +24,6 @@ import { stripeBillingTransform } from './scripts/stripe-billing-transform.ts';
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
 export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), denseNoteMatcherTransform(), chartV4RolloutTransform(), scoreVersionV5Transform(), engagementUiTransform(), stripeBillingTransform(), react()],
+  plugins: [weightedChartTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), accountSessionTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), denseNoteMatcherTransform(), chartV4RolloutTransform(), scoreVersionV5Transform(), engagementUiTransform(), stripeBillingTransform(), react()],
   base: isVercel ? '/' : '/Rhythtap/',
 });

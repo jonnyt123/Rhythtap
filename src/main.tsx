@@ -50,7 +50,12 @@ const baseSongs:Song[]=[
  {id:'gravity',title:'Zero Gravity',artist:'Phase Garden',bpm:102,color:'#b650ff',root:43,progression:[0,7,5,3],melody:melodyGravity,unlockLevel:4,duration:49,charts:charts(102,melodyGravity)},
  {id:'sickness',title:'Down With the Sickness',artist:'Disturbed',bpm:95,color:'#9cff3d',root:0,progression:[],melody:[],unlockLevel:1,duration:217.704,audioFile:'audio/down-with-the-sickness.mp3',previewFile:'previews/sickness.mp3',charts:onsetCharts(sicknessEvents)},
  {id:'never-left',title:'If You Never Left',artist:'blink-182',bpm:195,color:'#ff704d',root:0,progression:[],melody:[],unlockLevel:1,duration:178.495,audioFile:'audio/if-you-never-left.mp3',previewFile:'previews/never-left.mp3',charts:onsetCharts(neverLeftEvents)},
- {id:'fly-eagle',title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',bpm:105.4,color:'#ffd43b',root:0,progression:[],melody:[],unlockLevel:1,duration:192.192,audioFile:'audio/fly-like-an-eagle-metal.mp3',previewFile:'previews/fly-eagle.mp3',charts:onsetCharts(flyEagleEvents)}
+ {id:'fly-eagle',title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',bpm:105.4,color:'#ffd43b',root:0,progression:[],melody:[],unlockLevel:1,duration:192.192,audioFile:'audio/fly-like-an-eagle-metal.mp3',previewFile:'previews/fly-eagle.mp3',charts:onsetCharts(flyEagleEvents)},
+ {id:'my-immortal',title:'My Immortal',artist:'Evanescence',bpm:76,color:'#8fb3ff',root:0,progression:[],melody:[],unlockLevel:2,duration:270.497,audioFile:'audio/my-immortal.mp3',previewFile:'audio/my-immortal.mp3',charts:beatCharts(76,232,270.497,4)},
+ {id:'crazy-train',title:'Crazy Train',artist:'Ozzy Osbourne',bpm:136,color:'#ffbf3d',root:0,progression:[],melody:[],unlockLevel:2,duration:226.325,audioFile:'audio/crazy-train.mp3',previewFile:'audio/crazy-train.mp3',charts:beatCharts(136,325,226.325,1)},
+ {id:'kill-you',title:'Kill You',artist:'Eminem',bpm:107.666,color:'#ff536d',root:0,progression:[],melody:[],unlockLevel:3,duration:264.411,audioFile:'audio/kill-you.mp3',previewFile:'audio/kill-you.mp3',charts:beatCharts(107.666,232,264.411,2)},
+ {id:'kryptonite',title:'Kryptonite',artist:'3 Doors Down',bpm:99.384,color:'#63e2ff',root:0,progression:[],melody:[],unlockLevel:2,duration:234.292,audioFile:'audio/kryptonite.mp3',previewFile:'audio/kryptonite.mp3',charts:beatCharts(99.384,627,234.292,0)},
+ {id:'through-fire-flames',title:'Through the Fire and Flames',artist:'DragonForce',bpm:198.8,color:'#ff6f2d',root:0,progression:[],melody:[],unlockLevel:5,duration:300.121,audioFile:'audio/through-fire-flames.mp3',previewFile:'audio/through-fire-flames.mp3',charts:beatCharts(198.8,1324,300.121,3)}
 ];
 const IMPORTED_SONGS_KEY='rhythtap-imported-songs';
 const AUDIO_CACHE='rhythtap-audio-v1';

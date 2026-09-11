@@ -65,6 +65,11 @@ assert.doesNotMatch(accountSession,/localStorage\.setItem\([^\n]*password/i,'raw
 const prepareAudio=await readFile('scripts/prepare-audio.mjs','utf8');
 for(const file of ['my-immortal.mp3','crazy-train.mp3','kill-you.mp3','kryptonite.mp3','through-fire-flames.mp3'])assert.ok(prepareAudio.includes(file),`build audio verification is missing ${file}`);
 
+const mainSource=await readFile('src/main.tsx','utf8');
+for(const songId of ['my-immortal','crazy-train','kill-you','kryptonite','through-fire-flames'])assert.ok(mainSource.includes(`id:'${songId}'`),`production song catalog is missing ${songId}`);
+const viteConfig=await readFile('vite.config.ts','utf8');
+assert.ok(!viteConfig.includes('songPackTransform'),'production song catalog must live directly in source');
+
 const ci=await readFile('.github/workflows/multiplayer-ci.yml','utf8');
 assert.match(ci,/branches: \[main,/,'full validator CI must run on pushes to main');
 assert.ok(ci.includes('supabase/functions/record-solo/index.ts'),'CI must typecheck the authoritative solo Edge Function');
