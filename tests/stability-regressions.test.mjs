@@ -60,11 +60,14 @@ assert.match(session,/launchRef\.current\?\.matchId!==submittedMatchId/,'late va
 assert.match(session,/connectionState\.current==='connecting'/,'reconnects must have an in-flight guard');
 
 const accountSession=await readFile('src/supabase-account-client.ts','utf8');
+assert.match(accountSession,/const accountAuthStorage=/,'account session storage adapter must live in normal source');
+assert.match(accountSession,/storage:accountAuthStorage/,'Supabase Auth must use the explicit same-origin storage adapter');
 assert.match(accountSession,/persistSession:true/,'RhythmTap ID sessions must persist across browser launches');
 assert.match(accountSession,/autoRefreshToken:true/,'persisted account sessions must automatically refresh access tokens');
 assert.match(accountSession,/window\.localStorage/,'account sessions must use durable same-origin browser storage');
 assert.match(accountSession,/storageKey:'rhythtap-account-auth'/,'account auth storage must use a stable dedicated key');
 assert.doesNotMatch(accountSession,/localStorage\.setItem\([^\n]*password/i,'raw account passwords must never be written to browser storage');
+assert.doesNotMatch(vite,/accountSessionTransform|account-session-transform/,'account session persistence must not depend on a Vite transform');
 
 const prepareAudio=await readFile('scripts/prepare-audio.mjs','utf8');
 for(const file of ['my-immortal.mp3','crazy-train.mp3','kill-you.mp3','kryptonite.mp3','through-fire-flames.mp3'])assert.ok(prepareAudio.includes(file),`build audio verification is missing ${file}`);
