@@ -33,11 +33,35 @@ const patchLobby=(source:string)=>{
  return code;
 };
 
+const patchSession=(source:string)=>{
+ let code=source;
+ code=replaceRequired(code,'rematch readiness ref',
+  "latestProgress=useRef<Omit<MultiplayerProgress,'playerId'|'name'>>({score:0,combo:0,accuracy:0}),clockOffsetRef=useRef(launch?.clockOffsetMs??0)",
+  "latestProgress=useRef<Omit<MultiplayerProgress,'playerId'|'name'>>({score:0,combo:0,accuracy:0}),localRematchRef=useRef(false),clockOffsetRef=useRef(launch?.clockOffsetMs??0)");
+ code=replaceRequired(code,'reset rematch readiness ref',
+  "setVerifiedLocal(null);setLocalRematch(false);setOpponentRematch(false);rematchStarted.current=false;",
+  "setVerifiedLocal(null);localRematchRef.current=false;setLocalRematch(false);setOpponentRematch(false);rematchStarted.current=false;");
+ code=replaceRequired(code,'sync rematch readiness',
+  "payload:{...latestProgress.current,matchId:active.matchId,playerId:active.playerId,name:active.displayName,backgrounded:document.hidden}",
+  "payload:{...latestProgress.current,matchId:active.matchId,playerId:active.playerId,name:active.displayName,backgrounded:document.hidden,rematchReady:localRematchRef.current}");
+ code=replaceRequired(code,'restore opponent rematch readiness',
+  "setOpponentBackgrounded(Boolean(payload.backgrounded))});",
+  "setOpponentBackgrounded(Boolean(payload.backgrounded));setOpponentRematch(Boolean(payload.rematchReady))});");
+ code=replaceRequired(code,'cache finished final state',
+  "latestProgress.current=progress;void channel.send({type:'broadcast',event,payload:{...progress,matchId:targetMatch,playerId:current.playerId,name:current.displayName,finished:event==='final'}})",
+  "latestProgress.current={...progress,finished:event==='final'};void channel.send({type:'broadcast',event,payload:{...progress,matchId:targetMatch,playerId:current.playerId,name:current.displayName,finished:event==='final'}})");
+ code=replaceRequired(code,'persist local rematch readiness',
+  "setLocalRematch(true);void channel.send({type:'broadcast',event:'rematch-ready',payload:{playerId:current.playerId,matchId:current.matchId}})",
+  "localRematchRef.current=true;setLocalRematch(true);void channel.send({type:'broadcast',event:'rematch-ready',payload:{playerId:current.playerId,matchId:current.matchId}})");
+ return code;
+};
+
 export function multiplayerHardeningTransform():Plugin{
  return {name:'rhythtap-multiplayer-hardening-transform',enforce:'pre',transform(source,id){
   const normalized=id.replaceAll('\\','/');
   if(normalized.endsWith('/src/main.tsx'))return{code:patchMain(source),map:null};
   if(normalized.endsWith('/src/multiplayer-lobby.tsx'))return{code:patchLobby(source),map:null};
+  if(normalized.endsWith('/src/multiplayer-session.ts'))return{code:patchSession(source),map:null};
   return null;
  }};
 }
