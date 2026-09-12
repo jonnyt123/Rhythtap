@@ -19,8 +19,16 @@ Deno.test('host battle creation is single-flight',()=>{
 
 Deno.test('realtime presence is deduplicated by player identity',()=>{
  assert(transform.includes("const presence=flattenPresence(channel.presenceState()),unique=new Map<string,any>()"));
- assert(transform.includes("unique.set(key,player)"));
- assert(transform.includes("const list=Array.from(unique.values()).sort"));
+ assert(transform.includes('unique.set(key,player)'));
+ assert(transform.includes('const list=Array.from(unique.values()).sort'));
+});
+
+Deno.test('reconnect sync preserves final and rematch state',()=>{
+ assert(transform.includes('localRematchRef=useRef(false)'));
+ assert(transform.includes('rematchReady:localRematchRef.current'));
+ assert(transform.includes('setOpponentRematch(Boolean(payload.rematchReady))'));
+ assert(transform.includes("latestProgress.current={...progress,finished:event==='final'}"));
+ assert(transform.includes('localRematchRef.current=true;setLocalRematch(true)'));
 });
 
 Deno.test('hardening runs after multiplayer session composition and before downstream UI transforms',()=>{
@@ -32,6 +40,6 @@ Deno.test('hardening runs after multiplayer session composition and before downs
 
 Deno.test('battle result actions remain gated until local authoritative finalization resolves',()=>{
  assert(engagement.includes("completionPending=Boolean(result.progressPending)||(battle&&!verifiedBattle)"));
- assert(engagement.includes("disabled={completionPending}"));
+ assert(engagement.includes('disabled={completionPending}'));
  assert(session.includes("setVerifiedLocal(verified);send('final'"));
 });
