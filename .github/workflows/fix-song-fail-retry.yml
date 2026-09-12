@@ -1,0 +1,81 @@
+name: Repair song fail retry lifecycle
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/fix-song-fail-retry.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Patch retry lifecycle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path=Path('src/main.tsx')
+          s=path.read_text()
+
+          ref_anchor=" const transport=useRef(new SynthTransport()),arenaRef=useRef<HTMLDivElement>(null),raf=useRef(0),pressed=useRef(new Set<number>()),judged=useRef(new Set<number>()),activeHolds=useRef(new Map<number,Note>()),feedbackTimer=useRef(0),nowRef=useRef(0),missCursor=useRef(0),lastPaint=useRef(0),frameHealth=useRef({last:0,samples:0,slow:0}),perfSamples=useRef<number[]>([]),backgroundPaused=useRef(false),failedRef=useRef(false),energyRef=useRef(100);"
+          if ref_anchor not in s:
+              raise SystemExit('game refs anchor missing')
+          s=s.replace(ref_anchor,ref_anchor+"\n const startingRef=useRef(false);",1)
+
+          begin_start=s.index(" const begin=async()=>{judged.current.clear();")
+          begin_end=s.index("\n useEffect(()=>()=>{cancelAnimationFrame(raf.current);transport.current.stop()},[]);",begin_start)
+          old=s[begin_start:begin_end]
+          new=""" const begin=async()=>{judged.current.clear();if(startingRef.current)return;startingRef.current=true;cancelAnimationFrame(raf.current);transport.current.stop();failedRef.current=false;energyRef.current=100;scoreRef.current=0;comboRef.current=0;countsRef.current={PERFECT:0,GREAT:0,GOOD:0,MISS:0};maxRef.current=0;setReady(false);setPaused(false);setFailed(false);setNow(0);setScore(0);setCombo(0);setMaxCombo(0);setCounts({PERFECT:0,GREAT:0,GOOD:0,MISS:0});setPulse(0);setJudge(null);setHitEffect(null);setEnergy(100);activeHolds.current.clear();pressed.current.clear();missCursor.current=0;nowRef.current=0;lastPaint.current=0;frameHealth.current={last:0,samples:0,slow:0};perfSamples.current=[];delete document.documentElement.dataset.gamePerf;backgroundPaused.current=false;setAdaptiveLow(false);setDownloadProgress(null);transport.current.onDownloadProgress=setDownloadProgress;setLoading(true);setLoadError('');try{await transport.current.start(song);setReady(true)}catch{setLoadError('The track could not be loaded. Check your connection and try again.')}finally{startingRef.current=false;setLoading(false)}};"""
+          if "try{await transport.current.start(song);setReady(true)}catch" not in old:
+              raise SystemExit('begin transport anchor missing')
+          s=s[:begin_start]+new+s[begin_end:]
+
+          old_energy=" const adjustEnergy=(delta:number)=>setEnergy(current=>{const applied=delta<0&&inFailGrace()?0:delta,next=Math.max(0,Math.min(100,current+applied));energyRef.current=next;if(next<=0)failedRef.current=true;return next});"
+          new_energy=" const adjustEnergy=(delta:number)=>{const applied=delta<0&&inFailGrace()?0:delta,next=Math.max(0,Math.min(100,energyRef.current+applied));energyRef.current=next;if(next<=0)failedRef.current=true;setEnergy(next);return next};"
+          if old_energy not in s:
+              raise SystemExit('energy anchor missing')
+          s=s.replace(old_energy,new_energy,1)
+
+          old_miss="if(!judged.current.has(n.id)){judged.current.add(n.id);applyJudge('MISS',n.lane)}}for(const [lane,n] of activeHolds.current)"
+          new_miss="if(!judged.current.has(n.id)){judged.current.add(n.id);applyJudge('MISS',n.lane)}if(failedRef.current)break}for(const [lane,n] of activeHolds.current)"
+          if old_miss not in s:
+              raise SystemExit('miss loop anchor missing')
+          s=s.replace(old_miss,new_miss,1)
+
+          path.write_text(s)
+
+          test=Path('tests/song-fail.test.ts')
+          t=test.read_text()
+          marker="""Deno.test('failure UI warns without obscuring gameplay accessibility',()=>{\n"""
+          if marker not in t:
+              raise SystemExit('song fail test insertion anchor missing')
+          addition="""Deno.test('retry fully resets gameplay state before restarting transport',()=>{\n assert(main.includes('const startingRef=useRef(false)'));\n assert(main.includes('if(startingRef.current)return;startingRef.current=true'));\n assert(main.includes('setReady(false);setPaused(false);setFailed(false);setNow(0);setScore(0);setCombo(0);setMaxCombo(0)'));\n assert(main.includes('setCounts({PERFECT:0,GREAT:0,GOOD:0,MISS:0});setPulse(0);setJudge(null);setHitEffect(null);setEnergy(100)'));\n assert(main.includes('scoreRef.current=0;comboRef.current=0;countsRef.current={PERFECT:0,GREAT:0,GOOD:0,MISS:0};maxRef.current=0'));\n assert(main.includes('finally{startingRef.current=false;setLoading(false)}'));\n});\n\nDeno.test('health is synchronous and miss processing stops on the failure frame',()=>{\n assert(main.includes('Math.min(100,energyRef.current+applied)'));\n assert(main.includes('energyRef.current=next;if(next<=0)failedRef.current=true;setEnergy(next)'));\n assert(main.includes("applyJudge('MISS',n.lane)}if(failedRef.current)break"));\n});\n\n"""
+          t=t.replace(marker,addition+marker,1)
+          test.write_text(t)
+          PY
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: retry-fix-check
+          VITE_STRIPE_BILLING_ENV: test
+      - run: deno test --allow-read tests/song-fail.test.ts tests/game-preroll.test.ts tests/dense-note-matcher.test.ts tests/input-timing.test.ts
+      - name: Commit repaired lifecycle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.tsx tests/song-fail.test.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix song fail retry lifecycle"
+          git push origin HEAD:main
