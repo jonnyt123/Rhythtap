@@ -33,6 +33,21 @@ Deno.test('retry uses the same five-second preroll as a fresh start',()=>{
  assert(preroll.includes("event.key!=='Enter'&&event.key!==' '"));
 });
 
+Deno.test('retry fully resets gameplay state before restarting transport',()=>{
+ assert(main.includes('const startingRef=useRef(false)'));
+ assert(main.includes('if(startingRef.current)return;startingRef.current=true'));
+ assert(main.includes('setReady(false);setPaused(false);setFailed(false);setNow(0);setScore(0);setCombo(0);setMaxCombo(0)'));
+ assert(main.includes('setCounts({PERFECT:0,GREAT:0,GOOD:0,MISS:0});setPulse(0);setJudge(null);setHitEffect(null);setEnergy(100)'));
+ assert(main.includes('scoreRef.current=0;comboRef.current=0;countsRef.current={PERFECT:0,GREAT:0,GOOD:0,MISS:0};maxRef.current=0'));
+ assert(main.includes('finally{startingRef.current=false;setLoading(false)}'));
+});
+
+Deno.test('health is synchronous and miss processing stops on the failure frame',()=>{
+ assert(main.includes('Math.min(100,energyRef.current+applied)'));
+ assert(main.includes('energyRef.current=next;if(next<=0)failedRef.current=true;setEnergy(next)'));
+ assert(main.includes("applyJudge('MISS',n.lane)}if(failedRef.current)break"));
+});
+
 Deno.test('failure UI warns without obscuring gameplay accessibility',()=>{
  assert(css.includes('.meters.fail-warning .energy'));
  assert(css.includes('.song-failed'));
