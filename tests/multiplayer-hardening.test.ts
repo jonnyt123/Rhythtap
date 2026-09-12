@@ -5,6 +5,7 @@ const gameWide=await Deno.readTextFile('scripts/game-wide-hardening-transform.ts
 const vite=await Deno.readTextFile('vite.config.ts');
 const session=await Deno.readTextFile('src/multiplayer-session.ts');
 const engagement=await Deno.readTextFile('scripts/engagement-ui-transform.ts');
+const calibration=await Deno.readTextFile('src/gameplay-quality.tsx');
 const serviceWorker=await Deno.readTextFile('public/sw.js');
 
 Deno.test('online battle cannot be terminated by the solo song-fail meter',()=>{
@@ -46,12 +47,12 @@ Deno.test('battle result actions remain gated until local authoritative finaliza
  assert(session.includes("setVerifiedLocal(verified);send('final'"));
 });
 
-Deno.test('timing settings survive reload and corrupted offsets are sanitized',()=>{
+Deno.test('note speed survives reload and calibration remains bounded',()=>{
  assert(gameWide.includes("localStorage.getItem('ntr-speed')"));
  assert(gameWide.includes("Math.max(.7,Math.min(1.5,value))"));
  assert(gameWide.includes("localStorage.setItem('ntr-speed',String(next))"));
- assert(gameWide.includes("localStorage.getItem('ntr-offset')"));
- assert(gameWide.includes("Number.isFinite(value)?Math.max(-200,Math.min(200,value)):0"));
+ assert(calibration.includes('loadCalibration=()=>clampCalibration('));
+ assert(calibration.includes('saveCalibration=(value:number)=>{const next=clampCalibration(value)'));
 });
 
 Deno.test('sign out restores device-local guest progression instead of leaking cloud state',()=>{
