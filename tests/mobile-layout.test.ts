@@ -10,6 +10,7 @@ const profile=await Deno.readTextFile('src/player-profile-console.css');
 const mobilePerf=await Deno.readTextFile('src/mobile-gameplay-performance.css');
 const multiplayer=await Deno.readTextFile('src/multiplayer.css');
 const tour=await Deno.readTextFile('src/tour-social-ranked.tsx');
+const tourSocialCss=await Deno.readTextFile('src/tour-social-ranked.css');
 const tourDifficulty=await Deno.readTextFile('src/tour-difficulty.css');
 
 Deno.test('core screens use dynamic viewport and safe areas',()=>{
@@ -26,6 +27,15 @@ Deno.test('multiplayer lobby can vertically scroll on mobile despite global scre
  assert(multiplayer.includes('overscroll-behavior-y:contain'));
  assert(multiplayer.includes('touch-action:pan-y'));
  assert(multiplayer.includes('env(safe-area-inset-bottom)'));
+});
+
+Deno.test('content-heavy Tour Social Ranked and Results screens remain vertically scrollable',()=>{
+ assert(tourSocialCss.includes('.tsr-screen.screen{height:100dvh;min-height:100dvh;overflow-y:auto;overflow-x:hidden'));
+ assert(tourSocialCss.includes('overscroll-behavior-y:contain'));
+ assert(tourSocialCss.includes('-webkit-overflow-scrolling:touch'));
+ assert(tourSocialCss.includes('touch-action:pan-y'));
+ assert(engagement.includes('.results.screen{height:100dvh;overflow-y:auto;overflow-x:hidden'));
+ assert(engagement.includes('padding-bottom:calc(24px + env(safe-area-inset-bottom))'));
 });
 
 Deno.test('short mobile engagement layouts reserve controls space',()=>{
