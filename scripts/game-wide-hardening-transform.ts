@@ -7,9 +7,12 @@ const replaceRequired=(source:string,label:string,before:string,after:string)=>{
 
 const patchMain=(source:string)=>{
  let code=source;
- code=replaceRequired(code,'persisted timing settings',
-  "[speed,setSpeed]=useState(1),[offset,setOffset]=useState(()=>Number(localStorage.getItem('ntr-offset')||0))",
-  "[speed,setSpeed]=useState(()=>{const value=Number(localStorage.getItem('ntr-speed')||1);return Number.isFinite(value)?Math.max(.7,Math.min(1.5,value)):1}),[offset,setOffset]=useState(()=>{const value=Number(localStorage.getItem('ntr-offset')||0);return Number.isFinite(value)?Math.max(-200,Math.min(200,value)):0})");
+ code=replaceRequired(code,'persisted note speed',
+  "[speed,setSpeed]=useState(1)",
+  "[speed,setSpeed]=useState(()=>{const value=Number(localStorage.getItem('ntr-speed')||1);return Number.isFinite(value)?Math.max(.7,Math.min(1.5,value)):1})");
+ code=replaceRequired(code,'sanitized audio offset',
+  "[offset,setOffset]=useState(()=>Number(localStorage.getItem('ntr-offset')||0))",
+  "[offset,setOffset]=useState(()=>{const value=Number(localStorage.getItem('ntr-offset')||0);return Number.isFinite(value)?Math.max(-200,Math.min(200,value)):0})");
  code=replaceRequired(code,'persist note speed',
   "speed={speed} setSpeed={setSpeed}",
   "speed={speed} setSpeed={(v)=>{const next=Math.max(.7,Math.min(1.5,v));setSpeed(next);localStorage.setItem('ntr-speed',String(next))}}");
