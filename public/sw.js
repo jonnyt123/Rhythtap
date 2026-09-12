@@ -1,6 +1,6 @@
 const SHELL_CACHE='rhythtap-shell-v1';
 const RUNTIME_CACHE='rhythtap-runtime-v1';
-const BASE='/Rhythtap/';
+const BASE=new URL('./',self.location.href).pathname;
 
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(SHELL_CACHE).then(cache=>cache.add(BASE)).then(()=>self.skipWaiting()));
