@@ -1,0 +1,62 @@
+name: Destructive Mobile QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'public/**'
+      - 'index.html'
+      - 'vite.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/destructive-mobile-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build production app
+        run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - name: Install browser QA runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Start production preview
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/rhythtap-preview.log 2>&1 &
+          echo $! > /tmp/rhythtap-preview.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/Rhythtap/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/rhythtap-preview.log
+          exit 1
+      - name: Run destructive iPhone QA
+        run: node scripts/destructive-mobile-qa.mjs
+        env:
+          RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
+          RHYTHTAP_QA_OUT: qa-artifacts
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: destructive-mobile-qa-${{ github.sha }}
+          path: qa-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
