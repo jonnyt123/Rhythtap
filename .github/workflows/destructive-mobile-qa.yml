@@ -52,6 +52,11 @@ jobs:
         env:
           RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
           RHYTHTAP_QA_OUT: qa-artifacts
+      - name: Run mobile visual paint QA
+        run: node scripts/mobile-visual-regression.mjs
+        env:
+          RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
+          RHYTHTAP_QA_OUT: qa-artifacts
       - name: Upload QA evidence
         if: always()
         uses: actions/upload-artifact@v4
