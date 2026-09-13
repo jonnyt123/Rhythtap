@@ -48,7 +48,7 @@ jobs:
           cat /tmp/rhythtap-preview.log
           exit 1
       - name: Run destructive iPhone QA
-        run: node scripts/destructive-mobile-qa.mjs
+        run: node scripts/destructive-mobile-qa-v2.mjs
         env:
           RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
           RHYTHTAP_QA_OUT: qa-artifacts
