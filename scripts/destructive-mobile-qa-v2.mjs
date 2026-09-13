@@ -64,8 +64,9 @@ async function runEngine(browserName,engine){
    for(const e of pageErrors)add(browserName,'critical','Settings page exception',e);await context.close();
   }
 
-  // Each menu destination starts from fresh state so one feature cannot poison the next.
-  const destinations={'SOLO PLAY':'.select','MY CHARTS':'.imported-library','ACHIEVEMENTS':'.achievementsPage','PROFILE':'.account-screen','ONLINE BATTLE':'.multiplayer'};
+  // Each menu destination starts from fresh anonymous state so one feature cannot poison the next.
+  // Online Battle intentionally redirects signed-out players to RhythmTap ID instead of opening a battle lobby.
+  const destinations={'SOLO PLAY':'.select','MY CHARTS':'.imported-library','ACHIEVEMENTS':'.achievementsPage','PROFILE':'.account-screen','ONLINE BATTLE':'.account-screen'};
   for(const[label,selector]of Object.entries(destinations)){
    const{context,page,pageErrors}=await fresh(browser,engine);if(await requireHome(page,browserName,label)){
     const button=page.locator('button').filter({hasText:label}).first();if(!(await vis(button,1600)))notes.push(`${browserName}: ${label} unavailable in anonymous state`);else{await button.click({force:true});const ok=await vis(page.locator(selector),4000);await page.waitForTimeout(400);await snap(page,browserName,`menu-${slug(label)}`);const text=(await page.locator('#root').innerText().catch(()=>'' )).trim();if(!ok||!text)add(browserName,'high',`${label} rendered blank/wrong screen`,`Expected ${selector}; rendered=${ok}; text=${text.length}`);await checkOverflow(page,browserName,label)}}
