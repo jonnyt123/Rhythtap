@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/**'
       - 'scripts/**'
+      - 'tests/**'
       - 'public/**'
       - 'index.html'
       - 'vite.config.ts'
@@ -20,7 +21,7 @@ permissions:
 jobs:
   mobile-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -33,6 +34,8 @@ jobs:
         env:
           VITE_RHYTHTAP_BUILD: ${{ github.sha }}
           VITE_STRIPE_BILLING_ENV: test
+      - name: Run 20-test regression release gate
+        run: npm run test:regression
       - name: Install browser QA runtime
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
