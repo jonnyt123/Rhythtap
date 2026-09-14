@@ -4,6 +4,7 @@ import {buildCanonicalChart,normalizeChartVersion,validateAgainstChart,type Cano
 const CHART_SOURCE_COMMIT=Deno.env.get('RHYTHTAP_CHART_COMMIT')||'50c9e0b39aa441e5628ef10d471ed460d758dd69';
 const CHART_SOURCE_URL=`https://raw.githubusercontent.com/jonnyt123/Rhythtap/${CHART_SOURCE_COMMIT}/src/audioChartData.ts`;
 const AUDIO_SONGS=new Set(['sickness','never-left','fly-eagle']);
+const RUN_ID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'authorization, x-client-info, apikey, content-type','access-control-allow-methods':'POST, OPTIONS'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'content-type':'application/json','cache-control':'no-store'}});
 let onsetSourcePromise:Promise<string>|null=null;
@@ -36,10 +37,11 @@ Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
  try{
-  const userId=await authenticatedUserId(req),body=await req.json(),songId=String(body?.songId||'').slice(0,80),difficulty=String(body?.difficulty||'') as Difficulty,chartVersion=normalizeChartVersion(body?.chartVersion);
+  const userId=await authenticatedUserId(req),body=await req.json(),songId=String(body?.songId||'').slice(0,80),difficulty=String(body?.difficulty||'') as Difficulty,chartVersion=normalizeChartVersion(body?.chartVersion),runId=String(body?.runId||'');
   if(!songId||!['EASY','NORMAL','HARD'].includes(difficulty))return json({error:'Invalid solo result metadata'},400);
+  if(!RUN_ID_RE.test(runId))return json({error:'Invalid run id'},400);
   const chart=await loadChart(songId,difficulty,chartVersion),result=validateAgainstChart(body?.events,chart),admin=adminClient();
-  const {data,error}=await admin.rpc('record_validated_player_game',{p_user_id:userId,p_song_id:songId,p_difficulty:difficulty,p_score:result.score,p_accuracy:result.accuracy,p_max_combo:result.maxCombo,p_perfect_hits:result.perfect,p_chart_version:chartVersion});
+  const {data,error}=await admin.rpc('record_validated_player_game',{p_user_id:userId,p_song_id:songId,p_difficulty:difficulty,p_score:result.score,p_accuracy:result.accuracy,p_max_combo:result.maxCombo,p_perfect_hits:result.perfect,p_chart_version:chartVersion,p_run_id:runId});
   if(error)throw error;
   const row=Array.isArray(data)?data[0]:data;
   if(!row)throw new Error('Progress update returned no data');
