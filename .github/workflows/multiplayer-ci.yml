@@ -67,6 +67,8 @@ jobs:
         run: deno test --allow-read tests/stripe-billing.test.ts
       - name: Run Pro badge regression guards
         run: deno test --allow-read tests/pro-badge.test.ts
+      - name: Run solo progression idempotency guards
+        run: deno test --allow-read tests/progression-idempotency.test.ts
       - name: Check versioned chart selector
         run: deno check --node-modules-dir=auto supabase/functions/validate-match/chart-validator.ts
       - name: Check validate-match Edge Function
