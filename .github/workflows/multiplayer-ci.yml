@@ -103,6 +103,22 @@ jobs:
           version: latest
       - name: Link production project
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - name: Reconcile remote-only migration history
+        run: |
+          supabase migration repair --status reverted \
+            20260830233916 \
+            20260830233925 \
+            20260901235411 \
+            20260902084403 \
+            20260906064502 \
+            20260907001120 \
+            20260907001349 \
+            20260909000827 \
+            20260909031450 \
+            20260909103012 \
+            20260909103028 \
+            20260909104106
+          supabase migration list
       - name: Apply database migrations
         run: supabase db push
       - name: Deploy validate-match Edge Function
