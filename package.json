@@ -1,1 +1,27 @@
-{"name":"neon-tap-recharged","private":true,"version":"0.1.0","type":"module","scripts":{"prepare-audio":"node scripts/prepare-audio.mjs","dev":"npm run prepare-audio && vite --host 0.0.0.0","build":"npm run prepare-audio && tsc && vite build && node scripts/clean-build-audio.mjs","preview":"vite preview --host 0.0.0.0"},"dependencies":{"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest","lucide-react":"latest"},"devDependencies":{"typescript":"5.7.3","@types/react":"latest","@types/react-dom":"latest"}}
+{
+  "name": "neon-tap-recharged",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "prepare-audio": "node scripts/prepare-audio.mjs",
+    "dev": "npm run prepare-audio && vite --host 0.0.0.0",
+    "build": "npm run prepare-audio && tsc && vite build && node scripts/clean-build-audio.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:regression": "node --test tests/authoritative-validator.test.mjs tests/chart-quality-v4.test.ts tests/chart-quality-v5.test.ts tests/chart-version-compat.test.ts tests/death-metal-theme.test.ts tests/dense-note-matcher.test.ts tests/engagement-ui.test.ts tests/game-preroll.test.ts tests/gameplay-quality.test.ts tests/input-timing.test.ts tests/media-clock.test.ts tests/mobile-layout.test.ts tests/multiplayer-hardening.test.ts tests/pr21-release-hardening.test.ts tests/pro-badge.test.ts tests/scrolling-regression.test.ts tests/song-fail.test.ts tests/stability-regressions.test.mjs tests/stripe-billing.test.ts tests/weighted-v3-parity.test.ts",
+    "qa:mobile": "node scripts/destructive-mobile-qa-v2.mjs && node scripts/mobile-visual-regression.mjs",
+    "qa:release": "npm run build && npm run test:regression"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "typescript": "5.7.3",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}
