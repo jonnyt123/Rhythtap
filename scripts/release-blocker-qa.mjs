@@ -43,6 +43,25 @@ async function noteY(page){
  return page.locator('.note[data-time]').first().evaluate(el=>getComputedStyle(el).getPropertyValue('--note-y')).catch(()=>null);
 }
 
+async function forceHiddenVisibilityChange(page){
+ return page.evaluate(()=>{
+  try{
+   Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});
+   Object.defineProperty(document,'visibilityState',{configurable:true,get:()=>'hidden'});
+   document.dispatchEvent(new Event('visibilitychange'));
+   return document.hidden===true;
+  }catch{return false}
+ });
+}
+
+async function restoreVisibleState(page){
+ await page.evaluate(()=>{
+  try{delete document.hidden}catch{}
+  try{delete document.visibilityState}catch{}
+  document.dispatchEvent(new Event('visibilitychange'));
+ });
+}
+
 // Minimum supported iPhone-class viewport: runtime retry, pause/resume and layout safety.
 {
  const browser=await webkit.launch({headless:true});
@@ -61,14 +80,19 @@ async function noteY(page){
   try{await enterHardSolo(page)}catch(error){add('webkit-iphone8','critical','iPhone 8 cannot start Hard gameplay',String(error));}
   if(await vis(page.locator('.game'),1500)){
    await snap(page,'iphone8-hard-running');
-   const bg=await context.newPage();await bg.setContent('<p>background</p>');await bg.bringToFront();await page.waitForTimeout(900);await page.bringToFront();
-   if(!(await vis(page.locator('.modal').filter({hasText:'PAUSED'}),2500)))add('webkit-iphone8','high','Safari background did not pause gameplay','Expected PAUSED modal after visibility loss');
+
+   // Headless WebKit does not reliably toggle document.hidden when another Page is brought
+   // forward, so drive the exact production visibilitychange contract deterministically.
+   const hiddenInjected=await forceHiddenVisibilityChange(page);
+   if(!hiddenInjected)add('webkit-iphone8','medium','Could not synthesize Safari hidden state','Headless WebKit rejected document.hidden override; existing destructive QA still covers tab switching');
+   else if(!(await vis(page.locator('.modal').filter({hasText:'PAUSED'}),2500)))add('webkit-iphone8','high','Safari visibility loss did not pause gameplay','Production visibilitychange handler did not show PAUSED');
+   await restoreVisibleState(page);
+
    const resume=page.locator('button').filter({hasText:'RESUME'}).first();
    if(await vis(resume,1500)){
     const before=await noteY(page);await resume.click();await page.waitForTimeout(600);const after=await noteY(page);
     if(before&&after&&before===after)add('webkit-iphone8','high','Gameplay clock remained frozen after resume',`note position stayed at ${before}`);
    }
-   await bg.close();
 
    // Let an untouched Hard run fail, then verify retry fully restarts movement instead of freezing/miss-looping.
    const failed=page.locator('.song-failed');
