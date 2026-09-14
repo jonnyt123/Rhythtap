@@ -7,8 +7,8 @@ const difficulties=['EASY','NORMAL','HARD'] as const;
 const onsetSource=await Deno.readTextFile('src/audioChartData.ts');
 const transformSource=await Deno.readTextFile('scripts/weighted-chart-transform.ts');
 
-Deno.test('client transform imports the shared V3 generator instead of duplicating it',()=>{
- assert.match(transformSource,/\.\.\/supabase\/functions\/_shared\/weighted-chart-v3/);
+Deno.test('client transform imports the current shared V5 generator instead of duplicating it',()=>{
+ assert.match(transformSource,/\.\.\/supabase\/functions\/_shared\/weighted-chart-v5/);
  assert.match(transformSource,/makeWeightedBeatChart/);
  assert.match(transformSource,/makeWeightedOnsetChart/);
  assert.doesNotMatch(transformSource,/const hash01=/);
