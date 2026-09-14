@@ -21,7 +21,7 @@ permissions:
 jobs:
   mobile-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -34,6 +34,9 @@ jobs:
         env:
           VITE_RHYTHTAP_BUILD: ${{ github.sha }}
           VITE_STRIPE_BILLING_ENV: test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
       - name: Run 20-test regression release gate
         run: npm run test:regression
       - name: Install browser QA runtime
@@ -52,6 +55,11 @@ jobs:
           exit 1
       - name: Run destructive iPhone QA
         run: node scripts/destructive-mobile-qa-v2.mjs
+        env:
+          RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
+          RHYTHTAP_QA_OUT: qa-artifacts
+      - name: Run destructive Android Chrome QA
+        run: node scripts/android-mobile-qa.mjs
         env:
           RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
           RHYTHTAP_QA_OUT: qa-artifacts
