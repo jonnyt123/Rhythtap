@@ -16,10 +16,9 @@ Deno.test('refresh restores persisted progression without granting XP again',()=
 });
 
 Deno.test('retry starts a new gameplay attempt without replaying the prior reward function',()=>{
-  assert(engagement.includes("name:'song_retry'"),'retry event wiring missing');
+  assert(engagement.includes('song_retry'),'retry event wiring missing');
   assert(engagement.includes('retry()'),'retry must restart gameplay');
-  assertEquals(engagement.includes("name:'song_retry',userId,songId:song.id,difficulty,metadata:{score:result.score,accuracy:result.accuracy}});finishGame"),false,'retry must not call finishGame for the previous result');
-  assertEquals(engagement.includes("name:'song_retry',userId,songId:song.id,difficulty,metadata:{battle:true}});finishGame"),false,'battle rematch must not replay progression');
+  assertEquals(/song_retry[\s\S]{0,240}finishGame/.test(engagement),false,'retry wiring must not replay finishGame for the prior result');
 });
 
 Deno.test('cloud progression ignores stale async awards after a retry/new completion',()=>{
