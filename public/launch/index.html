@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#05050a" />
+  <meta name="description" content="Play RhythmTap, a fast three-lane browser rhythm game with progression, custom charts, and real-time two-player score battles." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="RhythmTap — Tap. Compete. Climb the ranks." />
+  <meta property="og:description" content="A mobile-first browser rhythm game with three difficulties, XP progression, custom chart imports, and real-time multiplayer." />
+  <meta property="og:url" content="https://jonnyt123.github.io/Rhythtap/launch/" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="canonical" href="https://jonnyt123.github.io/Rhythtap/launch/" />
+  <title>RhythmTap — Tap. Compete. Climb the ranks.</title>
+  <style>
+    :root{color-scheme:dark;--bg:#05050a;--panel:#0d0d16;--panel2:#12121e;--text:#f6f7fb;--muted:#a7abc0;--line:#24253a;--pink:#ff2d95;--cyan:#28d7ff;--violet:#8f5cff;--max:1160px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% 0%,rgba(143,92,255,.18),transparent 34rem),radial-gradient(circle at 90% 20%,rgba(40,215,255,.12),transparent 30rem),var(--bg);color:var(--text);line-height:1.55}a{color:inherit;text-decoration:none}.wrap{width:min(calc(100% - 32px),var(--max));margin:auto}.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 0;gap:20px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.02em}.brandmark{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 5%,var(--cyan) 6% 28%,var(--violet) 29% 55%,var(--pink) 56% 100%);box-shadow:0 0 30px rgba(143,92,255,.5)}.navlinks{display:flex;align-items:center;gap:18px;color:var(--muted);font-size:14px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;font-weight:800;border:1px solid transparent;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}.btn:hover{transform:translateY(-2px)}.btn.primary{background:linear-gradient(100deg,var(--pink),var(--violet),var(--cyan));color:#fff;box-shadow:0 12px 40px rgba(143,92,255,.28)}.btn.secondary{border-color:var(--line);background:rgba(255,255,255,.035)}.hero{padding:86px 0 62px;display:grid;grid-template-columns:1.18fr .82fr;align-items:center;gap:54px}.eyebrow{display:inline-flex;border:1px solid rgba(40,215,255,.28);background:rgba(40,215,255,.07);color:#bfefff;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.hero h1{font-size:clamp(48px,8vw,92px);line-height:.93;margin:22px 0 20px;letter-spacing:-.055em}.gradient{background:linear-gradient(90deg,#fff,var(--cyan) 34%,#bf9cff 64%,#ff7abc);-webkit-background-clip:text;background-clip:text;color:transparent}.lead{max-width:690px;font-size:clamp(18px,2.2vw,23px);color:var(--muted)}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}.facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.fact{padding:8px 11px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid var(--line);color:#cfd3e6;font-size:13px}.stage{position:relative;min-height:520px;display:grid;place-items:center}.phone{width:min(340px,78vw);aspect-ratio:9/18.8;border-radius:42px;padding:12px;background:#07070d;border:1px solid #33354c;box-shadow:0 34px 90px rgba(0,0,0,.55),0 0 80px rgba(143,92,255,.16);transform:rotate(3deg)}.screen{height:100%;border-radius:32px;overflow:hidden;position:relative;background:linear-gradient(#0a0a12,#111224 58%,#06060b)}.lanes{position:absolute;inset:9% 11% 13%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.lane{position:relative;border-left:1px solid rgba(255,255,255,.09);border-right:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.04))}.note{position:absolute;left:50%;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 10%,var(--cyan) 11% 38%,var(--violet) 39% 72%,var(--pink));box-shadow:0 0 22px rgba(40,215,255,.45)}.lane:nth-child(1) .note:nth-child(1){top:16%}.lane:nth-child(1) .note:nth-child(2){top:52%}.lane:nth-child(2) .note:nth-child(1){top:30%}.lane:nth-child(2) .note:nth-child(2){top:70%}.lane:nth-child(3) .note:nth-child(1){top:8%}.lane:nth-child(3) .note:nth-child(2){top:43%}.hitline{position:absolute;left:8%;right:8%;bottom:14%;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--pink),transparent);box-shadow:0 0 18px var(--cyan)}.pads{position:absolute;left:13%;right:13%;bottom:5%;display:flex;justify-content:space-between}.pad{width:54px;height:54px;border-radius:50%;border:2px solid rgba(255,255,255,.65);box-shadow:0 0 22px rgba(143,92,255,.4) inset,0 0 20px rgba(143,92,255,.18)}.score{position:absolute;left:0;right:0;top:4%;text-align:center;font-weight:900;letter-spacing:.12em;font-size:13px;color:#e9eaff}.glow{position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(70px);background:rgba(255,45,149,.2);right:-40px;bottom:0;z-index:-1}.section{padding:74px 0}.section h2{font-size:clamp(32px,5vw,54px);letter-spacing:-.04em;margin:0 0 14px}.sectionlead{color:var(--muted);max-width:730px;margin-bottom:30px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:20px;padding:22px;min-height:210px}.card h3{font-size:20px;margin:12px 0 8px}.card p{color:var(--muted);margin:0}.icon{font-size:26px}.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--panel)}.panel strong{color:#fff}.steps{counter-reset:step;display:grid;gap:14px;margin-top:20px}.step{display:flex;gap:15px;align-items:flex-start;color:var(--muted)}.step:before{counter-increment:step;content:counter(step);display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--pink));color:#fff;font-weight:900}.cta{padding:42px;border-radius:28px;border:1px solid rgba(143,92,255,.32);background:linear-gradient(120deg,rgba(143,92,255,.16),rgba(40,215,255,.08),rgba(255,45,149,.12));display:flex;align-items:center;justify-content:space-between;gap:26px}.cta h2{margin:0 0 8px}.cta p{margin:0;color:var(--muted)}footer{padding:40px 0 52px;color:#7f849b;font-size:13px}.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footlinks{display:flex;gap:16px;flex-wrap:wrap}@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:55px}.stage{min-height:470px}.grid{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}.navlinks a:not(.play){display:none}}@media(max-width:560px){.grid{grid-template-columns:1fr}.hero h1{font-size:54px}.hero{gap:22px}.section{padding:54px 0}.cta{padding:28px;align-items:flex-start;flex-direction:column}.phone{width:290px}.wrap{width:min(calc(100% - 22px),var(--max))}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+  </style>
+</head>
+<body>
+  <header class="wrap nav">
+    <a class="brand" href="/Rhythtap/launch/"><span class="brandmark" aria-hidden="true"></span><span>RhythmTap</span></a>
+    <nav class="navlinks" aria-label="Primary">
+      <a href="#features">Features</a><a href="#multiplayer">Multiplayer</a><a href="#custom">Custom charts</a><a class="btn primary play" href="/Rhythtap/">Play now</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="wrap hero">
+      <div>
+        <span class="eyebrow">Playable in your browser</span>
+        <h1>Tap. Compete.<br><span class="gradient">Climb the ranks.</span></h1>
+        <p class="lead">RhythmTap is a fast, mobile-first three-lane rhythm game built for instant play. Hit the notes, hold your combo, earn XP, chase higher scores, and challenge another player in real time.</p>
+        <div class="actions">
+          <a class="btn primary" href="/Rhythtap/">Play RhythmTap</a>
+          <a class="btn secondary" href="https://github.com/jonnyt123/Rhythtap">View on GitHub</a>
+        </div>
+        <div class="facts"><span class="fact">No install</span><span class="fact">Easy / Normal / Hard</span><span class="fact">Mobile + desktop</span><span class="fact">Real-time 1v1</span></div>
+      </div>
+      <div class="stage" aria-label="Stylized RhythmTap gameplay preview">
+        <div class="phone"><div class="screen"><div class="score">COMBO 128 · PERFECT</div><div class="lanes"><div class="lane"><span class="note"></span><span class="note"></span></div><div class="lane"><span class="note"></span><span class="note"></span></div><div class="lane"><span class="note"></span><span class="note"></span></div></div><div class="hitline"></div><div class="pads"><span class="pad"></span><span class="pad"></span><span class="pad"></span></div></div></div>
+        <div class="glow"></div>
+      </div>
+    </section>
+
+    <section class="wrap section" id="features">
+      <h2>Built around the part that matters: the hit.</h2>
+      <p class="sectionlead">Three clean lanes, circular notes, responsive timing, persistent progression, and quick sessions that work on a phone or desktop browser.</p>
+      <div class="grid">
+        <article class="card"><div class="icon">●●●</div><h3>Three-lane play</h3><p>Tap or hold notes as they reach the judgment line. Perfect, Great, Good, and Miss windows drive the score.</p></article>
+        <article class="card"><div class="icon">⚡</div><h3>Combo scoring</h3><p>Keep your streak alive to raise the multiplier and push a run beyond your previous best.</p></article>
+        <article class="card"><div class="icon">↗</div><h3>XP progression</h3><p>Create a RhythmTap ID to save progression, statistics, high scores, achievements, and profile data in the cloud.</p></article>
+        <article class="card"><div class="icon">◎</div><h3>Mobile-first</h3><p>Designed for touch input, responsive screens, safe areas, and browser play without an app-store install.</p></article>
+      </div>
+    </section>
+
+    <section class="wrap section" id="multiplayer">
+      <div class="split">
+        <div class="panel">
+          <span class="eyebrow">Real-time multiplayer</span>
+          <h2>Settle it in a score battle.</h2>
+          <p class="sectionlead">Create a private room, share a six-character code, and play a synchronized two-player match. Results are checked server-side before they count.</p>
+          <a class="btn primary" href="/Rhythtap/">Start a battle</a>
+        </div>
+        <div class="panel">
+          <h3>From room code to result</h3>
+          <div class="steps"><div class="step">Create or join a private room.</div><div class="step">Lock onto the same song and difficulty.</div><div class="step">Play the synchronized chart on separate devices.</div><div class="step">Compare server-verified results and rematch.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap section" id="custom">
+      <div class="split">
+        <div class="panel"><span class="eyebrow">Bring your own charts</span><h2>Import .tap files.</h2><p class="sectionlead">RhythmTap can import Phoenix-style <strong>.tap</strong> charts, attach local audio, save chart offsets, and keep custom content stored in your browser.</p><p>Supported local audio includes MP3, M4A, WAV, OGG, AAC, and FLAC. Custom audio stays on the player's device rather than being uploaded to RhythmTap's backend.</p></div>
+        <div class="panel"><span class="eyebrow">Cloud profile</span><h2>Your runs follow you.</h2><p class="sectionlead">Sign in with a RhythmTap ID to keep eligible progression, official-song high scores, public profile details, and core statistics across devices.</p><p>Or skip the account and jump straight into the game.</p></div>
+      </div>
+    </section>
+
+    <section class="wrap section">
+      <div class="cta"><div><h2>Ready for the first run?</h2><p>Open the game, pick a difficulty, and start tapping.</p></div><a class="btn primary" href="/Rhythtap/">Play RhythmTap</a></div>
+    </section>
+  </main>
+
+  <footer class="wrap"><div class="foot"><span>© 2026 RhythmTap</span><div class="footlinks"><a href="/Rhythtap/privacy.html">Privacy</a><a href="/Rhythtap/terms.html">Terms</a><a href="https://github.com/jonnyt123/Rhythtap">GitHub</a></div></div></footer>
+</body>
+</html>
