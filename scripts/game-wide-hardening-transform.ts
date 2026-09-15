@@ -7,6 +7,9 @@ const replaceRequired=(source:string,label:string,before:string,after:string)=>{
 
 const patchMain=(source:string)=>{
  let code=source;
+ code=replaceRequired(code,'synchronous lifecycle state commit',
+  "import {createRoot} from 'react-dom/client';",
+  "import {flushSync} from 'react-dom';\nimport {createRoot} from 'react-dom/client';");
  code=replaceRequired(code,'persisted note speed',
   "[speed,setSpeed]=useState(1)",
   "[speed,setSpeed]=useState(()=>{const value=Number(localStorage.getItem('ntr-speed')||1);return Number.isFinite(value)?Math.max(.7,Math.min(1.5,value)):1})");
@@ -19,6 +22,9 @@ const patchMain=(source:string)=>{
  code=replaceRequired(code,'verified battle high score',
   "useEffect(()=>{if(result.progressPending)return;const key=`ntr-high-${song.id}-${difficulty}${difficulty==='HARD'&&!song.id.startsWith('tap-')?'-v5':''}`;localStorage.setItem(key,String(Math.max(result.score,Number(localStorage.getItem(key)||0))))},[result.score,result.progressPending,song.id,difficulty]);",
   "useEffect(()=>{if(result.progressPending||(battle&&verifiedBattle?.validation!=='verified'))return;const finalScore=battle?verifiedBattle!.score:result.score,key=`ntr-high-${song.id}-${difficulty}${difficulty==='HARD'&&!song.id.startsWith('tap-')?'-v5':''}`;localStorage.setItem(key,String(Math.max(finalScore,Number(localStorage.getItem(key)||0))))},[result.score,result.progressPending,song.id,difficulty,battle,verifiedBattle?.score,verifiedBattle?.validation]);");
+ code=replaceRequired(code,'safari background pause lifecycle',
+  "useEffect(()=>{const handleVisibility=()=>{if(document.hidden&&ready&&!paused){backgroundPaused.current=true;pressed.current.clear();transport.current.pause();setPaused(true)}};document.addEventListener('visibilitychange',handleVisibility);return()=>document.removeEventListener('visibilitychange',handleVisibility)},[ready,paused]);",
+  "useEffect(()=>{const pauseForBackground=()=>{if(!ready||paused)return;backgroundPaused.current=true;pressed.current.clear();transport.current.pause();flushSync(()=>setPaused(true))},handleVisibility=()=>{if(document.hidden)pauseForBackground()};document.addEventListener('visibilitychange',handleVisibility);addEventListener('pagehide',pauseForBackground);return()=>{document.removeEventListener('visibilitychange',handleVisibility);removeEventListener('pagehide',pauseForBackground)}},[ready,paused]);");
  code=replaceRequired(code,'prune stale versioned audio',
   "const cache=await caches.open(AUDIO_CACHE),cached=await cache.match(path);if(cached){",
   "const cache=await caches.open(AUDIO_CACHE),cached=await cache.match(path);if(!cached){const target=new URL(path,location.href),keys=await cache.keys(),stale=keys.filter(request=>{const url=new URL(request.url);return url.origin===target.origin&&url.pathname===target.pathname&&url.href!==target.href});if(stale.length)await Promise.all(stale.map(request=>cache.delete(request)))}if(cached){");
