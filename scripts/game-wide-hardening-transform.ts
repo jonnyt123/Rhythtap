@@ -5,6 +5,12 @@ const replaceRequired=(source:string,label:string,before:string,after:string)=>{
  return source.replace(before,after);
 };
 
+const replaceSection=(source:string,label:string,startMarker:string,endMarker:string,after:string)=>{
+ const start=source.indexOf(startMarker),end=start<0?-1:source.indexOf(endMarker,start);
+ if(start<0||end<0)throw new Error(`[game-wide-hardening] Unable to patch ${label}; transformed layout changed.`);
+ return source.slice(0,start)+after+source.slice(end+endMarker.length);
+};
+
 const patchMain=(source:string)=>{
  let code=source;
  code=replaceRequired(code,'synchronous lifecycle state commit',
@@ -22,8 +28,9 @@ const patchMain=(source:string)=>{
  code=replaceRequired(code,'verified battle high score',
   "useEffect(()=>{if(result.progressPending)return;const key=`ntr-high-${song.id}-${difficulty}${difficulty==='HARD'&&!song.id.startsWith('tap-')?'-v5':''}`;localStorage.setItem(key,String(Math.max(result.score,Number(localStorage.getItem(key)||0))))},[result.score,result.progressPending,song.id,difficulty]);",
   "useEffect(()=>{if(result.progressPending||(battle&&verifiedBattle?.validation!=='verified'))return;const finalScore=battle?verifiedBattle!.score:result.score,key=`ntr-high-${song.id}-${difficulty}${difficulty==='HARD'&&!song.id.startsWith('tap-')?'-v5':''}`;localStorage.setItem(key,String(Math.max(finalScore,Number(localStorage.getItem(key)||0))))},[result.score,result.progressPending,song.id,difficulty,battle,verifiedBattle?.score,verifiedBattle?.validation]);");
- code=replaceRequired(code,'safari background pause lifecycle',
-  "useEffect(()=>{const handleVisibility=()=>{if(document.hidden&&ready&&!paused){backgroundPaused.current=true;pressed.current.clear();transport.current.pause();setPaused(true)}};document.addEventListener('visibilitychange',handleVisibility);return()=>document.removeEventListener('visibilitychange',handleVisibility)},[ready,paused]);",
+ code=replaceSection(code,'safari background pause lifecycle',
+  "useEffect(()=>{const handleVisibility=()=>{",
+  "},[ready,paused]);",
   "useEffect(()=>{const pauseForBackground=()=>{if(!ready||paused)return;backgroundPaused.current=true;pressed.current.clear();transport.current.pause();flushSync(()=>setPaused(true))},handleVisibility=()=>{if(document.hidden)pauseForBackground()};document.addEventListener('visibilitychange',handleVisibility);addEventListener('pagehide',pauseForBackground);return()=>{document.removeEventListener('visibilitychange',handleVisibility);removeEventListener('pagehide',pauseForBackground)}},[ready,paused]);");
  code=replaceRequired(code,'prune stale versioned audio',
   "const cache=await caches.open(AUDIO_CACHE),cached=await cache.match(path);if(cached){",
