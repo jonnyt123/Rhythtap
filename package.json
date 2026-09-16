@@ -7,6 +7,7 @@
     "prepare-audio": "node scripts/prepare-audio.mjs",
     "dev": "npm run prepare-audio && vite --host 0.0.0.0",
     "build": "npm run prepare-audio && tsc && vite build && node scripts/clean-build-audio.mjs",
+    "build:itch": "npm run prepare-audio && tsc && vite build --mode itch && node scripts/clean-build-audio.mjs dist-itch && node scripts/package-itch.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "test:regression": "node scripts/run-regression-suite.mjs",
     "qa:blockers": "node scripts/release-blocker-qa.mjs",
