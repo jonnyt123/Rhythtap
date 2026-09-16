@@ -3,82 +3,149 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#05050a" />
-  <meta name="description" content="Play RhythmTap, a fast three-lane browser rhythm game with progression, custom charts, and real-time two-player score battles." />
+  <meta name="theme-color" content="#050505" />
+  <meta name="description" content="Play RhythmTap, a hard-rock inspired three-lane browser rhythm game with progression, custom charts, and real-time score battles." />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="RhythmTap — Tap. Compete. Climb the ranks." />
+  <meta property="og:title" content="RhythmTap — Tap Hard. Play Loud." />
   <meta property="og:description" content="A mobile-first browser rhythm game with three difficulties, XP progression, custom chart imports, and real-time multiplayer." />
   <meta property="og:url" content="https://jonnyt123.github.io/Rhythtap/launch/" />
   <meta name="twitter:card" content="summary" />
   <link rel="canonical" href="https://jonnyt123.github.io/Rhythtap/launch/" />
-  <title>RhythmTap — Tap. Compete. Climb the ranks.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Roboto+Condensed:wght@400;700;900&display=swap" rel="stylesheet" />
+  <title>RhythmTap — Tap Hard. Play Loud.</title>
   <style>
-    :root{color-scheme:dark;--bg:#05050a;--panel:#0d0d16;--panel2:#12121e;--text:#f6f7fb;--muted:#a7abc0;--line:#24253a;--pink:#ff2d95;--cyan:#28d7ff;--violet:#8f5cff;--max:1160px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% 0%,rgba(143,92,255,.18),transparent 34rem),radial-gradient(circle at 90% 20%,rgba(40,215,255,.12),transparent 30rem),var(--bg);color:var(--text);line-height:1.55}a{color:inherit;text-decoration:none}.wrap{width:min(calc(100% - 32px),var(--max));margin:auto}.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 0;gap:20px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.02em}.brandmark{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 5%,var(--cyan) 6% 28%,var(--violet) 29% 55%,var(--pink) 56% 100%);box-shadow:0 0 30px rgba(143,92,255,.5)}.navlinks{display:flex;align-items:center;gap:18px;color:var(--muted);font-size:14px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;font-weight:800;border:1px solid transparent;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}.btn:hover{transform:translateY(-2px)}.btn.primary{background:linear-gradient(100deg,var(--pink),var(--violet),var(--cyan));color:#fff;box-shadow:0 12px 40px rgba(143,92,255,.28)}.btn.secondary{border-color:var(--line);background:rgba(255,255,255,.035)}.hero{padding:86px 0 62px;display:grid;grid-template-columns:1.18fr .82fr;align-items:center;gap:54px}.eyebrow{display:inline-flex;border:1px solid rgba(40,215,255,.28);background:rgba(40,215,255,.07);color:#bfefff;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.hero h1{font-size:clamp(48px,8vw,92px);line-height:.93;margin:22px 0 20px;letter-spacing:-.055em}.gradient{background:linear-gradient(90deg,#fff,var(--cyan) 34%,#bf9cff 64%,#ff7abc);-webkit-background-clip:text;background-clip:text;color:transparent}.lead{max-width:690px;font-size:clamp(18px,2.2vw,23px);color:var(--muted)}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}.facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.fact{padding:8px 11px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid var(--line);color:#cfd3e6;font-size:13px}.stage{position:relative;min-height:520px;display:grid;place-items:center}.phone{width:min(340px,78vw);aspect-ratio:9/18.8;border-radius:42px;padding:12px;background:#07070d;border:1px solid #33354c;box-shadow:0 34px 90px rgba(0,0,0,.55),0 0 80px rgba(143,92,255,.16);transform:rotate(3deg)}.screen{height:100%;border-radius:32px;overflow:hidden;position:relative;background:linear-gradient(#0a0a12,#111224 58%,#06060b)}.lanes{position:absolute;inset:9% 11% 13%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.lane{position:relative;border-left:1px solid rgba(255,255,255,.09);border-right:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.04))}.note{position:absolute;left:50%;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 10%,var(--cyan) 11% 38%,var(--violet) 39% 72%,var(--pink));box-shadow:0 0 22px rgba(40,215,255,.45)}.lane:nth-child(1) .note:nth-child(1){top:16%}.lane:nth-child(1) .note:nth-child(2){top:52%}.lane:nth-child(2) .note:nth-child(1){top:30%}.lane:nth-child(2) .note:nth-child(2){top:70%}.lane:nth-child(3) .note:nth-child(1){top:8%}.lane:nth-child(3) .note:nth-child(2){top:43%}.hitline{position:absolute;left:8%;right:8%;bottom:14%;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--pink),transparent);box-shadow:0 0 18px var(--cyan)}.pads{position:absolute;left:13%;right:13%;bottom:5%;display:flex;justify-content:space-between}.pad{width:54px;height:54px;border-radius:50%;border:2px solid rgba(255,255,255,.65);box-shadow:0 0 22px rgba(143,92,255,.4) inset,0 0 20px rgba(143,92,255,.18)}.score{position:absolute;left:0;right:0;top:4%;text-align:center;font-weight:900;letter-spacing:.12em;font-size:13px;color:#e9eaff}.glow{position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(70px);background:rgba(255,45,149,.2);right:-40px;bottom:0;z-index:-1}.section{padding:74px 0}.section h2{font-size:clamp(32px,5vw,54px);letter-spacing:-.04em;margin:0 0 14px}.sectionlead{color:var(--muted);max-width:730px;margin-bottom:30px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:20px;padding:22px;min-height:210px}.card h3{font-size:20px;margin:12px 0 8px}.card p{color:var(--muted);margin:0}.icon{font-size:26px}.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--panel)}.panel strong{color:#fff}.steps{counter-reset:step;display:grid;gap:14px;margin-top:20px}.step{display:flex;gap:15px;align-items:flex-start;color:var(--muted)}.step:before{counter-increment:step;content:counter(step);display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--pink));color:#fff;font-weight:900}.cta{padding:42px;border-radius:28px;border:1px solid rgba(143,92,255,.32);background:linear-gradient(120deg,rgba(143,92,255,.16),rgba(40,215,255,.08),rgba(255,45,149,.12));display:flex;align-items:center;justify-content:space-between;gap:26px}.cta h2{margin:0 0 8px}.cta p{margin:0;color:var(--muted)}footer{padding:40px 0 52px;color:#7f849b;font-size:13px}.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footlinks{display:flex;gap:16px;flex-wrap:wrap}@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:55px}.stage{min-height:470px}.grid{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}.navlinks a:not(.play){display:none}}@media(max-width:560px){.grid{grid-template-columns:1fr}.hero h1{font-size:54px}.hero{gap:22px}.section{padding:54px 0}.cta{padding:28px;align-items:flex-start;flex-direction:column}.phone{width:290px}.wrap{width:min(calc(100% - 22px),var(--max))}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+    :root{
+      color-scheme:dark;
+      --bg:#030405;
+      --bg2:#090b0e;
+      --panel:#111418;
+      --panel2:#171b20;
+      --steel:#6f7780;
+      --steel2:#a3a9af;
+      --bone:#eee8de;
+      --muted:#969da5;
+      --red:#c51d25;
+      --redhot:#f05046;
+      --ember:#c47a32;
+      --line:#3c4249;
+      --max:1180px;
+      --display:'Metal Mania',Impact,'Arial Black',system-ui,sans-serif;
+      --body:'Roboto Condensed',Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--bg)}
+    body{
+      margin:0;color:var(--bone);font-family:var(--body);line-height:1.55;overflow-x:hidden;
+      background:
+        radial-gradient(circle at 12% 4%,#8a151d46 0 3%,transparent 23rem),
+        radial-gradient(circle at 92% 9%,#b66b2230 0 4%,transparent 25rem),
+        repeating-linear-gradient(115deg,transparent 0 54px,#ffffff04 55px,transparent 57px 94px),
+        linear-gradient(165deg,#13161a 0,#07090b 43%,#020304 100%);
+    }
+    body:before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.34;
+      background:repeating-linear-gradient(0deg,transparent 0 3px,#fff 4px,transparent 5px 9px);
+      mix-blend-mode:soft-light;
+    }
+    a{color:inherit;text-decoration:none}.wrap{width:min(calc(100% - 32px),var(--max));margin:auto}
+    .nav{height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #8a91992d}
+    .brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-size:24px;letter-spacing:.06em;text-transform:uppercase}
+    .brandmark{position:relative;width:39px;height:39px;display:grid;place-items:center;clip-path:polygon(50% 0,100% 30%,83% 100%,17% 100%,0 30%);background:linear-gradient(145deg,#3a4047,#0a0c0f);border:1px solid #737b84;box-shadow:0 0 22px #a6171d38}
+    .brandmark:before{content:"⚡";font:900 22px/1 Impact;color:var(--redhot);text-shadow:0 0 8px #b21b20}
+    .navlinks{display:flex;align-items:center;gap:20px;color:#aab0b6;font-size:14px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+    .navlinks>a:not(.btn):hover{color:#fff}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border:1px solid #737b8466;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;background:linear-gradient(180deg,#262b31,#0c0e11);box-shadow:inset 0 1px #ffffff18,inset 0 -2px #0009,0 9px 24px #0008}
+    .btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    .btn.primary{color:#fff4ed;background:linear-gradient(180deg,#df4239,#a7181f 58%,#681016);border-color:#ef776d66;box-shadow:inset 0 1px #ffb7ad36,inset 0 -2px #390509,0 10px 26px #000b,0 0 18px #a9171d4d}
+    .hero{position:relative;display:grid;grid-template-columns:1.06fr .94fr;align-items:center;gap:48px;min-height:calc(100svh - 76px);padding:72px 0 64px}
+    .hero:before{content:"";position:absolute;left:-7vw;right:-7vw;top:12%;height:140px;z-index:-1;opacity:.38;background:linear-gradient(61deg,transparent 48%,#959ca41a 49% 51%,transparent 52%) 0 0/82px 56px,linear-gradient(-61deg,transparent 48%,#959ca41a 49% 51%,transparent 52%) 0 0/82px 56px;border-top:1px solid #9ca3aa28;border-bottom:1px solid #ffffff08}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #b43b3f66;background:#6511175c;color:#ee8a82;font:900 11px/1 var(--body);letter-spacing:.17em;text-transform:uppercase}
+    .eyebrow:before{content:"";width:7px;height:7px;transform:rotate(45deg);background:var(--redhot);box-shadow:0 0 9px #d5262e}
+    .hero h1{margin:20px 0 18px;font-family:var(--display);font-size:clamp(60px,9.4vw,116px);line-height:.77;letter-spacing:.01em;text-transform:uppercase;text-shadow:0 5px #000,5px 7px 0 #5e0d12,0 0 25px #a8192042}
+    .hero h1 .accent{display:block;color:var(--redhot);text-shadow:0 4px #5e0d12,0 0 17px #ad1c245c}
+    .lead{max-width:690px;margin:26px 0 0;font-size:clamp(18px,2vw,23px);color:#adb1b3}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+    .facts{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px}.fact{padding:7px 10px;border:1px solid #60676f5b;background:#0a0c0f;color:#bfc3c6;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+    .stage{position:relative;min-height:585px;display:grid;place-items:center}
+    .speaker{position:absolute;width:118px;top:17%;bottom:9%;border:1px solid #7f87904a;background:linear-gradient(145deg,#1c2025,#07090b);box-shadow:inset 0 0 0 4px #030405,0 26px 52px #000b;opacity:.78}
+    .speaker.left{left:0;transform:rotate(-2deg)}.speaker.right{right:0;transform:rotate(2deg)}
+    .speaker:before,.speaker:after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,#050607 0 38%,#242a30 39% 49%,#07080a 50%);border:1px solid #6c737a55;box-shadow:inset 0 0 18px #000}
+    .speaker:before{width:76px;height:76px;top:18%}.speaker:after{width:82px;height:82px;bottom:16%}
+    .phone{position:relative;z-index:2;width:min(348px,77vw);aspect-ratio:9/18.8;padding:11px;border:1px solid #858c9466;border-radius:23px;background:linear-gradient(145deg,#272c31,#07090b 66%);box-shadow:inset 0 1px #ffffff25,inset 0 -3px #000,0 36px 90px #000d,0 0 55px #8d141a32;transform:rotate(2deg);clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)}
+    .screen{height:100%;overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 0,#68101635,transparent 32%),linear-gradient(#121519,#050607 70%);border:1px solid #343a40}
+    .score{position:absolute;left:0;right:0;top:4%;text-align:center;font:900 12px/1 var(--body);letter-spacing:.15em;color:#eae5dc}.lanes{position:absolute;inset:10% 12% 13%;display:grid;grid-template-columns:repeat(3,1fr)}
+    .lane{position:relative;border-left:1px solid #7e858c33;background:linear-gradient(180deg,transparent,#ffffff03)}.lane:last-child{border-right:1px solid #7e858c33}
+    .note{position:absolute;left:50%;width:31px;height:31px;margin-left:-15.5px;border-radius:50%;border:2px solid #e8e0d5;background:radial-gradient(circle at 36% 30%,#fff 0 7%,var(--tone) 10% 44%,#292d31 72%);box-shadow:0 0 12px color-mix(in srgb,var(--tone) 52%,transparent),inset 0 -4px 7px #0008}.lane:nth-child(1){--tone:#d34b45}.lane:nth-child(2){--tone:#c47a32}.lane:nth-child(3){--tone:#aeb4ba}
+    .lane:nth-child(1) .note:nth-child(1){top:16%}.lane:nth-child(1) .note:nth-child(2){top:53%}.lane:nth-child(2) .note:nth-child(1){top:30%}.lane:nth-child(2) .note:nth-child(2){top:70%}.lane:nth-child(3) .note:nth-child(1){top:8%}.lane:nth-child(3) .note:nth-child(2){top:43%}
+    .hitline{position:absolute;left:8%;right:8%;bottom:14%;height:2px;background:linear-gradient(90deg,transparent,#7b8085,#fff,#7b8085,transparent)}
+    .pads{position:absolute;left:13%;right:13%;bottom:4.5%;display:flex;justify-content:space-between}.pad{width:56px;height:56px;border-radius:50%;border:2px solid #bfc4c8;background:radial-gradient(circle,#1a1e22 0 45%,#08090b 47% 66%,#611116 67%);box-shadow:inset 0 0 13px #000,0 0 11px #8d151b55}
+    .beam{position:absolute;top:0;width:165px;height:430px;filter:blur(3px);opacity:.13;z-index:0;clip-path:polygon(44% 0,56% 0,100% 100%,0 100%)}.beam.red{left:6%;background:linear-gradient(#ee3b38,transparent);transform:rotate(-8deg)}.beam.amber{right:6%;background:linear-gradient(#c97932,transparent);transform:rotate(8deg)}
+    .section{padding:84px 0}.section-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:28px;border-bottom:1px solid #6d747b42;padding-bottom:17px}.section h2{font-family:var(--display);font-size:clamp(38px,5.8vw,66px);line-height:.9;letter-spacing:.02em;text-transform:uppercase;margin:0}.sectionlead{color:#9da2a7;max-width:720px;margin:12px 0 0;font-size:18px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card,.panel{position:relative;background:repeating-linear-gradient(135deg,#ffffff03 0 1px,transparent 1px 14px),linear-gradient(180deg,#191d21,#090b0e);border:1px solid #656c7355;box-shadow:inset 0 1px #ffffff10,inset 0 -2px #000b,0 12px 28px #0008;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+    .card{padding:24px;min-height:230px}.card:before,.panel:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--redhot),#661015)}.card h3,.panel h3{margin:14px 0 8px;text-transform:uppercase;font-size:21px;letter-spacing:.035em}.card p,.panel p{color:#9da2a7;margin:0}.icon{width:52px;height:52px;display:grid;place-items:center;border-radius:50%;border:1px solid #777f875d;background:radial-gradient(circle,#292e34,#090b0e 72%);color:#e45850;font-size:20px;box-shadow:0 0 16px #9c171d32}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{padding:34px}.panel h2{font-size:clamp(38px,5vw,58px);margin:18px 0 13px}.panel strong{color:#fff}.steps{counter-reset:step;display:grid;gap:14px;margin-top:20px}.step{display:flex;gap:14px;align-items:flex-start;color:#a4a9ad}.step:before{counter-increment:step;content:counter(step);display:grid;place-items:center;flex:0 0 36px;height:36px;border:1px solid #b8414266;background:linear-gradient(180deg,#b62528,#5e0d11);color:#fff;font-weight:900;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+    .cta{position:relative;overflow:hidden;padding:46px;border:1px solid #91464a66;background:linear-gradient(105deg,#6b10163b,transparent 44%),repeating-linear-gradient(135deg,#ffffff03 0 1px,transparent 1px 14px),linear-gradient(180deg,#191b1e,#090a0c);display:flex;align-items:center;justify-content:space-between;gap:30px;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);box-shadow:0 18px 40px #0008}.cta:after{content:"RHYTHMTAP";position:absolute;right:-10px;bottom:-30px;font:400 110px/1 var(--display);color:#ffffff06;letter-spacing:.04em;pointer-events:none}.cta h2{font-family:var(--display);font-size:clamp(38px,5vw,60px);line-height:.9;margin:0 0 10px;text-transform:uppercase}.cta p{margin:0;color:#9fa4a9;font-size:18px}
+    footer{padding:42px 0 54px;color:#747b82;font-size:13px;border-top:1px solid #5c636a30}.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footlinks{display:flex;gap:18px;flex-wrap:wrap;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+    @media(max-width:920px){.hero{grid-template-columns:1fr;padding-top:54px}.stage{min-height:520px}.speaker{display:none}.grid{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}.navlinks a:not(.play){display:none}.section-head{align-items:flex-start;flex-direction:column}}
+    @media(max-width:560px){.wrap{width:min(calc(100% - 22px),var(--max))}.nav{height:66px}.brand{font-size:20px}.brandmark{width:34px;height:34px}.hero{min-height:auto;padding:50px 0 44px;gap:20px}.hero h1{font-size:58px}.lead{font-size:17px}.stage{min-height:455px}.phone{width:286px}.grid{grid-template-columns:1fr}.section{padding:58px 0}.sectionlead{font-size:16px}.card{min-height:auto}.panel{padding:26px 22px}.cta{padding:30px 24px;align-items:flex-start;flex-direction:column}.cta:after{font-size:72px}.btn{min-height:48px;padding:0 18px}.fact{font-size:11px}}
+    @media(max-width:360px){.hero h1{font-size:50px}.phone{width:264px}.nav .play{padding:0 13px;font-size:11px}.brand span:last-child{display:none}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
   </style>
 </head>
 <body>
   <header class="wrap nav">
     <a class="brand" href="/Rhythtap/launch/"><span class="brandmark" aria-hidden="true"></span><span>RhythmTap</span></a>
     <nav class="navlinks" aria-label="Primary">
-      <a href="#features">Features</a><a href="#multiplayer">Multiplayer</a><a href="#custom">Custom charts</a><a class="btn primary play" href="/Rhythtap/">Play now</a>
+      <a href="#features">Features</a><a href="#multiplayer">Multiplayer</a><a href="#custom">Custom Charts</a><a class="btn primary play" href="/Rhythtap/">Play Now</a>
     </nav>
   </header>
 
   <main>
     <section class="wrap hero">
       <div>
-        <span class="eyebrow">Playable in your browser</span>
-        <h1>Tap. Compete.<br><span class="gradient">Climb the ranks.</span></h1>
-        <p class="lead">RhythmTap is a fast, mobile-first three-lane rhythm game built for instant play. Hit the notes, hold your combo, earn XP, chase higher scores, and challenge another player in real time.</p>
+        <span class="eyebrow">Browser rhythm game</span>
+        <h1>Tap Hard.<span class="accent">Play Loud.</span></h1>
+        <p class="lead">RhythmTap is a fast three-lane rhythm game built with the energy of a live metal show. Hit the notes, hold the combo, earn XP, chase higher scores, and battle another player in real time.</p>
         <div class="actions">
           <a class="btn primary" href="/Rhythtap/">Play RhythmTap</a>
-          <a class="btn secondary" href="https://github.com/jonnyt123/Rhythtap">View on GitHub</a>
+          <a class="btn" href="https://github.com/jonnyt123/Rhythtap">View on GitHub</a>
         </div>
         <div class="facts"><span class="fact">No install</span><span class="fact">Easy / Normal / Hard</span><span class="fact">Mobile + desktop</span><span class="fact">Real-time 1v1</span></div>
       </div>
+
       <div class="stage" aria-label="Stylized RhythmTap gameplay preview">
+        <div class="beam red"></div><div class="beam amber"></div><div class="speaker left"></div><div class="speaker right"></div>
         <div class="phone"><div class="screen"><div class="score">COMBO 128 · PERFECT</div><div class="lanes"><div class="lane"><span class="note"></span><span class="note"></span></div><div class="lane"><span class="note"></span><span class="note"></span></div><div class="lane"><span class="note"></span><span class="note"></span></div></div><div class="hitline"></div><div class="pads"><span class="pad"></span><span class="pad"></span><span class="pad"></span></div></div></div>
-        <div class="glow"></div>
       </div>
     </section>
 
     <section class="wrap section" id="features">
-      <h2>Built around the part that matters: the hit.</h2>
-      <p class="sectionlead">Three clean lanes, circular notes, responsive timing, persistent progression, and quick sessions that work on a phone or desktop browser.</p>
+      <div class="section-head"><div><span class="eyebrow">Built for the hit</span><h2>Three lanes. No filler.</h2></div><p class="sectionlead">Fast sessions, circular notes, responsive timing and persistent progression—designed to feel at home on a phone or desktop browser.</p></div>
       <div class="grid">
-        <article class="card"><div class="icon">●●●</div><h3>Three-lane play</h3><p>Tap or hold notes as they reach the judgment line. Perfect, Great, Good, and Miss windows drive the score.</p></article>
-        <article class="card"><div class="icon">⚡</div><h3>Combo scoring</h3><p>Keep your streak alive to raise the multiplier and push a run beyond your previous best.</p></article>
-        <article class="card"><div class="icon">↗</div><h3>XP progression</h3><p>Create a RhythmTap ID to save progression, statistics, high scores, achievements, and profile data in the cloud.</p></article>
-        <article class="card"><div class="icon">◎</div><h3>Mobile-first</h3><p>Designed for touch input, responsive screens, safe areas, and browser play without an app-store install.</p></article>
+        <article class="card"><div class="icon">●●●</div><h3>Three-lane play</h3><p>Tap or hold notes as they reach the judgment line. Perfect, Great, Good and Miss windows drive the score.</p></article>
+        <article class="card"><div class="icon">⚡</div><h3>Combo scoring</h3><p>Keep the streak alive to raise your multiplier and push a run beyond your previous best.</p></article>
+        <article class="card"><div class="icon">↗</div><h3>XP progression</h3><p>Create a RhythmTap ID to save progression, statistics, high scores, achievements and profile data.</p></article>
+        <article class="card"><div class="icon">◎</div><h3>Mobile-first</h3><p>Built for touch input, safe areas and full browser play without an app-store install.</p></article>
       </div>
     </section>
 
     <section class="wrap section" id="multiplayer">
       <div class="split">
-        <div class="panel">
-          <span class="eyebrow">Real-time multiplayer</span>
-          <h2>Settle it in a score battle.</h2>
-          <p class="sectionlead">Create a private room, share a six-character code, and play a synchronized two-player match. Results are checked server-side before they count.</p>
-          <a class="btn primary" href="/Rhythtap/">Start a battle</a>
-        </div>
-        <div class="panel">
-          <h3>From room code to result</h3>
-          <div class="steps"><div class="step">Create or join a private room.</div><div class="step">Lock onto the same song and difficulty.</div><div class="step">Play the synchronized chart on separate devices.</div><div class="step">Compare server-verified results and rematch.</div></div>
-        </div>
+        <div class="panel"><span class="eyebrow">Real-time multiplayer</span><h2>Settle it in a score battle.</h2><p class="sectionlead">Create a private room, share a six-character code and play a synchronized two-player match. Results are checked server-side before they count.</p><a class="btn primary" href="/Rhythtap/">Start a Battle</a></div>
+        <div class="panel"><h3>From room code to result</h3><div class="steps"><div class="step">Create or join a private room.</div><div class="step">Lock onto the same song and difficulty.</div><div class="step">Play the synchronized chart on separate devices.</div><div class="step">Compare server-verified results and rematch.</div></div></div>
       </div>
     </section>
 
     <section class="wrap section" id="custom">
       <div class="split">
-        <div class="panel"><span class="eyebrow">Bring your own charts</span><h2>Import .tap files.</h2><p class="sectionlead">RhythmTap can import Phoenix-style <strong>.tap</strong> charts, attach local audio, save chart offsets, and keep custom content stored in your browser.</p><p>Supported local audio includes MP3, M4A, WAV, OGG, AAC, and FLAC. Custom audio stays on the player's device rather than being uploaded to RhythmTap's backend.</p></div>
-        <div class="panel"><span class="eyebrow">Cloud profile</span><h2>Your runs follow you.</h2><p class="sectionlead">Sign in with a RhythmTap ID to keep eligible progression, official-song high scores, public profile details, and core statistics across devices.</p><p>Or skip the account and jump straight into the game.</p></div>
+        <div class="panel"><span class="eyebrow">Bring your own charts</span><h2>Import .tap files.</h2><p class="sectionlead">RhythmTap can import Phoenix-style <strong>.tap</strong> charts, attach local audio, save chart offsets and keep custom content stored in your browser.</p><p>Supported local audio includes MP3, M4A, WAV, OGG, AAC and FLAC. Custom audio stays on the player's device rather than being uploaded.</p></div>
+        <div class="panel"><span class="eyebrow">Cloud profile</span><h2>Your runs follow you.</h2><p class="sectionlead">Sign in with a RhythmTap ID to keep eligible progression, official-song high scores, public profile details and core statistics across devices.</p><p>Or skip the account and jump straight into the game.</p></div>
       </div>
     </section>
 
-    <section class="wrap section">
-      <div class="cta"><div><h2>Ready for the first run?</h2><p>Open the game, pick a difficulty, and start tapping.</p></div><a class="btn primary" href="/Rhythtap/">Play RhythmTap</a></div>
-    </section>
+    <section class="wrap section"><div class="cta"><div><h2>Ready to hit the first note?</h2><p>Pick a difficulty, turn it up and start tapping.</p></div><a class="btn primary" href="/Rhythtap/">Play RhythmTap</a></div></section>
   </main>
 
   <footer class="wrap"><div class="foot"><span>© 2026 RhythmTap</span><div class="footlinks"><a href="/Rhythtap/privacy.html">Privacy</a><a href="/Rhythtap/terms.html">Terms</a><a href="https://github.com/jonnyt123/Rhythtap">GitHub</a></div></div></footer>
