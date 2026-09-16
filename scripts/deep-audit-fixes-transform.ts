@@ -9,7 +9,7 @@ const patchMain=(source:string)=>{
  let code=source;
  code=replaceRequired(code,'indexeddb open failure handling',
   "const openAudioStore=()=>new Promise<IDBDatabase>((resolve,reject)=>{const request=indexedDB.open('rhythtap-audio',1);request.onupgradeneeded=()=>request.result.createObjectStore('tracks');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});",
-  "const openAudioStore=()=>new Promise<IDBDatabase>((resolve,reject)=>{if(typeof indexedDB==='undefined'){reject(new Error('Local audio storage is unavailable in this browser.'));return}const request=indexedDB.open('rhythtap-audio',1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('tracks'))request.result.createObjectStore('tracks')};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('Unable to open local audio storage.'));request.onblocked=()=>reject(new Error('Local audio storage is blocked by another RhythmTap tab. Close other tabs and try again.'))});"
+  "const openAudioStore=()=>new Promise<IDBDatabase>((resolve,reject)=>{if(typeof indexedDB==='undefined'){reject(new Error('Local audio storage is unavailable in this browser.'));return}const request=indexedDB.open('rhythtap-audio',1);let settled=false;request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('tracks'))request.result.createObjectStore('tracks')};request.onsuccess=()=>{if(settled){request.result.close();return}settled=true;resolve(request.result)};request.onerror=()=>{if(settled)return;settled=true;reject(request.error||new Error('Unable to open local audio storage.'))};request.onblocked=()=>{if(settled)return;settled=true;reject(new Error('Local audio storage is blocked by another RhythmTap tab. Close other tabs and try again.'))}});"
  );
  code=replaceRequired(code,'indexeddb write abort handling',
   "const storeAudio=async(id:string,file:File)=>{const db=await openAudioStore();await new Promise<void>((resolve,reject)=>{const transaction=db.transaction('tracks','readwrite');transaction.objectStore('tracks').put(file,id);transaction.oncomplete=()=>resolve();transaction.onerror=()=>reject(transaction.error)});db.close()};",
@@ -41,7 +41,7 @@ const patchMain=(source:string)=>{
  );
  code=replaceRequired(code,'itch safe service worker registration',
   "if('serviceWorker'in navigator)addEventListener('load',()=>{void navigator.serviceWorker.register(import.meta.env.BASE_URL+'sw.js',{scope:import.meta.env.BASE_URL})});",
-  "if(import.meta.env.MODE!=='itch'&&'serviceWorker'in navigator)addEventListener('load',()=>{void navigator.serviceWorker.register(import.meta.env.BASE_URL+'sw.js',{scope:import.meta.env.BASE_URL}).catch(error=>console.warn('[sw] registration failed',error))});"
+  "if(import.meta.env.MODE!=='itch'&&'serviceWorker'in navigator)addEventListener('load',()=>{const swUrl=import.meta.env.BASE_URL+'sw.js?v='+encodeURIComponent(AUDIO_BUILD);void navigator.serviceWorker.register(swUrl,{scope:import.meta.env.BASE_URL}).catch(error=>console.warn('[sw] registration failed',error))});"
  );
  return code;
 };
