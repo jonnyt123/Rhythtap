@@ -48,7 +48,8 @@ const patchMain=(source:string)=>{
 
 export function deepAuditFixesTransform():Plugin{
  return {name:'rhythtap-deep-audit-fixes-transform',enforce:'pre',transform(source,id){
-  if(!id.replaceAll('\\\\','/').endsWith('/src/main.tsx'))return null;
+  const normalized=id.split(String.fromCharCode(92)).join('/');
+  if(!normalized.endsWith('/src/main.tsx'))return null;
   return{code:patchMain(source),map:null};
  }};
 }
