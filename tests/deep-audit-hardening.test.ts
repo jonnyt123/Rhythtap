@@ -24,6 +24,7 @@ Deno.test('local audio persistence handles restricted and aborted IndexedDB oper
  assert(deepAudit.includes('transaction.onabort'));
  assert(deepAudit.includes('finally{db.close()}'));
  assert(deepAudit.includes("request.onblocked"));
+ assert(deepAudit.includes('if(settled){request.result.close();return}'));
  assert(deepAudit.includes("deleteStoredAudio(id).catch"));
 });
 
@@ -38,19 +39,25 @@ Deno.test('pending media metadata waits are explicitly cancelled',()=>{
  assert(deepAudit.includes("media.dispatchEvent(new Event('rhythmtap-cancel'))"));
 });
 
-Deno.test('itch runtime does not attempt service worker registration',()=>{
+Deno.test('itch runtime does not attempt service worker registration and web worker URL is build-versioned',()=>{
  assert(deepAudit.includes("import.meta.env.MODE!=='itch'"));
+ assert(deepAudit.includes("sw.js?v="));
+ assert(deepAudit.includes('AUDIO_BUILD'));
  assert(deepAudit.includes("serviceWorker.register"));
  assert(vite.includes('deepAuditFixesTransform()'));
 });
 
-Deno.test('service worker retires stale shell and runtime caches and has explicit offline fallback',()=>{
- assert(serviceWorker.includes("SHELL_CACHE='rhythtap-shell-v2'"));
- assert(serviceWorker.includes("RUNTIME_CACHE='rhythtap-runtime-v2'"));
+Deno.test('service worker versions caches, avoids page-to-shell cache poisoning, and retires stale generations',()=>{
+ assert(serviceWorker.includes("searchParams.get('v')"));
+ assert(serviceWorker.includes("'rhythtap-shell-'+BUILD"));
+ assert(serviceWorker.includes("'rhythtap-runtime-'+BUILD"));
  assert(serviceWorker.includes("key.startsWith('rhythtap-runtime-')"));
+ assert(serviceWorker.includes('const isAppShellPath='));
+ assert(serviceWorker.includes('const appShell=isAppShellPath(url.pathname)'));
+ assert(serviceWorker.includes('if(response.ok&&appShell)'));
+ assert(serviceWorker.includes('if(appShell){const cached=await caches.match(BASE)'));
  assert(serviceWorker.includes("url.pathname.endsWith('/sw.js')"));
  assert(serviceWorker.includes("status:503"));
- assert(serviceWorker.includes('if(response.ok)'));
 });
 
 Deno.test('itch packager strips website-only files and rejects dev audio versions',()=>{
