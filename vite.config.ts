@@ -23,7 +23,15 @@ import { gameWideHardeningTransform } from './scripts/game-wide-hardening-transf
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
-export default defineConfig({
-  plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), react()],
-  base: isVercel ? '/' : '/Rhythtap/',
+export default defineConfig(({ mode }) => {
+  const isItch = mode === 'itch';
+
+  return {
+    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), react()],
+    base: isItch ? './' : (isVercel ? '/' : '/Rhythtap/'),
+    build: isItch ? {
+      outDir: 'dist-itch',
+      emptyOutDir: true,
+    } : undefined,
+  };
 });
