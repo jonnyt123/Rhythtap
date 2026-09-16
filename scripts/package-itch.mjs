@@ -5,6 +5,8 @@ import { deflateRawSync } from 'node:zlib';
 const sourceDir = path.resolve('dist-itch');
 const outputDir = path.resolve('artifacts');
 const outputFile = path.join(outputDir, 'rhythmtap-itch.zip');
+const excludedFromItch = relative => relative === 'sw.js' || relative === 'robots.txt' || relative === 'sitemap.xml' || relative.startsWith('launch/');
+const textExtensions = new Set(['.html', '.js', '.mjs', '.css', '.json', '.txt', '.xml']);
 
 const crcTable = new Uint32Array(256);
 for (let n = 0; n < 256; n += 1) {
@@ -37,7 +39,7 @@ async function collectFiles(dir, root = dir) {
   return files.sort((a, b) => a.relative.localeCompare(b.relative));
 }
 
-async function verifyBuild() {
+async function verifyBuild(files) {
   const indexPath = path.join(sourceDir, 'index.html');
   const html = await readFile(indexPath, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/gi)].map(match => match[1]);
@@ -58,6 +60,17 @@ async function verifyBuild() {
     } catch {
       throw new Error(`Missing file referenced by index.html: ${ref}`);
     }
+  }
+
+  for (const file of files) {
+    if (!textExtensions.has(path.extname(file.relative).toLowerCase())) continue;
+    const text = await readFile(file.absolute, 'utf8');
+    if (text.includes('?v=dev')) throw new Error(`itch.io build contains development audio versioning in ${file.relative}`);
+  }
+
+  if (process.env.CI) {
+    const buildId = String(process.env.VITE_RHYTHTAP_BUILD || '').trim();
+    if (!buildId || buildId === 'dev') throw new Error('CI itch.io builds require an immutable VITE_RHYTHTAP_BUILD identifier.');
   }
 }
 
@@ -134,14 +147,16 @@ async function makeZip(files) {
   return Buffer.concat([...chunks, ...central, end]);
 }
 
-await verifyBuild();
-const files = await collectFiles(sourceDir);
+const allFiles = await collectFiles(sourceDir);
+await verifyBuild(allFiles);
+const files = allFiles.filter(file => !excludedFromItch(file.relative));
 if (!files.some(file => file.relative === 'index.html')) throw new Error('itch.io package must contain index.html at the ZIP root.');
+if (files.some(file => excludedFromItch(file.relative))) throw new Error('itch.io package contains website-only files.');
 
 await mkdir(outputDir, { recursive: true });
 const archive = await makeZip(files);
 await writeFile(outputFile, archive);
 
 console.log(`itch.io package ready: ${path.relative(process.cwd(), outputFile)}`);
-console.log(`Files: ${files.length}`);
+console.log(`Files: ${files.length} (${allFiles.length - files.length} website-only files excluded)`);
 console.log(`ZIP size: ${(archive.length / 1024 / 1024).toFixed(2)} MiB`);
