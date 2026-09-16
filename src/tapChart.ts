@@ -29,7 +29,12 @@ export function parseTapChart(text:string):ImportedTapChart{
   raw.push({x:fields[0],time});
  }
  if(!raw.length)throw new Error('This .tap file does not contain any playable notes.');
- const xPositions=[...new Set(raw.map(note=>note.x))].sort((a,b)=>a-b),laneForX=(x:number)=>{if(xPositions.length===1)return 1;const rank=xPositions.indexOf(x);return Math.max(0,Math.min(2,Math.round(rank/(xPositions.length-1)*2)))};
- const notes=raw.sort((a,b)=>a.time-b.time).map((note,id)=>({id,time:note.time,lane:laneForX(note.x)}));
+ const xPositions=[...new Set(raw.map(note=>note.x))].sort((a,b)=>a-b);
+ const lanesByX=new Map<number,number>();
+ for(let rank=0;rank<xPositions.length;rank++){
+  const lane=xPositions.length===1?1:Math.max(0,Math.min(2,Math.round(rank/(xPositions.length-1)*2)));
+  lanesByX.set(xPositions[rank],lane);
+ }
+ const notes=raw.sort((a,b)=>a.time-b.time).map((note,id)=>({id,time:note.time,lane:lanesByX.get(note.x)??1}));
  return{title:meta.title||'Imported Chart',artist:meta.artist||'TAP CHART',sourceId:meta.id||String(Date.now()),notes,duration:notes.at(-1)!.time/1000+3};
 }
