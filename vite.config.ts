@@ -20,6 +20,7 @@ import { highResolutionMediaClockTransform } from './scripts/high-resolution-med
 import { engagementUiTransform } from './scripts/engagement-ui-transform.ts';
 import { stripeBillingTransform } from './scripts/stripe-billing-transform.ts';
 import { gameWideHardeningTransform } from './scripts/game-wide-hardening-transform.ts';
+import { deepAuditFixesTransform } from './scripts/deep-audit-fixes-transform.ts';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => {
   const isItch = mode === 'itch';
 
   return {
-    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), react()],
+    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), deepAuditFixesTransform(), react()],
     base: isItch ? './' : (isVercel ? '/' : '/Rhythtap/'),
     build: isItch ? {
       outDir: 'dist-itch',
