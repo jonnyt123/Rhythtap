@@ -26,6 +26,7 @@ const denoTests=[
  ['tests/stripe-billing.test.ts'],
  ['tests/pro-badge.test.ts'],
  ['tests/itch-release-hardening.test.ts'],
+ ['tests/deep-audit-hardening.test.ts'],
  ['--node-modules-dir=auto','tests/weighted-v3-parity.test.ts'],
 ];
 for(const args of denoTests)run('deno',['test','--allow-read',...args]);
