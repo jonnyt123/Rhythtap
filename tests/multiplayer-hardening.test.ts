@@ -73,7 +73,8 @@ Deno.test('versioned audio cache removes stale copies and clear-downloads remove
 });
 
 Deno.test('service worker derives deployment base instead of assuming GitHub Pages',()=>{
- assert(serviceWorker.includes("const BASE=new URL('./',self.location.href).pathname"));
+ assert(serviceWorker.includes("const scriptUrl=new URL(self.location.href)"));
+ assert(serviceWorker.includes("const BASE=new URL('./',scriptUrl).pathname"));
  assert(!serviceWorker.includes("const BASE='/Rhythtap/'"));
 });
 
