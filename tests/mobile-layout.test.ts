@@ -4,6 +4,7 @@ const engagement=await Deno.readTextFile('src/engagement-ui.css');
 const tutorial=await Deno.readTextFile('src/rhythmtap-tutorial.css');
 const tutorialReceptors=await Deno.readTextFile('src/receptor-tutorial.css');
 const base=await Deno.readTextFile('src/styles.css');
+const ux=await Deno.readTextFile('src/ux.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
 const metal=await Deno.readTextFile('src/death-metal-theme.css');
 const profile=await Deno.readTextFile('src/player-profile-console.css');
@@ -63,6 +64,8 @@ Deno.test('gameplay note translation regression protection remains active',()=>{
  assert(gameplay.includes('translate3d(-50%,var(--note-y),0)'));
  assert(gameplay.includes('.game.theme-diamond .note:not(.hold)'));
  assert(gameplay.includes('.game.theme-hex .note:not(.hold)'));
+ assert(ux.includes('.game.theme-diamond .note:not(.hold),.game.theme-hex .note:not(.hold){border-radius:50%;clip-path:none;transform:translate3d(-50%,var(--note-y),0)'));
+ assert(!ux.includes('.game.theme-diamond .note:not(.hold),.game.theme-hex .note:not(.hold),.game.theme-diamond .note.hold:before,.game.theme-hex .note.hold:before{border-radius:50%;clip-path:none;transform:translateX(-50%)'));
 });
 
 Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent judgment coordinate',()=>{
