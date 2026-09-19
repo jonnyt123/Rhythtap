@@ -34,7 +34,10 @@ const patchMain=(source:string)=>{
  code=replaceSection(code,'safari background pause lifecycle',
   "useEffect(()=>{const handleVisibility=()=>{",
   "},[ready,paused]);",
-  "useEffect(()=>{const pauseForBackground=()=>{if(!ready||paused)return;backgroundPaused.current=true;pressed.current.clear();transport.current.pause();flushSync(()=>setPaused(true))},handleVisibility=()=>{if(document.hidden)pauseForBackground()};document.addEventListener('visibilitychange',handleVisibility);addEventListener('pagehide',pauseForBackground);return()=>{document.removeEventListener('visibilitychange',handleVisibility);removeEventListener('pagehide',pauseForBackground)}},[ready,paused]);");
+  "useEffect(()=>{const pauseForBackground=()=>{if(!ready||paused||failedRef.current)return;backgroundPaused.current=true;pressed.current.clear();transport.current.pause();flushSync(()=>setPaused(true))},handleVisibility=()=>{if(document.hidden)pauseForBackground()};document.addEventListener('visibilitychange',handleVisibility);addEventListener('blur',pauseForBackground);addEventListener('pagehide',pauseForBackground);return()=>{document.removeEventListener('visibilitychange',handleVisibility);removeEventListener('blur',pauseForBackground);removeEventListener('pagehide',pauseForBackground)}},[ready,paused]);");
+ code=replaceRequired(code,'synchronous retry state reset',
+  "setReady(false);setPaused(false);setFailed(false);setNow(0);setScore(0);setCombo(0);setMaxCombo(0);setCounts({PERFECT:0,GREAT:0,GOOD:0,MISS:0});setPulse(0);setJudge(null);setHitEffect(null);setEnergy(100);",
+  "flushSync(()=>{setReady(false);setPaused(false);setFailed(false);setEnergy(100)});setNow(0);setScore(0);setCombo(0);setMaxCombo(0);setCounts({PERFECT:0,GREAT:0,GOOD:0,MISS:0});setPulse(0);setJudge(null);setHitEffect(null);");
  code=replaceRequired(code,'prune stale versioned audio',
   "const cache=await caches.open(AUDIO_CACHE),cached=await cache.match(path);if(cached){",
   "const cache=await caches.open(AUDIO_CACHE),cached=await cache.match(path);if(!cached){const target=new URL(path,location.href),keys=await cache.keys(),stale=keys.filter(request=>{const url=new URL(request.url);return url.origin===target.origin&&url.pathname===target.pathname&&url.href!==target.href});if(stale.length)await Promise.all(stale.map(request=>cache.delete(request)))}if(cached){");
