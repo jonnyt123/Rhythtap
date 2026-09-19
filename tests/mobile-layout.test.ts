@@ -4,6 +4,7 @@ const engagement=await Deno.readTextFile('src/engagement-ui.css');
 const tutorial=await Deno.readTextFile('src/rhythmtap-tutorial.css');
 const tutorialReceptors=await Deno.readTextFile('src/receptor-tutorial.css');
 const base=await Deno.readTextFile('src/styles.css');
+const main=await Deno.readTextFile('src/main.tsx');
 const ux=await Deno.readTextFile('src/ux.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
 const metal=await Deno.readTextFile('src/death-metal-theme.css');
@@ -68,6 +69,14 @@ Deno.test('gameplay note translation regression protection remains active',()=>{
  assert(!ux.includes('.game.theme-diamond .note:not(.hold),.game.theme-hex .note:not(.hold),.game.theme-diamond .note.hold:before,.game.theme-hex .note.hold:before{border-radius:50%;clip-path:none;transform:translateX(-50%)'));
 });
 
+Deno.test('gameplay geometry fix is loaded after ux overrides and iOS backgrounding pauses safely',()=>{
+ assert(main.includes("import './gameplay-position-fix.css';"));
+ assert(main.indexOf("import './gameplay-position-fix.css';")>main.indexOf("import './ux.css';"));
+ assert(main.includes("addEventListener('blur',pauseForBackground)"));
+ assert(main.includes("addEventListener('pagehide',pauseForBackground)"));
+ assert(main.includes("document.addEventListener('visibilitychange',handleVisibility)"));
+});
+
 Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent judgment coordinate',()=>{
  assert(gameplay.includes('.game .lane:after'));
  assert(gameplay.includes('top:89%'));
@@ -77,6 +86,8 @@ Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent jud
  assert(gameplay.includes('top:calc(89% - 66px)'));
  assert(gameplay.includes('height:132px'));
  assert(gameplay.includes('width:92%'));
+ assert(gameplay.includes('width:54px'));
+ assert(gameplay.includes('.game .lane:after{width:50px;height:50px}'));
  assert(gameplay.includes('.game .lane.holding:before'));
  assert(gameplay.includes('background:transparent'));
  assert(!gameplay.includes('bottom:78px'));
