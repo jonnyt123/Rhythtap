@@ -7,6 +7,9 @@ const base=await Deno.readTextFile('src/styles.css');
 const main=await Deno.readTextFile('src/main.tsx');
 const ux=await Deno.readTextFile('src/ux.css');
 const gameplay=await Deno.readTextFile('src/gameplay-position-fix.css');
+const hardening=await Deno.readTextFile('scripts/game-wide-hardening-transform.ts');
+const preroll=await Deno.readTextFile('src/game-preroll.ts');
+const indexHtml=await Deno.readTextFile('index.html');
 const metal=await Deno.readTextFile('src/death-metal-theme.css');
 const profile=await Deno.readTextFile('src/player-profile-console.css');
 const mobilePerf=await Deno.readTextFile('src/mobile-gameplay-performance.css');
@@ -69,12 +72,15 @@ Deno.test('gameplay note translation regression protection remains active',()=>{
  assert(!ux.includes('.game.theme-diamond .note:not(.hold),.game.theme-hex .note:not(.hold),.game.theme-diamond .note.hold:before,.game.theme-hex .note.hold:before{border-radius:50%;clip-path:none;transform:translateX(-50%)'));
 });
 
-Deno.test('gameplay geometry fix is loaded after ux overrides and iOS backgrounding pauses safely',()=>{
- assert(main.includes("import './gameplay-position-fix.css';"));
- assert(main.indexOf("import './gameplay-position-fix.css';")>main.indexOf("import './ux.css';"));
- assert(main.includes("addEventListener('blur',pauseForBackground)"));
- assert(main.includes("addEventListener('pagehide',pauseForBackground)"));
- assert(main.includes("document.addEventListener('visibilitychange',handleVisibility)"));
+Deno.test('gameplay geometry override loads after theme CSS and iOS backgrounding pauses safely',()=>{
+ assert(indexHtml.indexOf('/src/gameplay-position-fix.css')>indexHtml.indexOf('/src/rhythm-metal-refresh.css'));
+ assert(hardening.includes("addEventListener('blur',pauseForBackground)"));
+ assert(hardening.includes("addEventListener('pagehide',pauseForBackground)"));
+ assert(hardening.includes("document.addEventListener('visibilitychange',handleVisibility)"));
+ assert(hardening.includes('synchronous retry state reset'));
+ assert(hardening.includes('flushSync(()=>{setReady(false);setPaused(false);setFailed(false);setEnergy(100)}'));
+ assert(preroll.includes('const PREROLL_MS=3000'));
+ assert(preroll.includes('for(let count=3;count>=1;count--)'));
 });
 
 Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent judgment coordinate',()=>{
@@ -86,8 +92,10 @@ Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent jud
  assert(gameplay.includes('top:calc(89% - 66px)'));
  assert(gameplay.includes('height:132px'));
  assert(gameplay.includes('width:92%'));
- assert(gameplay.includes('width:42px'));
- assert(gameplay.includes('.game .lane:after{width:38px;height:38px}'));
+ assert(gameplay.includes('width:36px'));
+ assert(gameplay.includes('.game .lane:after{width:30px;height:30px}'));
+ assert(gameplay.includes('background:transparent!important'));
+ assert(gameplay.includes('border:0!important'));
  assert(gameplay.includes('.game .lane.holding:before'));
  assert(gameplay.includes('background:transparent'));
  assert(!gameplay.includes('bottom:78px'));
