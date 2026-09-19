@@ -1,4 +1,4 @@
-const PREROLL_MS=5000;
+const PREROLL_MS=3000;
 let armed=false;
 let disarmTimer=0;
 
@@ -26,10 +26,10 @@ async function showCountdown(){
   overlay.className='rt-preroll';
   overlay.setAttribute('role','status');
   overlay.setAttribute('aria-live','assertive');
-  overlay.innerHTML='<small>GET READY</small><strong>5</strong><span>TRACK STARTS IN</span>';
+  overlay.innerHTML='<small>GET READY</small><strong>3</strong><span>TRACK STARTS IN</span>';
   game.appendChild(overlay);
   const value=overlay.querySelector('strong')!;
-  for(let count=5;count>=1;count--){
+  for(let count=3;count>=1;count--){
     value.textContent=String(count);
     overlay.dataset.tick=String(count);
     await sleep(1000);
