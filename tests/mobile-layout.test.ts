@@ -86,8 +86,8 @@ Deno.test('gameplay receptor, touch zone, and hold glow share the 89 percent jud
  assert(gameplay.includes('top:calc(89% - 66px)'));
  assert(gameplay.includes('height:132px'));
  assert(gameplay.includes('width:92%'));
- assert(gameplay.includes('width:54px'));
- assert(gameplay.includes('.game .lane:after{width:50px;height:50px}'));
+ assert(gameplay.includes('width:42px'));
+ assert(gameplay.includes('.game .lane:after{width:38px;height:38px}'));
  assert(gameplay.includes('.game .lane.holding:before'));
  assert(gameplay.includes('background:transparent'));
  assert(!gameplay.includes('bottom:78px'));
