@@ -1,0 +1,160 @@
+name: Reference Main Menu QA
+
+on:
+  push:
+    branches: [ui/reference-main-menu]
+
+permissions:
+  contents: read
+
+jobs:
+  menu-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build production app
+        run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run menu-related static regression guards
+        run: |
+          deno test --allow-read tests/mobile-layout.test.ts
+          deno test --allow-read tests/scrolling-regression.test.ts
+          deno test --allow-read tests/death-metal-theme.test.ts
+          deno test --allow-read tests/engagement-ui.test.ts
+      - name: Install Chromium QA runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start production preview
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/rhythtap-preview.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/Rhythtap/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/rhythtap-preview.log
+          exit 1
+      - name: Run exact viewport main-menu QA
+        run: |
+          mkdir -p qa-artifacts
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          import fs from 'node:fs';
+
+          const base='http://127.0.0.1:4173/Rhythtap/';
+          const viewports=[
+            [320,568],[375,667],[390,844],[393,852],[414,896],[430,932],
+          ];
+          const required=[
+            ['logo','.reference-logo-block'],
+            ['character','.reference-character-slot'],
+            ['player name','.reference-player-card .player-copy>strong'],
+            ['store','.reference-store-button'],
+            ['user beatmaps','.metal-menu-charts'],
+            ['settings','.metal-menu-settings'],
+            ['play','.metal-menu-solo'],
+          ];
+          const browser=await chromium.launch({headless:true});
+          const summary=[];
+
+          const inspect=async(width,height,{largeValues=false,landscape=false}={})=>{
+            const context=await browser.newContext({
+              viewport:{width,height},screen:{width,height},
+              deviceScaleFactor:2,isMobile:!landscape,hasTouch:!landscape,
+              locale:'en-CA',timezoneId:'America/Toronto',
+            });
+            const page=await context.newPage();
+            const pageErrors=[];
+            const consoleErrors=[];
+            page.on('pageerror',e=>pageErrors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+            await page.addInitScript(({xp})=>{
+              localStorage.setItem('rhythtap-tutorial-complete-v1','1');
+              localStorage.setItem('rhythtap-profile',JSON.stringify({xp}));
+            },{xp:largeValues?10000000:0});
+            await page.goto(base,{waitUntil:'networkidle'});
+            await page.locator('.metal-home').waitFor({state:'visible',timeout:8000});
+            const metrics=await page.evaluate(()=>({
+              docOverflowX:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+              bodyOverflowX:document.body.scrollWidth-document.body.clientWidth,
+              pageOverflowY:document.documentElement.scrollHeight-window.innerHeight,
+              innerScroller:document.querySelector('.metal-home-content')?{
+                scrollHeight:document.querySelector('.metal-home-content').scrollHeight,
+                clientHeight:document.querySelector('.metal-home-content').clientHeight
+              }:null,
+            }));
+            if(metrics.docOverflowX>3||metrics.bodyOverflowX>3)throw new Error(`${width}x${height}: horizontal overflow ${JSON.stringify(metrics)}`);
+            if(metrics.pageOverflowY>3)throw new Error(`${width}x${height}: document-level vertical overflow ${metrics.pageOverflowY}px`);
+
+            const boxes={};
+            for(const [label,selector] of required){
+              const locator=page.locator(selector).first();
+              if(!(await locator.isVisible()))throw new Error(`${width}x${height}: missing/hidden ${label} (${selector})`);
+              const box=await locator.boundingBox();
+              if(!box)throw new Error(`${width}x${height}: no box for ${label}`);
+              if(box.x < -2 || box.x+box.width > width+2)throw new Error(`${width}x${height}: ${label} extends horizontally outside viewport: ${JSON.stringify(box)}`);
+              boxes[label]=box;
+            }
+
+            const nameText=(await page.locator('.reference-player-card .player-copy>strong').first().textContent())?.trim();
+            const stats=await page.locator('.reference-stat-row').allTextContents();
+            if(!nameText)throw new Error(`${width}x${height}: player name empty`);
+            if(stats.length<2||!stats[0].includes('LEVEL')||!stats[1].includes('XP CREDITS'))throw new Error(`${width}x${height}: dynamic stats rows missing: ${JSON.stringify(stats)}`);
+            if(largeValues&&!stats[1].replaceAll(',','').includes('1000000'))throw new Error(`${width}x${height}: large credit value did not render: ${stats[1]}`);
+
+            await page.screenshot({path:`qa-artifacts/menu-${width}x${height}${largeValues?'-large-values':''}.png`,fullPage:false});
+            if(pageErrors.length)throw new Error(`${width}x${height}: page errors: ${pageErrors.join(' | ')}`);
+            const relevantConsole=consoleErrors.filter(x=>!/favicon|Failed to load resource.*404/i.test(x));
+            if(relevantConsole.length)throw new Error(`${width}x${height}: console errors: ${relevantConsole.join(' | ')}`);
+            summary.push({viewport:`${width}x${height}`,largeValues,metrics,nameText,stats,boxes});
+            await context.close();
+          };
+
+          for(const [width,height] of viewports)await inspect(width,height);
+          await inspect(320,568,{largeValues:true});
+          await inspect(844,390,{landscape:true});
+
+          const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+          const page=await context.newPage();
+          await page.addInitScript(()=>localStorage.setItem('rhythtap-tutorial-complete-v1','1'));
+          await page.goto(base,{waitUntil:'networkidle'});
+          await page.locator('.metal-home').waitFor({state:'visible'});
+          await page.locator('.reference-store-button').click();
+          await page.locator('.account-screen').waitFor({state:'visible'});
+          await page.locator('.account-screen button[aria-label="Back"]').first().click();
+          await page.locator('.metal-home').waitFor({state:'visible'});
+          await page.locator('.metal-menu-charts').click();
+          await page.locator('.imported-library').waitFor({state:'visible'});
+          await page.locator('.imported-library button[aria-label="Back"]').click();
+          await page.locator('.metal-home').waitFor({state:'visible'});
+          await page.locator('button[aria-label="Settings"]').first().click();
+          await page.locator('.settingsPage').waitFor({state:'visible'});
+          await page.locator('.settingsPage button[aria-label="Back"]').click();
+          await page.locator('.metal-home').waitFor({state:'visible'});
+          await page.locator('.metal-menu-solo').click();
+          await page.locator('.select').waitFor({state:'visible'});
+          summary.push({navigation:'store -> back -> user beatmaps -> back -> settings -> back -> solo select',passed:true});
+          await context.close();
+
+          await browser.close();
+          fs.writeFileSync('qa-artifacts/reference-menu-qa.json',JSON.stringify(summary,null,2));
+          console.log(JSON.stringify({viewports:viewports.map(v=>v.join('x')),largeValues:'320x568',landscape:'844x390',navigation:true},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reference-main-menu-qa-${{ github.sha }}
+          path: qa-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
