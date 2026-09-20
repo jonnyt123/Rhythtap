@@ -809,3 +809,17 @@
 @media(prefers-reduced-motion:reduce){
  .reference-character-slot,.reference-store-button{transition:none}
 }
+
+
+/* Reference screen ordering: keep the redesign's core play path in the first viewport
+   while retaining every pre-existing feature below it. */
+.metal-home-content{display:flex;flex-direction:column}
+.reference-logo-block{order:1}
+.reference-announcement{order:2}
+.reference-player-grid{order:3}
+.metal-menu-stack{order:4}
+.tour-main-cta{order:5}
+.home-learn-strip{order:6}
+.engagement-strip{order:7}
+.metal-utility-grid{order:8}
+.metal-footer{order:9}
