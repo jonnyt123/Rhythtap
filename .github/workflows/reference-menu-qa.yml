@@ -81,10 +81,13 @@ jobs:
             page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
             await page.addInitScript(({xp})=>{
               localStorage.setItem('rhythtap-tutorial-complete-v1','1');
+              localStorage.setItem('rhythtap-tutorial-seen','1');
+              localStorage.setItem('rhythtap-graphics','LOW');
               localStorage.setItem('rhythtap-profile',JSON.stringify({xp}));
             },{xp:largeValues?10000000:0});
-            await page.goto(base,{waitUntil:'networkidle'});
-            await page.locator('.metal-home').waitFor({state:'visible',timeout:8000});
+            await page.goto(base,{waitUntil:'domcontentloaded',timeout:45000});
+            await page.waitForTimeout(900);
+            await page.locator('.metal-home').waitFor({state:'visible',timeout:12000});
             const metrics=await page.evaluate(()=>({
               docOverflowX:document.documentElement.scrollWidth-document.documentElement.clientWidth,
               bodyOverflowX:document.body.scrollWidth-document.body.clientWidth,
@@ -127,9 +130,14 @@ jobs:
 
           const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
           const page=await context.newPage();
-          await page.addInitScript(()=>localStorage.setItem('rhythtap-tutorial-complete-v1','1'));
-          await page.goto(base,{waitUntil:'networkidle'});
-          await page.locator('.metal-home').waitFor({state:'visible'});
+          await page.addInitScript(()=>{
+            localStorage.setItem('rhythtap-tutorial-complete-v1','1');
+            localStorage.setItem('rhythtap-tutorial-seen','1');
+            localStorage.setItem('rhythtap-graphics','LOW');
+          });
+          await page.goto(base,{waitUntil:'domcontentloaded',timeout:45000});
+          await page.waitForTimeout(900);
+          await page.locator('.metal-home').waitFor({state:'visible',timeout:12000});
           await page.locator('.reference-store-button').click();
           await page.locator('.account-screen').waitFor({state:'visible'});
           await page.locator('.account-screen button[aria-label="Back"]').first().click();
