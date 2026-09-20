@@ -1,0 +1,27 @@
+/* Full-screen route scroll ownership.
+   The base .screen shell intentionally clips by default for gameplay/fixed-stage screens.
+   Content-heavy routes override that contract here so iOS can reach controls below the viewport. */
+.multiplayer.screen,
+.career-tour.screen,
+.account-screen.screen,
+.tsr-screen.screen,
+.imported-library.screen,
+.chart-leaderboard.screen,
+.settingsPage.screen,
+.achievementsPage.screen,
+.results.screen{
+  height:100dvh;
+  min-height:100dvh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+
+/* These screens deliberately keep the outer shell fixed and scroll a dedicated inner region. */
+.home .home-content,
+.select .songlist{
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "neon-tap-recharged",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "prepare-audio": "node scripts/prepare-audio.mjs",
+    "dev": "npm run prepare-audio && vite --host 0.0.0.0",
+    "build": "npm run prepare-audio && tsc && vite build && node scripts/clean-build-audio.mjs",
+    "build:itch": "npm run prepare-audio && tsc && vite build --mode itch && node scripts/clean-build-audio.mjs dist-itch && node scripts/package-itch.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:regression": "node scripts/run-regression-suite.mjs",
+    "qa:blockers": "node scripts/release-blocker-qa.mjs",
+    "qa:mobile": "node scripts/destructive-mobile-qa-v2.mjs && node scripts/android-mobile-qa.mjs && node scripts/mobile-visual-regression.mjs && npm run qa:blockers",
+    "qa:release": "npm run build && npm run test:regression"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "typescript": "5.7.3",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}

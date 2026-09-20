@@ -1,0 +1,200 @@
+/* RhythmTap rhythm-metal presentation refresh.
+   CSS-only: gameplay timing, scoring, input and multiplayer logic remain unchanged. */
+:root{
+  --rt-blood:#c5262d;
+  --rt-blood-hot:#f05248;
+  --rt-ember:#c47a32;
+  --rt-bone:#eee8de;
+  --rt-steel:#9da4ab;
+  --rt-iron:#555c63;
+  --rt-black:#030405;
+  --rt-panel:#111419;
+  --rt-panel-2:#080a0d;
+  --rt-display:'Metal Mania',Impact,'Arial Black',system-ui,sans-serif;
+}
+
+html,body,#root{background:#020304!important;color:var(--rt-bone)}
+body{background:radial-gradient(circle at 50% -15%,#6f111831,transparent 34%),#020304!important}
+.screen{
+  color:var(--rt-bone)!important;
+  background:
+    radial-gradient(ellipse at 50% -8%,#75141a3b 0 12%,transparent 42%),
+    radial-gradient(circle at 90% 16%,#c8cdd20a 0 5%,transparent 27%),
+    repeating-linear-gradient(117deg,transparent 0 49px,#ffffff04 50px,transparent 52px 91px),
+    linear-gradient(165deg,#14171b 0,#08090b 52%,#030405 100%)!important;
+}
+.screen:before{opacity:.24!important;background:repeating-linear-gradient(0deg,transparent 0 4px,#cfd2d50a 5px,transparent 6px 11px)!important}
+
+/* Display typography: intentionally decorative only on high-impact labels. */
+.brandmark,
+.featured-copy h1,
+header h2,
+.songmeta h3,
+.results h2,
+.modal h2,
+.section-label,
+.grade{
+  font-family:var(--rt-display)!important;
+  font-weight:400!important;
+  letter-spacing:.035em!important;
+}
+.brandmark{font-size:17px!important;letter-spacing:.08em!important;text-transform:uppercase;color:var(--rt-bone)!important;text-shadow:0 2px #000,0 0 15px #a5192055}
+.brandmark svg{color:var(--rt-blood-hot)!important;filter:drop-shadow(0 0 7px #ad171dcc)!important}
+.eyebrow,.hint,.footerline,.level,.songmeta>span,.songmeta div span,.setting small,.how p{color:#91979d!important}
+
+/* Core controls: road-case / amp hardware rather than app-store pills. */
+.icon,.primary,.secondary,.quick-grid button,.song,.playdock,.difficulty,.setting,.how,.player-card{
+  border-radius:3px!important;
+}
+.icon{
+  border:1px solid #777e8657!important;
+  background:linear-gradient(180deg,#252a30,#0c0e11)!important;
+  box-shadow:inset 0 1px #ffffff1a,inset 0 -2px #000b,0 6px 15px #0008!important;
+}
+.primary,.secondary{
+  font-family:'Arial Narrow',Impact,system-ui,sans-serif!important;
+  text-transform:uppercase;
+  letter-spacing:.09em!important;
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+}
+.primary{
+  color:#fff4ed!important;
+  background:linear-gradient(180deg,#dc413a 0,#a71920 57%,#671016 100%)!important;
+  border:1px solid #f07a705e!important;
+  box-shadow:inset 0 1px #ffb7ad35,inset 0 -2px #390509,0 9px 23px #000a,0 0 16px #98151c52!important;
+}
+.secondary{
+  background:linear-gradient(180deg,#282d33,#0d0f12)!important;
+  border:1px solid #777e8655!important;
+  color:#e7e3dc!important;
+}
+
+/* Home screen: make the first view read as a rhythm game, not a dashboard. */
+.home.screen{max-width:880px!important;isolation:isolate}
+.home.screen:after{
+  content:"";position:absolute;z-index:0;left:6%;right:6%;top:70px;height:105px;pointer-events:none;opacity:.58;
+  background:
+    linear-gradient(61deg,transparent 48%,#9ba1a91a 49% 51%,transparent 52%) 0 0/72px 50px,
+    linear-gradient(-61deg,transparent 48%,#9ba1a91a 49% 51%,transparent 52%) 0 0/72px 50px;
+  border-top:1px solid #9ba1a92b;border-bottom:1px solid #ffffff08;
+}
+.home-content{position:relative;z-index:2!important}
+.home .player-card{
+  border:1px solid #777e8659!important;
+  background:repeating-linear-gradient(135deg,#ffffff04 0 1px,transparent 1px 15px),linear-gradient(180deg,#1c2025,#090b0e)!important;
+  box-shadow:inset 0 1px #ffffff16,inset 0 -2px #000b,0 10px 25px #0009!important;
+}
+.home .avatar{border-radius:50%!important;background:radial-gradient(circle at 48% 35%,#373d44,#07080a 70%)!important;border:2px solid #777e86!important;box-shadow:0 0 0 4px #060708,0 0 0 5px #8f171c80!important}
+.home .xp-track{border-radius:1px!important;background:#050607!important;border:1px solid #4e545a!important}
+.home .xp-track i{background:linear-gradient(90deg,#711218,#bd292d 62%,#ea5b4f)!important;box-shadow:0 0 8px #98151c80!important}
+
+.featured{
+  min-height:310px!important;
+  border:1px solid #7b82895b!important;
+  border-radius:4px!important;
+  background:linear-gradient(118deg,#1d2025 0,#0c0e11 54%,#07080a 100%)!important;
+  box-shadow:inset 0 1px #ffffff16,inset 0 -3px #000b,0 18px 44px #000b!important;
+  clip-path:polygon(13px 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%,0 13px);
+}
+.featured:before{
+  content:"LIVE NOTE HIGHWAY";position:absolute;z-index:4;left:16px;top:13px;padding:4px 7px;
+  border:1px solid #b946465c;background:#6611164d;color:#ec8a82;
+  font:800 6px 'Space Mono',monospace;letter-spacing:.17em;
+}
+.featured:after{background:linear-gradient(90deg,transparent 0 23%,#08090bd4 51%,#08090bf5 100%)!important}
+.featured-art{
+  overflow:hidden!important;
+  background:linear-gradient(180deg,#07080a 0,#13161a 100%)!important;
+  border-right:1px solid #646a7040;
+  perspective:340px;
+}
+.featured-art:before{
+  content:"";position:absolute;left:11%;right:11%;top:-9%;bottom:-8%;transform:perspective(330px) rotateX(18deg);
+  background:
+    linear-gradient(90deg,transparent 32%,#8f959b42 33% 34%,transparent 35% 65%,#8f959b42 66% 67%,transparent 68%),
+    repeating-linear-gradient(180deg,transparent 0 34px,#ffffff0a 35px 36px);
+  border-left:1px solid #8f959b45;border-right:1px solid #8f959b45;
+  box-shadow:inset 0 -55px 55px #7b12182b;
+}
+.featured-art:after{
+  content:"";position:absolute;width:21px;height:21px;border-radius:50%;left:19%;top:25%;
+  background:radial-gradient(circle at 36% 30%,#fff 0 7%,#e0574e 9% 35%,#81131a 36% 70%,#282b2e 72%);
+  border:2px solid #e6ded2;box-shadow:0 0 11px #c1282b,70px 62px 0 -1px #b87130,70px 62px 9px 0 #8f501f,5px 120px 0 -1px #a9afb5,5px 120px 9px 0 #737b82;
+}
+.featured-art svg{width:44px!important;height:44px!important;opacity:.18!important;color:#c5c9cd!important;filter:none!important}
+.featured-art span{z-index:3!important;color:#aeb4ba!important}
+.featured-copy{padding-left:18px!important}
+.featured-copy .eyebrow{color:#e26760!important}
+.featured-copy h1{font-size:clamp(38px,10vw,61px)!important;line-height:.82!important;letter-spacing:.015em!important;text-transform:uppercase!important;color:var(--rt-bone)!important;text-shadow:0 3px #000,4px 5px 0 #681116,0 0 18px #a8192040!important}
+.featured-copy h1 i{font-family:inherit!important;font-style:normal!important;color:#e75249!important;text-shadow:0 2px #5c0d11,0 0 14px #a8181e73!important}
+.featured-copy p{color:#a6a7a6!important;font-size:12px!important}
+
+.quick-grid button{
+  border:1px solid #6e747b4f!important;
+  background:repeating-linear-gradient(135deg,#ffffff04 0 1px,transparent 1px 13px),linear-gradient(180deg,#1a1e22,#090b0e)!important;
+  box-shadow:inset 0 1px #ffffff10,0 7px 17px #0008!important;
+}
+.quick-grid button>span{border-radius:50%!important;background:#71121835!important;color:#e1544d!important;border:1px solid #8a383b55}
+.quick-grid strong{font-family:'Arial Narrow',Impact,system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.045em}
+.daily{border-radius:3px!important;border-color:#855d2c55!important;background:linear-gradient(90deg,#8b52171e,transparent)!important;color:#d59b4b!important}
+.daily strong{color:#d7d2ca!important}
+
+/* Song select: physical road cases, large readable titles, stage-colored difficulty. */
+.select header h2{text-transform:uppercase}
+.section-label{font-size:13px!important;text-transform:uppercase;color:#e5dfd6!important}
+.song{
+  border:1px solid #6f757c4b!important;
+  background:repeating-linear-gradient(135deg,#ffffff04 0 1px,transparent 1px 13px),linear-gradient(180deg,#1b1f23,#090b0e)!important;
+  box-shadow:inset 0 1px #ffffff12,inset 0 -2px #0009,0 8px 19px #0008!important;
+}
+.song.active{border-color:#b83d415f!important;background:linear-gradient(90deg,#7111162f,transparent 38%),linear-gradient(180deg,#211c1e,#0b0b0d)!important;box-shadow:inset 4px 0 var(--rt-blood),0 9px 22px #000a!important}
+.cover{border-radius:2px!important;filter:saturate(.65) contrast(1.08)!important;border:1px solid #7379804d!important;box-shadow:inset 0 0 24px #0009!important}
+.cover b{font-family:var(--rt-display)!important;font-weight:400!important;color:#f0e9df!important;text-shadow:0 3px 9px #000!important}
+.songmeta h3{text-transform:uppercase;font-size:20px!important;color:#f1ece4!important}
+.preview{background:#15181c!important;border-color:#6d737a55!important}
+.difficulty{background:#08090bef!important;border:1px solid #666c7355!important;box-shadow:0 -10px 28px #000b!important}
+.difficulty button{border-radius:2px!important;background:linear-gradient(180deg,#20242a,#0c0e11)!important;border-color:#61676e52!important;color:#9ca1a6!important}
+.difficulty button.active{background:linear-gradient(180deg,#cf3937,#781117)!important;border-color:#db5b55!important;color:#fff1e9!important;box-shadow:inset 0 1px #ffaaa33b,0 0 12px #74111666!important}
+.playdock{background:linear-gradient(180deg,#181b1f,#08090bef)!important;border:1px solid #666c7352!important;box-shadow:inset 0 1px #ffffff11,0 -10px 28px #000c!important}
+
+/* Gameplay: concert-stage palette while preserving all geometry/hit targets. */
+.game{background:radial-gradient(ellipse at 50% 4%,#6410152c,transparent 34%),linear-gradient(180deg,#0e1013,#030405)!important}
+.gamehud{border-bottom:1px solid #6c72792c}
+.arena{background:repeating-linear-gradient(90deg,transparent 0 32%,#ffffff04 33%,transparent 34% 65%,#ffffff04 66%,transparent 67%),linear-gradient(180deg,#0d0f12aa,#040506f2)!important;filter:drop-shadow(0 0 18px #000)!important}
+.lane:nth-child(1){--lane:#d34b45!important}
+.lane:nth-child(2){--lane:#c17a34!important}
+.lane:nth-child(3){--lane:#aeb4ba!important}
+.lane{border-left-color:#8b91972c!important;background:linear-gradient(180deg,transparent 34%,color-mix(in srgb,var(--lane) 7%,transparent))!important}
+.lane:last-child{border-right-color:#8b91972c!important}
+.note:not(.hold){border-color:#e3ddd3!important;box-shadow:0 0 6px #fff6,0 0 12px color-mix(in srgb,var(--lane) 48%,transparent),inset 0 -4px 7px #0008!important}
+.pad{border-radius:50%!important;background:radial-gradient(circle,#171a1e 0 45%,#090a0c 46% 66%,color-mix(in srgb,var(--lane) 25%,#08090b) 67%)!important;border:2px solid color-mix(in srgb,var(--lane) 72%,#ddd)!important;box-shadow:inset 0 0 13px #000,0 0 10px color-mix(in srgb,var(--lane) 24%,transparent)!important}
+.pad:active,.lane.holding .pad{background:radial-gradient(circle,color-mix(in srgb,var(--lane) 60%,#242424),#08090b 68%)!important;color:#fff!important;box-shadow:0 0 22px color-mix(in srgb,var(--lane) 60%,transparent)!important}
+.feedback strong,.feedback>span{font-family:'Arial Narrow',Impact,system-ui,sans-serif!important;text-transform:uppercase;text-shadow:0 2px 5px #000,0 0 8px currentColor!important}
+.feedback .perfect{color:#f0ebe3!important}.feedback .great{color:#d34b45!important}.feedback .good{color:#c17a34!important}.feedback .miss{color:#98171d!important}.feedback .hold{color:#bec3c7!important}
+.energy,.pulse{border-radius:1px!important;background:#050607!important;border:1px solid #4d5258!important}
+.energy span{background:linear-gradient(90deg,#711117,#c93432)!important;box-shadow:none!important}.pulse span{background:#b8762c!important;box-shadow:none!important}.pulse svg{color:#b8762c!important}
+
+/* Results/settings carry the same stage identity. */
+.modal{background:#040506e8!important}
+.grade{color:#e9e4dc!important;text-shadow:5px 5px 0 #751117,0 9px 28px #000!important;filter:none!important}
+.breakdown{border-radius:3px!important;border-color:#656b734b!important;background:#090a0c!important}
+.breakdown div{border-color:#5e646b35!important;background:linear-gradient(180deg,#15181c,#0b0d0f)!important}
+.results>small,.breakdown strong,.xp-award strong,.setting output{color:#e3635c!important}
+.setting,.how{background:linear-gradient(180deg,#191c20,#0a0c0f)!important;border-color:#686f7645!important;box-shadow:inset 0 1px #ffffff10,0 10px 26px #0008!important}
+.setting input{accent-color:var(--rt-blood)!important}
+
+@media(max-width:480px){
+  .featured{min-height:286px!important;grid-template-columns:39% 61%!important}
+  .featured-copy{padding:26px 13px 22px 9px!important}
+  .featured-copy h1{font-size:39px!important}
+  .featured-art:after{transform:scale(.82);transform-origin:top left}
+  .songmeta h3{font-size:17px!important}
+}
+@media(max-width:360px){
+  .featured{grid-template-columns:1fr!important}
+  .featured-art{position:absolute!important;inset:0!important;opacity:.36!important}
+  .featured:after{background:#08090bbd!important}
+  .featured-copy{padding:38px 22px 24px!important}
+  .featured-copy h1{font-size:43px!important}
+}
+@media(prefers-reduced-motion:reduce){.featured,.song,.player-card,.quick-grid,.daily{animation:none!important}}

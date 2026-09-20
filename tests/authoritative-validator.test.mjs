@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import {buildCanonicalChart,validateAgainstChart,parseOnsetEvents,makeOnsetChart,makeBeatChart} from '../.validator-ci/validator.js';
+
+const perfectEventsFor=chart=>{const output=[];for(const note of chart.notes){output.push({kind:'PERFECT',noteId:note.id,lane:note.lane,atMs:Math.round(note.time)});if(note.duration)output.push({kind:'HOLD',noteId:note.id,lane:note.lane,atMs:Math.round(note.time+note.duration)})}return output.sort((a,b)=>a.atMs-b.atMs||a.noteId-b.noteId||(a.kind==='HOLD'?1:-1))};
+
+const chart=buildCanonicalChart('voltage','EASY');
+const events=perfectEventsFor(chart);
+const result=validateAgainstChart(events,chart);
+assert.equal(result.noteCount,chart.notes.length);
+assert.equal(result.perfect,chart.notes.length);
+assert.equal(result.miss,0);
+assert.ok(result.score>0);
+
+const wrongLane=structuredClone(events);wrongLane[0].lane=(wrongLane[0].lane+1)%3;
+assert.throws(()=>validateAgainstChart(wrongLane,chart),/Lane mismatch/);
+const fakePerfect=structuredClone(events);const firstInitial=fakePerfect.find(event=>event.kind!=='HOLD');const firstNote=chart.notes.find(note=>note.id===firstInitial.noteId);firstInitial.atMs=Math.round(firstNote.time+100);fakePerfect.sort((a,b)=>a.atMs-b.atMs||a.noteId-b.noteId);assert.throws(()=>validateAgainstChart(fakePerfect,chart),/Timing does not match PERFECT/);
+const missing=events.filter((_,index)=>index!==0);assert.throws(()=>validateAgainstChart(missing,chart),/Incomplete chart result/);
+const duplicate=[...events,events[0]].sort((a,b)=>a.atMs-b.atMs||a.noteId-b.noteId);assert.throws(()=>validateAgainstChart(duplicate,chart),/Duplicate judgement/);
+const nonHold=chart.notes.find(note=>!note.duration);const badHold=[...events,{kind:'HOLD',noteId:nonHold.id,lane:nonHold.lane,atMs:Math.round(nonHold.time+500)}].sort((a,b)=>a.atMs-b.atMs||a.noteId-b.noteId);assert.throws(()=>validateAgainstChart(badHold,chart),/non-hold/);
+const actualHold=chart.notes.find(note=>note.duration);if(actualHold){const early=structuredClone(events);const h=early.find(event=>event.kind==='HOLD'&&event.noteId===actualHold.id);h.atMs=Math.round(actualHold.time+(actualHold.duration??0)-300);early.sort((a,b)=>a.atMs-b.atMs||a.noteId-b.noteId);assert.throws(()=>validateAgainstChart(early,chart),/too early/)}
+
+const holdChart={songId:'test',difficulty:'NORMAL',notes:[{id:0,time:1000,lane:1,duration:800}],endMs:3200};
+const holdGood=[{kind:'PERFECT',noteId:0,lane:1,atMs:1000},{kind:'HOLD',noteId:0,lane:1,atMs:1800}];
+assert.equal(validateAgainstChart(holdGood,holdChart).holdCount,1);
+const holdEarly=structuredClone(holdGood);holdEarly[1].atMs=1500;assert.throws(()=>validateAgainstChart(holdEarly,holdChart),/too early/);
+const holdBreak=[{kind:'PERFECT',noteId:0,lane:1,atMs:1000},{kind:'HOLD_BREAK',noteId:0,lane:1,atMs:1400}];
+const brokenResult=validateAgainstChart(holdBreak,holdChart);assert.equal(brokenResult.holdCount,0);assert.equal(brokenResult.perfect,1);assert.equal(brokenResult.miss,1);assert.equal(brokenResult.accuracy,50);
+const holdBreakLate=structuredClone(holdBreak);holdBreakLate[1].atMs=1750;assert.throws(()=>validateAgainstChart(holdBreakLate,holdChart),/too late/);
+const duplicateOutcome=[...holdGood,{kind:'HOLD_BREAK',noteId:0,lane:1,atMs:1400}].sort((a,b)=>a.atMs-b.atMs||a.noteId-b.noteId);assert.throws(()=>validateAgainstChart(duplicateOutcome,holdChart),/Duplicate hold outcome/);
+
+const source='export type OnsetEvent=readonly [time:number,lane:number,strength:number];\nexport const sicknessEvents:readonly OnsetEvent[]=[[1000,0,100],[1500,1,80],[2100,2,95]];';
+const parsed=parseOnsetEvents(source,'sicknessEvents');assert.equal(parsed.length,3);assert.ok(makeOnsetChart(parsed,'NORMAL').length>=3);
+
+const beatCases=[
+ ['my-immortal',76,232,270.497,4],
+ ['crazy-train',136,325,226.325,1],
+ ['kill-you',107.666,232,264.411,2],
+ ['kryptonite',99.384,627,234.292,0],
+ ['through-fire-flames',198.8,1324,300.121,3],
+];
+for(const [songId,bpm,offset,duration,seed] of beatCases){
+ for(const difficulty of ['EASY','NORMAL','HARD']){
+  const canonical=buildCanonicalChart(songId,difficulty);
+  const expected=makeBeatChart(bpm,offset,duration,difficulty,seed);
+  assert.deepEqual(canonical.notes,expected,`${songId} ${difficulty} must match client beat-chart rules`);
+  assert.ok(canonical.notes.length>100,`${songId} ${difficulty} chart is unexpectedly sparse`);
+  assert.ok(canonical.notes.every(note=>note.lane>=0&&note.lane<=2));
+ }
+}
+const dragonHard=buildCanonicalChart('through-fire-flames','HARD');
+assert.ok(dragonHard.notes.length>2500,'Through the Fire and Flames HARD should remain the dense challenge chart');
+const dragonPerfect=validateAgainstChart(perfectEventsFor(dragonHard),dragonHard);assert.ok(dragonPerfect.score>5000000,'A legitimate dense chart can exceed the legacy 5M cloud-score ceiling');
+
+console.log(JSON.stringify({noteCount:result.noteCount,holdCount:result.holdCount,score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,dragonHardNotes:dragonHard.notes.length,dragonPerfectScore:dragonPerfect.score}));
