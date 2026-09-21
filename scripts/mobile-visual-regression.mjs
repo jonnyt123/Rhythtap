@@ -151,7 +151,7 @@ async function checkExactMainMenuViewport(browserName,browser,viewport,{largeVal
    return;
   }
 
-  const required=[
+  const portraitRequired=[
    ['logo','.reference-logo-block'],
    ['announcement','.reference-announcement'],
    ['character','.reference-character-slot'],
@@ -161,6 +161,11 @@ async function checkExactMainMenuViewport(browserName,browser,viewport,{largeVal
    ['settings','.metal-menu-settings'],
    ['play','.metal-menu-solo'],
   ];
+  // The production landscape rule intentionally removes the decorative logo and
+  // announcement at <=500px height so gameplay/menu controls keep the space.
+  const required=viewport.width>viewport.height
+   ?portraitRequired.filter(([name])=>name!=='logo'&&name!=='announcement')
+   :portraitRequired;
   for(const [name,selector] of required){
    const locator=page.locator(selector).first();
    if(!(await visible(locator,2500))){add(browserName,'high',`${label}: ${name} missing`,selector);continue}
