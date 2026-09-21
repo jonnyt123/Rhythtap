@@ -823,3 +823,114 @@
 .engagement-strip{order:7}
 .metal-utility-grid{order:8}
 .metal-footer{order:9}
+
+
+/* GENERATED PRODUCTION ART + SCREENSHOT TIGHTENING
+   Core artwork is static; all player/account/navigation content remains live. */
+.reference-logo-block{
+ width:min(58%,360px)!important;
+ min-height:74px;
+ margin:-2px 2px 4px auto!important;
+ padding:0!important;
+ display:flex;
+ align-items:center;
+ justify-content:flex-end;
+}
+.reference-logo-art{
+ display:block;
+ width:100%;
+ height:auto;
+ max-height:92px;
+ object-fit:contain;
+ object-position:right center;
+ filter:drop-shadow(0 7px 5px rgba(0,0,0,.72));
+ pointer-events:none;
+ user-select:none;
+}
+.reference-logo-block>small,
+.reference-logo-block>.metal-logo,
+.reference-logo-block>p{display:none!important}
+
+.reference-character-art{inset:5px 5px 25px!important;display:block!important}
+.reference-character-art img{
+ width:100%;
+ height:100%;
+ display:block;
+ object-fit:cover;
+ object-position:50% 42%;
+ border:1px solid rgba(231,122,64,.4);
+ box-shadow:inset 0 0 18px rgba(0,0,0,.45);
+}
+.reference-character-art svg{display:none!important}
+.reference-character-slot:before{z-index:1;background:linear-gradient(180deg,transparent 58%,rgba(8,2,3,.58))!important}
+.reference-character-slot:after{z-index:1;opacity:.5}
+.reference-character-slot>small{z-index:3}
+
+/* The reference makes the core actions read before auxiliary systems. */
+.metal-menu-stack{display:grid!important}
+.metal-menu-charts{order:1;grid-column:1/-1}
+.metal-menu-settings{order:2;grid-column:1/-1}
+.metal-menu-solo{order:3;grid-column:1/-1}
+.metal-menu-social{order:4}
+.metal-menu-ranked{order:5}
+.metal-menu-online{order:6}
+.metal-menu-achievements{order:7}
+.metal-menu-profile{order:8}
+.metal-menu-solo .metal-menu-copy strong{
+ font-size:0!important;
+ line-height:0!important;
+ color:transparent!important;
+ text-shadow:none!important;
+}
+.metal-menu-solo .metal-menu-copy strong:after{
+ content:"PLAY"!important;
+ display:block!important;
+ font:900 clamp(34px,9vw,54px)/.95 Impact,'Arial Black',system-ui,sans-serif!important;
+ color:#f5dfaf!important;
+ text-shadow:0 2px #7d2315,0 5px #040202,0 0 11px rgba(225,78,29,.25)!important;
+}
+.metal-menu-solo .metal-menu-copy small{display:none}
+.metal-menu-solo .metal-menu-copy em{font-size:6px!important;text-align:center}
+
+/* Shrink persistent top-bar utilities so the reference artwork owns the header. */
+.metal-home .topbar.metal-status{
+ height:42px!important;
+ grid-template-columns:minmax(74px,1fr) auto auto!important;
+ gap:5px!important;
+ padding-bottom:4px!important;
+}
+.metal-home .brandmark.metal-mini-brand{
+ min-width:74px!important;height:30px!important;padding-inline:7px!important;font-size:8px!important;
+}
+.metal-home .brandmark.metal-mini-brand svg{width:13px;height:13px}
+.metal-home .wallet.metal-wallet{height:30px!important;min-width:72px!important;padding:3px 7px!important}
+.metal-home .wallet.metal-wallet small{font-size:5px!important}
+.metal-home .wallet.metal-wallet strong{font-size:10px!important}
+.metal-home .wallet.metal-wallet svg{width:14px;height:14px}
+.metal-home .icon.metal-icon{width:30px!important;height:30px!important}
+.metal-home .icon.metal-icon svg{width:15px;height:15px}
+.metal-home-content{height:calc(100dvh - 48px)!important}
+
+/* The screenshot's core stack is tighter than the previous QA capture. */
+.reference-announcement{margin-bottom:7px!important}
+.reference-player-grid{margin-top:0!important}
+.reference-player-side{padding-top:12px!important}
+.metal-menu-stack{margin-top:7px!important}
+.metal-menu-button{min-height:54px!important}
+.metal-menu-charts{min-height:56px!important}
+.metal-menu-settings{min-height:52px!important}
+.metal-menu-solo{min-height:80px!important;margin-top:0!important}
+
+@media(max-width:370px){
+ .reference-logo-block{width:57%!important;min-height:60px}
+ .reference-logo-art{max-height:72px}
+ .reference-announcement{font-size:11px!important;min-height:34px!important;padding:7px 10px!important}
+ .reference-character-slot{min-height:162px!important}
+ .reference-player-side{padding-top:9px!important}
+ .reference-store-button{min-height:46px!important}
+ .metal-menu-charts,.metal-menu-settings{min-height:46px!important}
+ .metal-menu-solo{min-height:70px!important}
+}
+@media(orientation:landscape) and (max-height:500px){
+ .reference-logo-block,.reference-announcement{display:none!important}
+}
