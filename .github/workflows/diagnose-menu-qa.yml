@@ -1,0 +1,69 @@
+name: Diagnose Local Menu QA
+
+on:
+  push:
+    branches: [ui/reference-main-menu]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start preview
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/rhythtap-preview.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/Rhythtap/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/rhythtap-preview.log
+          exit 1
+      - name: Diagnose browser boot
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+          const page=await context.newPage();
+          const pageErrors=[],consoleErrors=[],failed=[];
+          page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)));
+          page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+          page.on('requestfailed',r=>failed.push({url:r.url(),failure:r.failure()}));
+          await page.addInitScript(()=>{
+            localStorage.setItem('rhythtap-tutorial-complete-v1','1');
+            localStorage.setItem('rhythtap-tutorial-seen','1');
+            localStorage.setItem('rhythtap-graphics','LOW');
+          });
+          const response=await page.goto('http://127.0.0.1:4173/Rhythtap/',{waitUntil:'domcontentloaded',timeout:45000});
+          await page.waitForTimeout(5000);
+          const state=await page.evaluate(()=>({
+            href:location.href,
+            rootText:document.querySelector('#root')?.textContent||'',
+            rootHtml:(document.querySelector('#root')?.innerHTML||'').slice(0,3000),
+            sections:[...document.querySelectorAll('section')].map(x=>({class:x.className,text:(x.textContent||'').slice(0,300)})),
+            scripts:[...document.scripts].map(x=>x.src).filter(Boolean),
+            styles:[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.href),
+            storage:{tutorialComplete:localStorage.getItem('rhythtap-tutorial-complete-v1'),tutorialSeen:localStorage.getItem('rhythtap-tutorial-seen')},
+          }));
+          console.log('HTTP',response?.status());
+          console.log('STATE',JSON.stringify(state,null,2));
+          console.log('PAGE_ERRORS',JSON.stringify(pageErrors,null,2));
+          console.log('CONSOLE_ERRORS',JSON.stringify(consoleErrors,null,2));
+          console.log('FAILED_REQUESTS',JSON.stringify(failed,null,2));
+          await browser.close();
+          NODE
