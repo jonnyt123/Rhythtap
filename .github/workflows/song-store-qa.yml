@@ -1,0 +1,34 @@
+name: Song Store Branch QA
+
+on:
+  push:
+    branches: [feature/song-shop-coins]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Song store regression guards
+        run: deno test --allow-read tests/song-store.test.ts
+      - name: Related UI regression guards
+        run: |
+          deno test --allow-read tests/mobile-layout.test.ts
+          deno test --allow-read tests/scrolling-regression.test.ts
+          deno test --allow-read tests/death-metal-theme.test.ts
