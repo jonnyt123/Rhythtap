@@ -1,7 +1,7 @@
 import {assert,assertEquals} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 import {SONG_STORE_CATALOG,coinsForXpAward} from '../src/song-economy.ts';
 
-const transform=await Deno.readTextFile('scripts/song-store-transform.ts');
+const transform=await Deno.readTextFile('scripts/song-store-transform-v2.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260922050000_song_store_coins.sql');
 const store=await Deno.readTextFile('src/song-store.tsx');
 const storeCss=await Deno.readTextFile('src/song-store.css');
