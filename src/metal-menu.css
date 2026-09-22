@@ -1303,3 +1303,39 @@
   background-position:center,center 22%!important;
  }
 }
+
+/* FINAL ART VISIBILITY FIX — use BASE_URL-backed <img> elements, not absolute CSS URLs. */
+.reference-logo-block{background-image:none!important}
+.reference-logo-art{
+ position:relative!important;
+ z-index:3!important;
+ display:block!important;
+ width:100%!important;
+ height:auto!important;
+ max-height:110px!important;
+ object-fit:contain!important;
+ object-position:right center!important;
+ opacity:1!important;
+ visibility:visible!important;
+}
+.reference-character-slot{background:#100404!important}
+.reference-character-art{
+ position:absolute!important;
+ z-index:2!important;
+ inset:5px 5px 25px!important;
+ display:block!important;
+ opacity:1!important;
+ visibility:visible!important;
+ pointer-events:none!important;
+}
+.reference-character-art img{
+ display:block!important;
+ width:100%!important;
+ height:100%!important;
+ object-fit:cover!important;
+ object-position:center top!important;
+ opacity:1!important;
+ visibility:visible!important;
+}
+.reference-character-slot:before,.reference-character-slot:after{z-index:3!important;pointer-events:none!important}
+.reference-character-slot>small{z-index:4!important}
