@@ -8,8 +8,8 @@ const replaceRequired=(source:string,label:string,before:string,after:string)=>{
 const patchMain=(source:string)=>{
  let code=source;
  code=replaceRequired(code,'shop imports',
-  "import {parseTapChart} from './tapChart';",
-  "import {parseTapChart} from './tapChart';\nimport {SongShopScreen} from './song-store';\nimport {STARTER_SONG_IDS,awardLocalCoins,isStarterSong,loadLocalSongEconomy,purchaseLocalSong,songPrice} from './song-economy';"
+  "import {MAX_TAP_FILE_BYTES,parseTapChart} from './tapChart';",
+  "import {MAX_TAP_FILE_BYTES,parseTapChart} from './tapChart';\nimport {SongShopScreen} from './song-store';\nimport {STARTER_SONG_IDS,awardLocalCoins,isStarterSong,loadLocalSongEconomy,purchaseLocalSong,songPrice} from './song-economy';"
  );
  code=replaceRequired(code,'store screen',"type Screen='home'|","type Screen='home'|'store'|");
  code=replaceRequired(code,'economy state',
@@ -66,7 +66,7 @@ const patchMain=(source:string)=>{
  code=replaceRequired(code,'setlist ownership gate',"const locked=profile.level<s.unlockLevel;","const locked=!s.id.startsWith('tap-')&&!isSongUnlocked(s.id);");
  code=replaceRequired(code,'locked song store action',
   "<button className=\"songpick\" disabled={locked} onClick={()=>setSong(s)}>",
-  "<button className=\"songpick\" onClick={()=>{if(locked){openStore();return}setSong(s)}}>"
+  "<button className=\"songpick\" onClick={()=>{if(locked){openStore();return}setSong(s)}>"
  );
  code=replaceRequired(code,'locked song copy',"{locked?`UNLOCKS AT LEVEL ${s.unlockLevel}`:s.artist}","{locked?`${songPrice(s.id).toLocaleString()} COINS · STORE`:s.artist}");
  code=replaceRequired(code,'locked play action',
