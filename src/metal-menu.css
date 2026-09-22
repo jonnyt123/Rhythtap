@@ -1146,3 +1146,88 @@
 .metal-menu-button{overflow:hidden}.metal-menu-button>.reference-button-surface{opacity:.42}.metal-menu-solo{min-height:112px;margin-top:7px;grid-template-columns:56px minmax(0,1fr) 20px;border:0;overflow:visible;background:#160403}.metal-menu-solo>.reference-play-arch{inset:-24px -12px -15px;opacity:.92}.metal-menu-solo>.reference-play-button-art{inset:5px 7px;width:calc(100% - 14px);height:calc(100% - 10px);opacity:.9}.metal-menu-solo .metal-menu-copy strong{font-size:clamp(30px,8vw,46px);color:#ffe0a0;text-align:center}.metal-menu-solo .metal-menu-copy small,.metal-menu-solo .metal-menu-copy em{color:#d4a16d;text-align:center}
 @media(max-width:370px){.reference-player-grid{grid-template-columns:minmax(100px,.72fr) minmax(0,1.28fr);gap:7px}.reference-character-slot{min-height:228px}.reference-player-card{min-height:158px!important}.reference-store-button{min-height:63px;padding:6px 8px}.reference-announcement{min-height:50px;padding:11px 22px 12px 17px}.metal-menu-solo{min-height:96px}}
 @media(max-height:500px) and (orientation:landscape){.reference-menu-texture{opacity:.62}.reference-player-grid{grid-template-columns:110px minmax(0,1fr)}.reference-character-slot{min-height:150px}.reference-player-card{min-height:100px!important}.reference-store-button{min-height:48px}.metal-menu-solo{min-height:72px}}
+
+
+/* ASSET INTEGRATION VIEWPORT FIT */
+/* Keep the new artwork inside the original mobile contract without scaling the whole UI. */
+@media (orientation:portrait) and (max-height:700px){
+ .metal-home .topbar.metal-status{height:38px!important;padding-bottom:3px!important}
+ .metal-home-content{height:calc(100dvh - 43px)!important}
+ .reference-logo-block{
+  min-height:54px!important;
+  width:min(54%,320px)!important;
+  margin:-2px 2px 2px auto!important;
+ }
+ .reference-logo-art{max-height:64px!important}
+ .reference-announcement{
+  min-height:40px!important;
+  margin-bottom:5px!important;
+  padding:8px 18px 9px 14px!important;
+  font-size:clamp(11px,3.2vw,14px)!important;
+ }
+ .reference-player-grid{
+  grid-template-columns:minmax(104px,.78fr) minmax(0,1.22fr)!important;
+  gap:7px!important;
+ }
+ .reference-character-slot{min-height:205px!important}
+ .reference-player-side{padding-top:7px!important;gap:5px!important}
+ .metal-home .player-card.metal-player-card.reference-player-card{
+  min-height:140px!important;
+  padding:13px 9px 7px!important;
+ }
+ .reference-player-card .player-copy>strong{
+  margin-top:-20px!important;
+  margin-bottom:4px!important;
+  font-size:clamp(18px,5.4vw,24px)!important;
+ }
+ .reference-stat-row{min-height:27px!important;padding:3px 0!important}
+ .reference-store-button{min-height:55px!important;padding:5px 8px!important}
+ .metal-menu-stack{margin-top:5px!important;gap:5px!important}
+ .metal-menu-charts,.metal-menu-settings{min-height:44px!important}
+ .metal-menu-solo{min-height:68px!important;margin-top:0!important}
+ .metal-menu-solo .metal-menu-copy strong:after{font-size:34px!important}
+}
+
+@media (orientation:landscape) and (max-height:500px){
+ .metal-home-content{
+  display:grid!important;
+  grid-template-columns:minmax(0,54%) minmax(0,44%)!important;
+  column-gap:2%!important;
+  align-content:start!important;
+  align-items:start!important;
+  height:calc(100dvh - 48px)!important;
+ }
+ .reference-player-grid{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  max-width:none!important;
+  float:none!important;
+  margin:0!important;
+ }
+ .metal-menu-stack{
+  grid-column:2!important;
+  grid-row:1!important;
+  width:100%!important;
+  max-width:none!important;
+  float:none!important;
+  margin:0!important;
+  gap:4px!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ .metal-menu-charts,.metal-menu-settings,.metal-menu-solo{grid-column:1/-1!important}
+ .metal-menu-charts,.metal-menu-settings{min-height:40px!important}
+ .metal-menu-solo{min-height:56px!important;margin-top:0!important}
+ .metal-menu-solo .metal-menu-copy strong:after{font-size:30px!important}
+ .metal-menu-stack .metal-menu-button:not(.metal-menu-solo):not(.metal-menu-charts):not(.metal-menu-settings){
+  min-height:40px!important;
+ }
+ .metal-menu-stack .metal-menu-copy strong{font-size:12px!important}
+ .metal-menu-stack .metal-menu-copy small,
+ .metal-menu-stack .metal-menu-copy em{display:none!important}
+ .metal-utility-grid,.engagement-strip,.tour-main-cta,.home-learn-strip,.metal-footer{
+  grid-column:1/-1!important;
+  float:none!important;
+  clear:both!important;
+ }
+}
