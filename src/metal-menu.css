@@ -1305,7 +1305,7 @@
 }
 
 /* FINAL ART VISIBILITY FIX — use BASE_URL-backed <img> elements, not absolute CSS URLs. */
-.reference-logo-block{background-image:none!important}
+.reference-logo-block{}
 .reference-logo-art{
  position:relative!important;
  z-index:3!important;
@@ -1318,7 +1318,7 @@
  opacity:1!important;
  visibility:visible!important;
 }
-.reference-character-slot{background:#100404!important}
+.reference-character-slot{background-color:#100404!important}
 .reference-character-art{
  position:absolute!important;
  z-index:2!important;
