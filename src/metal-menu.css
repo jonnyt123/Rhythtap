@@ -1231,3 +1231,75 @@
   clear:both!important;
  }
 }
+
+
+/* FINAL REFERENCE-MATCH PASS */
+/* Use the committed production art as CSS-backed fallbacks too. This prevents the
+   logo/character slots from collapsing or painting behind layered decoration in
+   browser-specific stacking contexts while keeping all live UI/handlers intact. */
+.reference-logo-block{
+ background-image:url('/Rhythtap/assets/menu/rhythmtap-logo.webp')!important;
+ background-repeat:no-repeat!important;
+ background-position:right center!important;
+ background-size:contain!important;
+ width:min(62%,420px)!important;
+ min-height:92px!important;
+ margin:0 0 6px auto!important;
+}
+.reference-logo-art{
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ opacity:0!important;
+ pointer-events:none!important;
+}
+.reference-character-slot{
+ background-image:
+  linear-gradient(180deg,transparent 58%,rgba(8,2,3,.30)),
+  url('/Rhythtap/assets/menu/player-character.webp')!important;
+ background-repeat:no-repeat,no-repeat!important;
+ background-size:cover,cover!important;
+ background-position:center,center top!important;
+}
+.reference-character-art{opacity:0!important;pointer-events:none!important}
+.reference-character-slot:before{background:linear-gradient(180deg,transparent 68%,rgba(8,2,3,.42))!important;opacity:.55!important}
+.reference-character-slot:after{opacity:.28!important}
+
+@media (orientation:portrait) and (min-height:701px){
+ .reference-announcement{
+  width:min(68%,560px)!important;
+  margin:0 auto 10px 0!important;
+ }
+ .reference-player-grid{
+  grid-template-columns:minmax(132px,.88fr) minmax(0,1.12fr)!important;
+  gap:9px!important;
+ }
+ .reference-character-slot{min-height:292px!important}
+ .reference-player-side{padding-top:14px!important}
+ .metal-home .player-card.metal-player-card.reference-player-card{
+  min-height:202px!important;
+  padding:20px 14px 12px!important;
+ }
+ .reference-store-button{min-height:74px!important}
+ .metal-menu-charts{min-height:60px!important}
+ .metal-menu-settings{min-height:56px!important}
+ .metal-menu-solo{min-height:102px!important}
+}
+
+@media (orientation:portrait) and (max-height:700px){
+ .reference-logo-block{
+  width:min(58%,330px)!important;
+  min-height:62px!important;
+  margin:0 0 3px auto!important;
+ }
+ .reference-player-grid{
+  grid-template-columns:minmax(108px,.82fr) minmax(0,1.18fr)!important;
+ }
+ .reference-character-slot{min-height:208px!important}
+}
+
+@media (orientation:landscape) and (max-height:500px){
+ .reference-character-slot{
+  background-position:center,center 22%!important;
+ }
+}
