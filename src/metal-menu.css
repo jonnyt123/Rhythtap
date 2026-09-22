@@ -1238,7 +1238,6 @@
    logo/character slots from collapsing or painting behind layered decoration in
    browser-specific stacking contexts while keeping all live UI/handlers intact. */
 .reference-logo-block{
- background-image:url('/Rhythtap/assets/menu/rhythmtap-logo.webp')!important;
  background-repeat:no-repeat!important;
  background-position:right center!important;
  background-size:contain!important;
@@ -1254,12 +1253,9 @@
  pointer-events:none!important;
 }
 .reference-character-slot{
- background-image:
-  linear-gradient(180deg,transparent 58%,rgba(8,2,3,.30)),
-  url('/Rhythtap/assets/menu/player-character.webp')!important;
- background-repeat:no-repeat,no-repeat!important;
- background-size:cover,cover!important;
- background-position:center,center top!important;
+ background-repeat:no-repeat!important;
+ background-size:cover!important;
+ background-position:center top!important;
 }
 .reference-character-art{opacity:0!important;pointer-events:none!important}
 .reference-character-slot:before{background:linear-gradient(180deg,transparent 68%,rgba(8,2,3,.42))!important;opacity:.55!important}
@@ -1300,7 +1296,7 @@
 
 @media (orientation:landscape) and (max-height:500px){
  .reference-character-slot{
-  background-position:center,center 22%!important;
+  background-position:center 22%!important;
  }
 }
 
