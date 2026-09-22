@@ -45,8 +45,14 @@ Deno.serve(async req=>{
   if(error)throw error;
   const row=Array.isArray(data)?data[0]:data;
   if(!row)throw new Error('Progress update returned no data');
+  const [{data:profileRow,error:profileError},{data:eventRow,error:eventError}]=await Promise.all([
+   admin.from('player_profiles').select('coins').eq('user_id',userId).single(),
+   admin.from('player_progress_events').select('coin_awarded').eq('user_id',userId).eq('source_run_id',runId).maybeSingle()
+  ]);
+  if(profileError)throw profileError;
+  if(eventError)throw eventError;
   return json({
-   progress:{xp:Number(row.xp),level:Number(row.level),songsCompleted:Number(row.songs_completed),perfectHits:Number(row.perfect_hits),bestCombo:Number(row.best_combo),xpAwarded:Number(row.xp_awarded),dailyBonus:Number(row.daily_bonus)},
+   progress:{xp:Number(row.xp),level:Number(row.level),songsCompleted:Number(row.songs_completed),perfectHits:Number(row.perfect_hits),bestCombo:Number(row.best_combo),xpAwarded:Number(row.xp_awarded),dailyBonus:Number(row.daily_bonus),coins:Number(profileRow?.coins)||0,coinsAwarded:Number(eventRow?.coin_awarded)||0},
    result:{score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},validationVersion:chartVersion,chartVersion,validation:'verified'}
   });
  }catch(error){
