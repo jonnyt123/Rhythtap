@@ -144,6 +144,18 @@ Deno.test('setlist ownership replaces level-only song locking',()=>{
  assert(transform.includes("const locked=!['voltage','sickness','never-left','fly-eagle'].includes(song.id)&&!unlockedSongIds.includes(song.id);"));
 });
 
+Deno.test('successful purchases show an accessible SONG UNLOCKED reveal',()=>{
+ assert(store.includes("setReveal({song:bought,price:songPrice(songId),coins:result.coins})"));
+ assert(store.includes('role="dialog"'));
+ assert(store.includes('aria-modal="true"'));
+ assert(store.includes('SONG UNLOCKED'));
+ assert(store.includes('COINS SPENT'));
+ assert(store.includes('NEW BALANCE'));
+ assert(store.includes('autoFocus'));
+ assert(storeCss.includes('.song-unlock-overlay{'));
+ assert(storeCss.includes('@media(prefers-reduced-motion:reduce)'));
+});
+
 Deno.test('shop keeps the metal mobile presentation and safe areas',()=>{
  assert(store.includes('BUILD YOUR SETLIST'));
  assert(store.includes('Clear songs to earn coins'));
