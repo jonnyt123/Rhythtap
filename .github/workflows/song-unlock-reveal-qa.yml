@@ -1,0 +1,45 @@
+name: Song Unlock Reveal QA
+
+on:
+  push:
+    branches: [feature/song-shop-coins]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Store and economy tests
+        run: |
+          deno test --allow-read tests/song-store.test.ts
+          deno test --allow-read tests/song-economy-simulation.test.ts
+      - name: Related regression pack
+        run: |
+          deno test --allow-read tests/progression-idempotency.test.ts
+          deno test --allow-read tests/multiplayer-hardening.test.ts
+          deno test --allow-read tests/mobile-layout.test.ts
+          deno test --allow-read tests/scrolling-regression.test.ts
+          deno test --allow-read tests/death-metal-theme.test.ts
+          deno test --allow-read tests/stripe-billing.test.ts
+          deno test --allow-read tests/pro-badge.test.ts
+          deno test --allow-read tests/deep-audit-hardening.test.ts
+      - name: Check record-solo function
+        run: deno check --node-modules-dir=auto supabase/functions/record-solo/index.ts
