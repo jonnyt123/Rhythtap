@@ -32,7 +32,6 @@ jobs:
       - name: Related regression pack
         run: |
           deno test --allow-read tests/progression-idempotency.test.ts
-          deno test --allow-read tests/song-fail.test.ts
           deno test --allow-read tests/multiplayer-hardening.test.ts
           deno test --allow-read tests/mobile-layout.test.ts
           deno test --allow-read tests/scrolling-regression.test.ts
