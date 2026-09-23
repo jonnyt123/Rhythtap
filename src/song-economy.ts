@@ -22,7 +22,7 @@ export const songStoreEntry=(songId:string)=>bySong.get(songId)||null;
 export const songPrice=(songId:string)=>bySong.get(songId)?.price??0;
 export const isOfficialStoreSong=(songId:string)=>bySong.has(songId);
 export const isStarterSong=(songId:string)=>Boolean(bySong.get(songId)?.starter);
-export const coinsForXpAward=(xpAward:number)=>Math.min(100,Math.max(10,Math.round(Math.max(0,xpAward)/15)));
+export const coinsForXpAward=(xpAward:number)=>xpAward<=0?0:Math.min(100,Math.max(25,Math.round(xpAward/15)));
 
 const normalizeUnlocked=(ids:unknown,legacyLevel:number)=>{
  const set=new Set<string>(STARTER_SONG_IDS);
