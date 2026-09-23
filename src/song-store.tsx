@@ -47,7 +47,7 @@ export function SongShopScreen({songs,coins,unlockedSongIds,signedIn,playerName,
      </button>
     </article>})}
    </div>
-   <div className="song-store-note"><Coins/><div><strong>HOW TO EARN COINS</strong><p>Finish official RhythmTap songs. Better validated runs earn more coins, with every completed song paying at least 10.</p></div></div>
+   <div className="song-store-note"><Coins/><div><strong>HOW TO EARN COINS</strong><p>Finish official RhythmTap songs. Better validated runs earn more coins, with every completed official song paying at least 25.</p></div></div>
   </div>
  </section>;
 }
