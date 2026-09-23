@@ -123,7 +123,7 @@ begin
     return new;
   end if;
 
-  award := least(100, greatest(10, round(new.xp_awarded::numeric / 15)::integer));
+  award := least(100, greatest(25, round(new.xp_awarded::numeric / 15)::integer));
   new.coin_awarded := award;
 
   update public.player_profiles
