@@ -53,13 +53,13 @@ values
   ('sickness',0,true,1,true),
   ('never-left',0,true,1,true),
   ('fly-eagle',0,true,1,true),
-  ('afterglow',250,false,2,true),
-  ('my-immortal',350,false,2,true),
-  ('crazy-train',400,false,2,true),
+  ('afterglow',200,false,2,true),
+  ('my-immortal',300,false,2,true),
+  ('crazy-train',350,false,2,true),
   ('kryptonite',450,false,2,true),
-  ('kill-you',650,false,3,true),
-  ('gravity',800,false,4,true),
-  ('through-fire-flames',1200,false,5,true)
+  ('kill-you',550,false,3,true),
+  ('gravity',650,false,4,true),
+  ('through-fire-flames',900,false,5,true)
 on conflict (song_id) do update
 set price = excluded.price,
     starter = excluded.starter,
