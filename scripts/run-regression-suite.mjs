@@ -20,6 +20,7 @@ const denoTests=[
  ['tests/engagement-ui.test.ts'],
  ['tests/progression-idempotency.test.ts'],
  ['tests/song-store.test.ts'],
+ ['tests/song-economy-simulation.test.ts'],
  ['tests/mobile-layout.test.ts'],
  ['tests/scrolling-regression.test.ts'],
  ['tests/death-metal-theme.test.ts'],
