@@ -1,5 +1,5 @@
 import {assert,assertEquals} from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import {SONG_STORE_CATALOG,coinsForXpAward} from '../src/song-economy.ts';
+import {SONG_STORE_CATALOG,STARTER_SONG_IDS,coinsForXpAward,purchaseLocalSong} from '../src/song-economy.ts';
 
 const transform=await Deno.readTextFile('scripts/song-store-transform-v2.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260922050000_song_store_coins.sql');
@@ -16,13 +16,76 @@ Deno.test('song catalog has stable starter tracks and nonnegative prices',()=>{
  assertEquals(SONG_STORE_CATALOG.find(entry=>entry.songId==='through-fire-flames')?.price,1200);
 });
 
-Deno.test('coin earnings are bounded and performance-scaled',()=>{
- assertEquals(coinsForXpAward(0),10);
- assertEquals(coinsForXpAward(150),10);
+Deno.test('paid-song pricing curve has deliberate progression and sane completion pacing',()=>{
+ const paid=SONG_STORE_CATALOG.filter(entry=>!entry.starter);
+ assertEquals(paid.map(entry=>entry.price),[250,350,400,450,650,800,1200]);
+ const total=paid.reduce((sum,entry)=>sum+entry.price,0);
+ assertEquals(total,4100);
+ const plays=(price:number,reward:number)=>Math.ceil(price/reward);
+ const floorReward=coinsForXpAward(1);
+ const solidReward=coinsForXpAward(750);
+ const capReward=coinsForXpAward(1500);
+ assert(plays(paid[0].price,floorReward)<=10,'first paid song must be reachable within 10 successful low-reward clears');
+ assert(plays(paid.at(-1)!.price,floorReward)<=48,'highest-priced song must remain reachable even at the reward floor');
+ assert(plays(total,solidReward)<=82,'solid play should unlock the full paid catalog without triple-digit clears');
+ assert(plays(total,capReward)<=41,'high performance should materially accelerate the catalog');
+});
+
+Deno.test('local purchases never overspend, double-charge, or mutate on invalid attempts',()=>{
+ const base={version:1 as const,coins:249,unlockedSongIds:[...STARTER_SONG_IDS]};
+ const short=purchaseLocalSong(base,'afterglow');
+ assertEquals(short.purchased,false);
+ assertEquals(short.economy.coins,249);
+ assertEquals(short.economy.unlockedSongIds,base.unlockedSongIds);
+
+ const exact=purchaseLocalSong({...base,coins:250},'afterglow');
+ assertEquals(exact.purchased,true);
+ assertEquals(exact.economy.coins,0);
+ assert(exact.economy.unlockedSongIds.includes('afterglow'));
+
+ const duplicate=purchaseLocalSong(exact.economy,'afterglow');
+ assertEquals(duplicate.purchased,false);
+ assertEquals(duplicate.economy.coins,0);
+
+ const invalid=purchaseLocalSong({...base,coins:999},'not-a-real-song');
+ assertEquals(invalid.purchased,false);
+ assertEquals(invalid.economy.coins,999);
+ assertEquals(invalid.economy.unlockedSongIds,base.unlockedSongIds);
+});
+
+Deno.test('exact catalog wallet can buy every paid track once and ends at zero',()=>{
+ const paid=SONG_STORE_CATALOG.filter(entry=>!entry.starter);
+ const total=paid.reduce((sum,entry)=>sum+entry.price,0);
+ let economy={version:1 as const,coins:total,unlockedSongIds:[...STARTER_SONG_IDS]};
+ for(const entry of paid){
+  const result=purchaseLocalSong(economy,entry.songId);
+  assert(result.purchased,entry.songId+' should purchase');
+  economy=result.economy;
+ }
+ assertEquals(economy.coins,0);
+ for(const entry of SONG_STORE_CATALOG)assert(economy.unlockedSongIds.includes(entry.songId));
+});
+
+Deno.test('coin earnings are bounded, monotonic and server-parity exact',()=>{
+ assertEquals(coinsForXpAward(-500),0);
+ assertEquals(coinsForXpAward(0),0);
+ assertEquals(coinsForXpAward(1),25);
+ assertEquals(coinsForXpAward(150),25);
+ assertEquals(coinsForXpAward(375),25);
  assertEquals(coinsForXpAward(750),50);
+ assertEquals(coinsForXpAward(1125),75);
  assertEquals(coinsForXpAward(1500),100);
  assertEquals(coinsForXpAward(5000),100);
- assert(migration.includes("least(100, greatest(10, round(new.xp_awarded::numeric / 15)::integer))"));
+ let previous=0;
+ for(let xp=0;xp<=5000;xp++){
+  const reward=coinsForXpAward(xp);
+  assert(reward>=previous);
+  assert(reward===0||reward>=25);
+  assert(reward<=100);
+  previous=reward;
+ }
+ assert(migration.includes("if new.xp_awarded <= 0 then"));
+ assert(migration.includes("award := least(100, greatest(25, round(new.xp_awarded::numeric / 15)::integer));"));
 });
 
 Deno.test('cloud purchases are server-authoritative and atomic',()=>{
