@@ -6,13 +6,13 @@ export const SONG_STORE_CATALOG:SongStoreEntry[]=[
  {songId:'sickness',price:0,starter:true,legacyUnlockLevel:1},
  {songId:'never-left',price:0,starter:true,legacyUnlockLevel:1},
  {songId:'fly-eagle',price:0,starter:true,legacyUnlockLevel:1},
- {songId:'afterglow',price:250,starter:false,legacyUnlockLevel:2},
- {songId:'my-immortal',price:350,starter:false,legacyUnlockLevel:2},
- {songId:'crazy-train',price:400,starter:false,legacyUnlockLevel:2},
+ {songId:'afterglow',price:200,starter:false,legacyUnlockLevel:2},
+ {songId:'my-immortal',price:300,starter:false,legacyUnlockLevel:2},
+ {songId:'crazy-train',price:350,starter:false,legacyUnlockLevel:2},
  {songId:'kryptonite',price:450,starter:false,legacyUnlockLevel:2},
- {songId:'kill-you',price:650,starter:false,legacyUnlockLevel:3},
- {songId:'gravity',price:800,starter:false,legacyUnlockLevel:4},
- {songId:'through-fire-flames',price:1200,starter:false,legacyUnlockLevel:5},
+ {songId:'kill-you',price:550,starter:false,legacyUnlockLevel:3},
+ {songId:'gravity',price:650,starter:false,legacyUnlockLevel:4},
+ {songId:'through-fire-flames',price:900,starter:false,legacyUnlockLevel:5},
 ];
 
 const LOCAL_ECONOMY_KEY='rhythtap-song-economy-v1';
