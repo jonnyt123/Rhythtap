@@ -13,32 +13,32 @@ Deno.test('song catalog has stable starter tracks and nonnegative prices',()=>{
  assert(starters.every(entry=>entry.price===0));
  assert(SONG_STORE_CATALOG.every(entry=>Number.isInteger(entry.price)&&entry.price>=0));
  assertEquals(new Set(SONG_STORE_CATALOG.map(entry=>entry.songId)).size,SONG_STORE_CATALOG.length);
- assertEquals(SONG_STORE_CATALOG.find(entry=>entry.songId==='through-fire-flames')?.price,1200);
+ assertEquals(SONG_STORE_CATALOG.find(entry=>entry.songId==='through-fire-flames')?.price,900);
 });
 
 Deno.test('paid-song pricing curve has deliberate progression and sane completion pacing',()=>{
  const paid=SONG_STORE_CATALOG.filter(entry=>!entry.starter);
- assertEquals(paid.map(entry=>entry.price),[250,350,400,450,650,800,1200]);
+ assertEquals(paid.map(entry=>entry.price),[200,300,350,450,550,650,900]);
  const total=paid.reduce((sum,entry)=>sum+entry.price,0);
- assertEquals(total,4100);
+ assertEquals(total,3400);
  const plays=(price:number,reward:number)=>Math.ceil(price/reward);
  const floorReward=coinsForXpAward(1);
  const solidReward=coinsForXpAward(750);
  const capReward=coinsForXpAward(1500);
- assert(plays(paid[0].price,floorReward)<=10,'first paid song must be reachable within 10 successful low-reward clears');
- assert(plays(paid.at(-1)!.price,floorReward)<=48,'highest-priced song must remain reachable even at the reward floor');
- assert(plays(total,solidReward)<=82,'solid play should unlock the full paid catalog without triple-digit clears');
- assert(plays(total,capReward)<=41,'high performance should materially accelerate the catalog');
+ assert(plays(paid[0].price,floorReward)<=8,'first paid song must be reachable within 8 successful low-reward clears');
+ assert(plays(paid.at(-1)!.price,floorReward)<=36,'highest-priced song must remain reachable within 36 floor-reward clears');
+ assert(plays(total,solidReward)<=68,'solid play should unlock the full paid catalog well before 100 clears');
+ assert(plays(total,capReward)<=34,'high performance should materially accelerate the catalog');
 });
 
 Deno.test('local purchases never overspend, double-charge, or mutate on invalid attempts',()=>{
- const base={version:1 as const,coins:249,unlockedSongIds:[...STARTER_SONG_IDS]};
+ const base={version:1 as const,coins:199,unlockedSongIds:[...STARTER_SONG_IDS]};
  const short=purchaseLocalSong(base,'afterglow');
  assertEquals(short.purchased,false);
- assertEquals(short.economy.coins,249);
+ assertEquals(short.economy.coins,199);
  assertEquals(short.economy.unlockedSongIds,base.unlockedSongIds);
 
- const exact=purchaseLocalSong({...base,coins:250},'afterglow');
+ const exact=purchaseLocalSong({...base,coins:200},'afterglow');
  assertEquals(exact.purchased,true);
  assertEquals(exact.economy.coins,0);
  assert(exact.economy.unlockedSongIds.includes('afterglow'));
@@ -121,6 +121,19 @@ Deno.test('main menu Store opens the shop instead of player profile',()=>{
  assert(transform.includes("onStore={()=>setScreen('store')}"));
  assert(transform.includes("screen==='store'&&<SongShopScreen"));
  assert(transform.includes('<small>COINS</small><strong>{coins.toLocaleString()}</strong>'));
+});
+
+Deno.test('completed official songs show the exact coin reward on results',()=>{
+ assert(transform.includes("coinsForXpAward(result.xpEarned).toLocaleString()"));
+ assert(transform.includes('COINS EARNED'));
+ assert(transform.includes("result.progressPending?'VERIFYING…'"));
+ assert(transform.includes("result.progressError?'NOT SAVED'"));
+ assert(transform.includes("!battle&&!song.id.startsWith('tap-')"));
+ assert(storeCss.includes('.result-coin-reward{'));
+});
+
+Deno.test('guest coin awards cannot be farmed with imported charts',()=>{
+ assert(transform.includes("if(official)setLocalSongEconomy(current=>awardLocalCoins(current,xpEarned))"));
 });
 
 Deno.test('setlist ownership replaces level-only song locking',()=>{
