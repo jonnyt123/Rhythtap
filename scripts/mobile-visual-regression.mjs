@@ -39,17 +39,38 @@ async function capturePaint(page,browser,label){
  }
 }
 
-async function newContext(browser,landscape=false){
+async function newContext(browser,landscape=false,viewport=null){
  const portrait=devices['iPhone 14'];
  const landscapeProfile=devices['iPhone 14 landscape'];
  const profile=landscape&&landscapeProfile?landscapeProfile:portrait;
- const context=await browser.newContext({...profile,locale:'en-CA',timezoneId:'America/Toronto'});
- await context.addInitScript(()=>{
+ const size=viewport?{viewport,screen:viewport}:{};
+ return browser.newContext({...profile,...size,locale:'en-CA',timezoneId:'America/Toronto'});
+}
+
+async function prepareHome(page,{xp=null}={}){
+ await page.goto(target,{waitUntil:'domcontentloaded',timeout:45000});
+ // Production first-launch state is selected during app boot. Seed storage from the
+ // loaded origin and perform a real reload rather than relying on addInitScript timing.
+ await page.evaluate(({xp})=>{
   localStorage.setItem('rhythmtap-tutorial-complete-v1','1');
-  localStorage.setItem('rhythtap-tutorial-seen','1');
+  localStorage.setItem('rhythmtap-tutorial-seen','1');
   localStorage.setItem('rhythtap-graphics','LOW');
- });
- return context;
+  if(xp!==null)localStorage.setItem('rhythtap-profile',JSON.stringify({xp}));
+ },{xp});
+ await page.reload({waitUntil:'domcontentloaded',timeout:45000});
+ await page.waitForTimeout(700);
+
+ // Keep the QA independent of the tutorial storage implementation. If a future
+ // onboarding revision still opens training, exit it through the real UI contract.
+ const tutorial=page.locator('.tutorial-screen').filter({visible:true}).first();
+ if(await visible(tutorial,900)){
+  const exit=page.locator('.tutorial-screen button[aria-label="Exit tutorial"]').first();
+  if(await visible(exit,900)){
+   await exit.click();
+   await page.waitForTimeout(250);
+  }
+ }
+ return visible(page.locator('.metal-home,.home').filter({visible:true}).first(),5000);
 }
 
 async function openCase(browserName,browser,test){
@@ -58,8 +79,12 @@ async function openCase(browserName,browser,test){
  const pageErrors=[];
  page.on('pageerror',error=>pageErrors.push(String(error)));
  try{
-  await page.goto(target,{waitUntil:'domcontentloaded',timeout:45000});
-  await page.waitForTimeout(700);
+  const homeReady=await prepareHome(page);
+  if(!homeReady){
+   const rootText=(await page.locator('#root').innerText().catch(()=>'' )).trim();
+   add(browserName,'high',`${test.label}: home bootstrap failed`,`Neither the seeded reload nor tutorial exit reached home; rootText=${rootText.slice(0,220)}`);
+   return;
+  }
   if(test.action){
    const trigger=page.locator(test.action.selector).filter({hasText:test.action.text||undefined,visible:true}).first();
    if(!(await visible(trigger,3000))){
@@ -101,6 +126,98 @@ const cases=[
 for(const [browserName,engine] of [['webkit-iphone14',webkit],['chromium-iphone14',chromium]]){
  const browser=await engine.launch({headless:true});
  try{for(const test of cases)await openCase(browserName,browser,test)}finally{await browser.close()}
+}
+
+
+const exactPhoneViewports=[
+ {width:320,height:568},
+ {width:375,height:667},
+ {width:390,height:844},
+ {width:393,height:852},
+ {width:414,height:896},
+ {width:430,height:932},
+];
+
+async function checkExactMainMenuViewport(browserName,browser,viewport,{largeValues=false}={}){
+ const label=`main menu ${viewport.width}x${viewport.height}${largeValues?' large-values':''}`;
+ const context=await newContext(browser,false,viewport);
+ const page=await context.newPage();
+ const pageErrors=[],consoleErrors=[];
+ page.on('pageerror',error=>pageErrors.push(String(error)));
+ page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text())});
+ try{
+  if(!(await prepareHome(page,{xp:largeValues?10000000:null}))){
+   add(browserName,'critical',`${label}: home not rendered`,(await page.locator('#root').innerText().catch(()=>'' )).slice(0,260));
+   return;
+  }
+
+  const portraitRequired=[
+   ['logo','.reference-logo-block'],
+   ['announcement','.reference-announcement'],
+   ['character','.reference-character-slot'],
+   ['player panel','.reference-player-card'],
+   ['store','.reference-store-button'],
+   ['user beatmaps','.metal-menu-charts'],
+   ['settings','.metal-menu-settings'],
+   ['play','.metal-menu-solo'],
+  ];
+  // The production landscape rule intentionally removes the decorative logo and
+  // announcement at <=500px height so gameplay/menu controls keep the space.
+  const required=viewport.width>viewport.height
+   ?portraitRequired.filter(([name])=>name!=='logo'&&name!=='announcement')
+   :portraitRequired;
+  for(const [name,selector] of required){
+   const locator=page.locator(selector).first();
+   if(!(await visible(locator,2500))){add(browserName,'high',`${label}: ${name} missing`,selector);continue}
+   const box=await locator.boundingBox();
+   if(box&&(box.x<-2||box.x+box.width>viewport.width+2))add(browserName,'high',`${label}: ${name} outside horizontal viewport`,JSON.stringify(box));
+  }
+
+  const metrics=await page.evaluate(()=>({
+   documentOverflowX:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+   documentOverflowY:document.documentElement.scrollHeight-window.innerHeight,
+   bodyOverflowX:document.body.scrollWidth-document.body.clientWidth,
+   content:document.querySelector('.metal-home-content')?{
+    clientHeight:document.querySelector('.metal-home-content').clientHeight,
+    scrollHeight:document.querySelector('.metal-home-content').scrollHeight,
+    scrollWidth:document.querySelector('.metal-home-content').scrollWidth,
+    clientWidth:document.querySelector('.metal-home-content').clientWidth,
+   }:null,
+  }));
+  if(metrics.documentOverflowX>3||metrics.bodyOverflowX>3)add(browserName,'high',`${label}: horizontal page overflow`,JSON.stringify(metrics));
+  if(metrics.documentOverflowY>3)add(browserName,'medium',`${label}: document owns vertical scrolling`,`${metrics.documentOverflowY}px; menu scrolling should remain inside .metal-home-content.`);
+
+  const playBox=await page.locator('.metal-menu-solo').first().boundingBox();
+  if(playBox&&(playBox.y<0||playBox.y+playBox.height>viewport.height+2))add(browserName,'high',`${label}: PLAY is not in the initial viewport`,JSON.stringify(playBox));
+
+  const statValues=page.locator('.reference-stat-row b');
+  const statCount=await statValues.count();
+  for(let i=0;i<statCount;i++){
+   const overflow=await statValues.nth(i).evaluate(el=>el.scrollWidth-el.clientWidth);
+   if(overflow>1)add(browserName,'high',`${label}: player stat is clipped`,`${overflow}px clipped in row ${i+1}`);
+  }
+  if(largeValues){
+   const stats=(await page.locator('.reference-stat-row').allTextContents()).join(' | ');
+   if(!stats.replaceAll(',','').includes('1000000'))add(browserName,'high',`${label}: 1,000,000-credit stress value missing`,stats);
+  }
+
+  await capturePaint(page,browserName,label);
+  for(const error of pageErrors)add(browserName,'critical',`${label}: page exception`,error);
+  for(const error of consoleErrors.filter(value=>!/favicon|Failed to load resource.*404/i.test(value)))add(browserName,'high',`${label}: console error`,error);
+ }catch(error){
+  add(browserName,'critical',`${label}: viewport QA aborted`,error instanceof Error?error.stack||error.message:String(error));
+ }finally{
+  await context.close();
+ }
+}
+
+{
+ const browser=await webkit.launch({headless:true});
+ try{
+  for(const viewport of exactPhoneViewports)await checkExactMainMenuViewport('webkit-exact-menu',browser,viewport);
+  await checkExactMainMenuViewport('webkit-exact-menu',browser,{width:320,height:568},{largeValues:true});
+  await checkExactMainMenuViewport('webkit-exact-menu',browser,{width:844,height:390});
+ }finally{await browser.close()}
 }
 
 const severity={critical:4,high:3,medium:2,low:1};
