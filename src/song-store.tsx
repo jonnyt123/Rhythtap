@@ -1,5 +1,5 @@
 import React,{useMemo,useState} from 'react';
-import {ArrowLeft,Check,Coins,Lock,Music2,ShoppingBag} from 'lucide-react';
+import {ArrowLeft,Check,Coins,Lock,Music2,ShoppingBag,Sparkles} from 'lucide-react';
 import {SONG_STORE_CATALOG,songPrice} from './song-economy';
 import './song-store.css';
 
@@ -17,11 +17,11 @@ type Props={
 };
 
 export function SongShopScreen({songs,coins,unlockedSongIds,signedIn,playerName,back,purchaseSong}:Props){
- const[pending,setPending]=useState(''),[message,setMessage]=useState('');
+ const[pending,setPending]=useState(''),[message,setMessage]=useState(''),[reveal,setReveal]=useState<{song:StoreSong;price:number;coins:number}|null>(null);
  const owned=useMemo(()=>new Set(unlockedSongIds),[unlockedSongIds]);
  const songMap=useMemo(()=>new Map(songs.map(song=>[song.id,song])),[songs]);
  const catalog=SONG_STORE_CATALOG.map(entry=>({entry,song:songMap.get(entry.songId)})).filter(item=>Boolean(item.song));
- const buy=async(songId:string)=>{if(pending)return;setPending(songId);setMessage('');try{const result=await purchaseSong(songId);setMessage(result.message)}catch(error){setMessage(error instanceof Error?error.message:'Unable to unlock this track.')}finally{setPending('')}};
+ const buy=async(songId:string)=>{if(pending)return;setPending(songId);setMessage('');try{const result=await purchaseSong(songId);setMessage(result.message);const bought=songMap.get(songId);if(result.purchased&&bought)setReveal({song:bought,price:songPrice(songId),coins:result.coins})}catch(error){setMessage(error instanceof Error?error.message:'Unable to unlock this track.')}finally{setPending('')}};
  return <section className="song-store screen">
   <img className="song-store-texture" src={import.meta.env.BASE_URL+'assets/menu/menu-texture.webp'} alt="" aria-hidden="true"/>
   <header className="song-store-header">
@@ -49,5 +49,19 @@ export function SongShopScreen({songs,coins,unlockedSongIds,signedIn,playerName,
    </div>
    <div className="song-store-note"><Coins/><div><strong>HOW TO EARN COINS</strong><p>Finish official RhythmTap songs. Better validated runs earn more coins, with every completed official song paying at least 25.</p></div></div>
   </div>
+  {reveal&&<div className="song-unlock-overlay" role="dialog" aria-modal="true" aria-labelledby="song-unlock-title">
+   <div className="song-unlock-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/></div>
+   <div className="song-unlock-card" style={{'--unlock-song':reveal.song.color} as React.CSSProperties}>
+    <Sparkles className="song-unlock-spark"/>
+    <small>RHYTHMTAP STORE</small>
+    <h2 id="song-unlock-title">SONG UNLOCKED</h2>
+    <div className="song-unlock-cover"><Music2/><i/></div>
+    <strong>{reveal.song.title}</strong>
+    <span>{reveal.song.artist}</span>
+    <div className="song-unlock-purchase"><Coins/><b>{reveal.price.toLocaleString()}</b><small>COINS SPENT</small></div>
+    <div className="song-unlock-balance"><small>NEW BALANCE</small><strong>{reveal.coins.toLocaleString()} COINS</strong></div>
+    <button autoFocus onClick={()=>setReveal(null)}><Check/> BACK TO STORE</button>
+   </div>
+  </div>}
  </section>;
 }
