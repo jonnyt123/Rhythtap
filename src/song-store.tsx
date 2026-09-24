@@ -47,7 +47,7 @@ export function SongShopScreen({songs,coins,unlockedSongIds,signedIn,playerName,
      </button>
     </article>})}
    </div>
-   <div className="song-store-note"><Coins/><div><strong>HOW TO EARN COINS</strong><p>Finish official RhythmTap songs. Better validated runs earn more coins, with every completed official song paying at least 25.</p></div></div>
+   <div className="song-store-note"><Coins/><div><strong>HOW TO EARN COINS</strong><p>Finish official RhythmTap songs. Every valid clear pays at least 25 coins. One-time milestones add +15 for a first clear, +10 for an S rank, and +15 for a full combo.</p></div></div>
   </div>
   {reveal&&<div className="song-unlock-overlay" role="dialog" aria-modal="true" aria-labelledby="song-unlock-title">
    <div className="song-unlock-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/></div>
