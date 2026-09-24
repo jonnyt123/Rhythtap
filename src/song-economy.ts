@@ -40,7 +40,7 @@ const normalizeMilestones=(items:unknown)=>{
  return [...new Set(items.filter((item):item is string=>typeof item==='string'&&item.length<=160))];
 };
 const milestoneKey=(songId:string,difficulty:string,type:'first-clear'|'s-rank'|'full-combo')=>
- type==='first-clear'?\`\${songId}:ANY:first-clear\`:\`\${songId}:\${difficulty.toUpperCase()}:\${type}\`;
+ type==='first-clear'?`${songId}:ANY:first-clear`:`${songId}:${difficulty.toUpperCase()}:${type}`;
 
 export const loadLocalSongEconomy=(legacyXp:number,legacyLevel:number):LocalSongEconomy=>{
  try{
@@ -84,7 +84,7 @@ export const purchaseLocalSong=(economy:LocalSongEconomy,songId:string)=>{
  const entry=bySong.get(songId);
  if(!entry)return{economy,message:'That track is not sold in the RhythmTap Store.',purchased:false};
  if(entry.starter||economy.unlockedSongIds.includes(songId))return{economy,message:'Already unlocked.',purchased:false};
- if(economy.coins<entry.price)return{economy,message:\`You need \${(entry.price-economy.coins).toLocaleString()} more coins.\`,purchased:false};
+ if(economy.coins<entry.price)return{economy,message:`You need ${(entry.price-economy.coins).toLocaleString()} more coins.`,purchased:false};
  const next=saveLocalSongEconomy({...economy,coins:economy.coins-entry.price,unlockedSongIds:[...economy.unlockedSongIds,songId]});
  return{economy:next,message:'Track unlocked.',purchased:true};
 };
