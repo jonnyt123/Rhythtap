@@ -1,0 +1,33 @@
+name: Coin Bonuses And Preroll QA
+
+on:
+  push:
+    branches: [feature/coin-milestone-bonuses-preroll-ci]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Full regression release gate
+        run: npm run test:regression
+      - name: Check record-solo
+        run: deno check --node-modules-dir=auto supabase/functions/record-solo/index.ts
