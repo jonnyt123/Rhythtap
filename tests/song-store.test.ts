@@ -1,8 +1,9 @@
 import {assert,assertEquals} from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import {SONG_STORE_CATALOG,STARTER_SONG_IDS,coinsForXpAward,purchaseLocalSong} from '../src/song-economy.ts';
+import {COIN_BONUS_VALUES,SONG_STORE_CATALOG,STARTER_SONG_IDS,awardLocalSongCoins,coinsForXpAward,purchaseLocalSong} from '../src/song-economy.ts';
 
 const transform=await Deno.readTextFile('scripts/song-store-transform-v2.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260922050000_song_store_coins.sql');
+const bonusMigration=await Deno.readTextFile('supabase/migrations/20260923200000_coin_milestone_bonuses.sql');
 const store=await Deno.readTextFile('src/song-store.tsx');
 const storeCss=await Deno.readTextFile('src/song-store.css');
 const recordSolo=await Deno.readTextFile('supabase/functions/record-solo/index.ts');
@@ -32,7 +33,7 @@ Deno.test('paid-song pricing curve has deliberate progression and sane completio
 });
 
 Deno.test('local purchases never overspend, double-charge, or mutate on invalid attempts',()=>{
- const base={version:1 as const,coins:199,unlockedSongIds:[...STARTER_SONG_IDS]};
+ const base={version:1 as const,coins:199,unlockedSongIds:[...STARTER_SONG_IDS],coinMilestones:[]};
  const short=purchaseLocalSong(base,'afterglow');
  assertEquals(short.purchased,false);
  assertEquals(short.economy.coins,199);
@@ -56,7 +57,7 @@ Deno.test('local purchases never overspend, double-charge, or mutate on invalid 
 Deno.test('exact catalog wallet can buy every paid track once and ends at zero',()=>{
  const paid=SONG_STORE_CATALOG.filter(entry=>!entry.starter);
  const total=paid.reduce((sum,entry)=>sum+entry.price,0);
- let economy={version:1 as const,coins:total,unlockedSongIds:[...STARTER_SONG_IDS]};
+ let economy={version:1 as const,coins:total,unlockedSongIds:[...STARTER_SONG_IDS],coinMilestones:[]};
  for(const entry of paid){
   const result=purchaseLocalSong(economy,entry.songId);
   assert(result.purchased,entry.songId+' should purchase');
@@ -86,6 +87,44 @@ Deno.test('coin earnings are bounded, monotonic and server-parity exact',()=>{
  }
  assert(migration.includes("if new.xp_awarded <= 0 then"));
  assert(migration.includes("award := least(100, greatest(25, round(new.xp_awarded::numeric / 15)::integer));"));
+});
+
+Deno.test('one-time coin milestones are anti-farm and parity-safe',()=>{
+ const base={version:1 as const,coins:0,unlockedSongIds:[...STARTER_SONG_IDS],coinMilestones:[]};
+ const first=awardLocalSongCoins(base,{songId:'voltage',difficulty:'NORMAL',xpAward:750,accuracy:97,misses:0});
+ assertEquals(first.baseCoins,50);
+ assertEquals(first.bonuses,{firstClear:COIN_BONUS_VALUES.firstClear,sRank:COIN_BONUS_VALUES.sRank,fullCombo:COIN_BONUS_VALUES.fullCombo});
+ assertEquals(first.totalCoins,90);
+ const replay=awardLocalSongCoins(first.economy,{songId:'voltage',difficulty:'NORMAL',xpAward:750,accuracy:99,misses:0});
+ assertEquals(replay.baseCoins,50);
+ assertEquals(replay.bonusCoins,0);
+ assertEquals(replay.totalCoins,50);
+ const hard=awardLocalSongCoins(replay.economy,{songId:'voltage',difficulty:'HARD',xpAward:750,accuracy:96,misses:0});
+ assertEquals(hard.bonuses.firstClear,0);
+ assertEquals(hard.bonuses.sRank,10);
+ assertEquals(hard.bonuses.fullCombo,15);
+ assertEquals(hard.totalCoins,75);
+ const miss=awardLocalSongCoins(hard.economy,{songId:'sickness',difficulty:'NORMAL',xpAward:750,accuracy:95,misses:1});
+ assertEquals(miss.bonuses.firstClear,15);
+ assertEquals(miss.bonuses.sRank,10);
+ assertEquals(miss.bonuses.fullCombo,0);
+ assert(bonusMigration.includes("values(new.user_id,new.song_id,'ANY','first-clear',15)"));
+ assert(bonusMigration.includes("values(new.user_id,new.song_id,new.difficulty,'s-rank',10)"));
+ assert(bonusMigration.includes("values(new.user_id,new.song_id,new.difficulty,'full-combo',15)"));
+ assert(bonusMigration.includes('on conflict do nothing'));
+ assert(bonusMigration.includes('new.coin_awarded := base_award + bonus_award'));
+ assert(bonusMigration.includes('new.bonus_eligible'));
+});
+
+Deno.test('validated bonus response is authoritative and shown on results',()=>{
+ assert(recordSolo.includes("record_validated_player_game_v2"));
+ assert(recordSolo.includes("p_miss_hits:result.miss"));
+ assert(recordSolo.includes("coin_base_awarded,coin_bonus_awarded,first_clear_bonus,s_rank_bonus,full_combo_bonus"));
+ assert(transform.includes("award.coinBonuses"));
+ assert(transform.includes("FIRST CLEAR"));
+ assert(transform.includes("S RANK"));
+ assert(transform.includes("FULL COMBO"));
+ assert(storeCss.includes('.result-coin-reward em{'));
 });
 
 Deno.test('cloud purchases are server-authoritative and atomic',()=>{
