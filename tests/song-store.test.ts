@@ -1,5 +1,5 @@
 import {assert,assertEquals} from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import {COIN_BONUS_VALUES,SONG_STORE_CATALOG,STARTER_SONG_IDS,awardLocalSongCoins,coinsForXpAward,purchaseLocalSong} from '../src/song-economy.ts';
+import {COIN_BONUS_VALUES,SONG_STORE_CATALOG,STARTER_SONG_IDS,awardLocalSongCoins,coinsForXpAward,purchaseLocalSong,type LocalSongEconomy} from '../src/song-economy.ts';
 
 const transform=await Deno.readTextFile('scripts/song-store-transform-v2.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260922050000_song_store_coins.sql');
@@ -57,7 +57,7 @@ Deno.test('local purchases never overspend, double-charge, or mutate on invalid 
 Deno.test('exact catalog wallet can buy every paid track once and ends at zero',()=>{
  const paid=SONG_STORE_CATALOG.filter(entry=>!entry.starter);
  const total=paid.reduce((sum,entry)=>sum+entry.price,0);
- let economy={version:1 as const,coins:total,unlockedSongIds:[...STARTER_SONG_IDS],coinMilestones:[]};
+ let economy:LocalSongEconomy={version:1,coins:total,unlockedSongIds:[...STARTER_SONG_IDS],coinMilestones:[]};
  for(const entry of paid){
   const result=purchaseLocalSong(economy,entry.songId);
   assert(result.purchased,entry.songId+' should purchase');
