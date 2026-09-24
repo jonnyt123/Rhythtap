@@ -2,6 +2,7 @@ import {assert,assertEquals} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 import {COIN_BONUS_VALUES,SONG_STORE_CATALOG,STARTER_SONG_IDS,awardLocalSongCoins,coinsForXpAward,purchaseLocalSong,type LocalSongEconomy} from '../src/song-economy.ts';
 
 const transform=await Deno.readTextFile('scripts/song-store-transform-v2.ts');
+const coinBonusTransform=await Deno.readTextFile('scripts/coin-bonus-transform.ts');
 const migration=await Deno.readTextFile('supabase/migrations/20260922050000_song_store_coins.sql');
 const bonusMigration=await Deno.readTextFile('supabase/migrations/20260923200000_coin_milestone_bonuses.sql');
 const store=await Deno.readTextFile('src/song-store.tsx');
@@ -120,10 +121,10 @@ Deno.test('validated bonus response is authoritative and shown on results',()=>{
  assert(recordSolo.includes("record_validated_player_game_v2"));
  assert(recordSolo.includes("p_miss_hits:result.miss"));
  assert(recordSolo.includes("coin_base_awarded,coin_bonus_awarded,first_clear_bonus,s_rank_bonus,full_combo_bonus"));
- assert(transform.includes("award.coinBonuses"));
- assert(transform.includes("FIRST CLEAR"));
- assert(transform.includes("S RANK"));
- assert(transform.includes("FULL COMBO"));
+ assert(coinBonusTransform.includes("award.coinBonuses"));
+ assert(coinBonusTransform.includes("FIRST CLEAR"));
+ assert(coinBonusTransform.includes("S RANK"));
+ assert(coinBonusTransform.includes("FULL COMBO"));
  assert(storeCss.includes('.result-coin-reward em{'));
 });
 
@@ -151,7 +152,7 @@ Deno.test('validated progression mints coins exactly when a progress event is in
  assert(migration.includes('new.coin_awarded := award'));
  assert(migration.includes('set coins = coins + award'));
  assert(recordSolo.includes("select('coins')"));
- assert(recordSolo.includes("select('coin_awarded')"));
+ assert(recordSolo.includes("select('coin_awarded,coin_base_awarded,coin_bonus_awarded,first_clear_bonus,s_rank_bonus,full_combo_bonus')"));
  assert(recordSolo.includes('coinsAwarded:Number(eventRow?.coin_awarded)||0'));
 });
 
