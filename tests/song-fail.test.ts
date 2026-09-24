@@ -27,9 +27,9 @@ Deno.test('failed runs never enter reward or high-score results flow',()=>{
  assert(!main.includes('failed&&finish('));
 });
 
-Deno.test('retry uses the same five-second preroll as a fresh start',()=>{
+Deno.test('retry uses the same three-second preroll as a fresh start',()=>{
  assert(preroll.includes("label.includes('RETRY SONG')"));
- assert(preroll.includes("for(let count=5;count>=1;count--)"));
+ assert(preroll.includes("for(let count=3;count>=1;count--)"));
  assert(preroll.includes("event.key!=='Enter'&&event.key!==' '"));
 });
 
