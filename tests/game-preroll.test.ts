@@ -4,9 +4,9 @@ const preroll=await Deno.readTextFile('src/game-preroll.ts');
 const css=await Deno.readTextFile('src/game-preroll.css');
 const index=await Deno.readTextFile('index.html');
 
-Deno.test('gameplay start has a five-second synchronized preroll',()=>{
-  assert(preroll.includes('const PREROLL_MS=5000'));
-  assert(preroll.includes("for(let count=5;count>=1;count--)"));
+Deno.test('gameplay start has a three-second synchronized preroll',()=>{
+  assert(preroll.includes('const PREROLL_MS=3000'));
+  assert(preroll.includes("for(let count=3;count>=1;count--)"));
   assert(preroll.includes("value.textContent='GO'"));
   assert(preroll.includes("label.includes('TAP TO START')"));
   assert(preroll.includes("label.includes('START PLAYING')"));
