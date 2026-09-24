@@ -1,7 +1,7 @@
 import type {Plugin} from 'vite';
 
 const required=(code:string,label:string,before:string,after:string)=>{
- if(!code.includes(before))throw new Error(\`[coin-bonuses] \${label} marker missing\`);
+ if(!code.includes(before))throw new Error(`[coin-bonuses] ${label} marker missing`);
  return code.replace(before,after);
 };
 
@@ -23,8 +23,8 @@ const main=(source:string)=>{
   "setResult(current=>({...current,score:award.validatedScore,accuracy:award.validatedAccuracy,maxCombo:award.validatedMaxCombo,counts:award.validatedCounts,xpEarned:award.xpAwarded,dailyBonus:award.dailyBonus,levelUp:award.level>previousLevel,previousLevel,progressPending:false,progressError:''}));",
   "setResult(current=>({...current,score:award.validatedScore,accuracy:award.validatedAccuracy,maxCombo:award.validatedMaxCombo,counts:award.validatedCounts,xpEarned:award.xpAwarded,dailyBonus:award.dailyBonus,coinsAwarded:award.coinsAwarded,coinBaseAwarded:award.coinBaseAwarded,coinBonusAwarded:award.coinBonusAwarded,coinBonuses:award.coinBonuses,levelUp:award.level>previousLevel,previousLevel,progressPending:false,progressError:''}));");
  code=required(code,'results reward display',
-  "<strong>{result.progressPending?'VERIFYING…':result.progressError?'NOT SAVED':\`+\${coinsForXpAward(result.xpEarned).toLocaleString()}\`}</strong></span></div>",
-  "<strong>{result.progressPending?'VERIFYING…':result.progressError?'NOT SAVED':\`+\${(result.coinsAwarded??coinsForXpAward(result.xpEarned)).toLocaleString()}\`}</strong>{!result.progressPending&&!result.progressError&&(result.coinBonusAwarded??0)>0&&<em>+\${result.coinBonusAwarded} BONUS{result.coinBonuses?.firstClear?' · FIRST CLEAR':''}{result.coinBonuses?.sRank?' · S RANK':''}{result.coinBonuses?.fullCombo?' · FULL COMBO':''}</em>}</span></div>");
+  "<strong>{result.progressPending?'VERIFYING…':result.progressError?'NOT SAVED':`+${coinsForXpAward(result.xpEarned).toLocaleString()}`}</strong></span></div>",
+  "<strong>{result.progressPending?'VERIFYING…':result.progressError?'NOT SAVED':`+${(result.coinsAwarded??coinsForXpAward(result.xpEarned)).toLocaleString()}`}</strong>{!result.progressPending&&!result.progressError&&(result.coinBonusAwarded??0)>0&&<em>+${result.coinBonusAwarded} BONUS{result.coinBonuses?.firstClear?' · FIRST CLEAR':''}{result.coinBonuses?.sRank?' · S RANK':''}{result.coinBonuses?.fullCombo?' · FULL COMBO':''}</em>}</span></div>");
  return code;
 };
 
