@@ -1,5 +1,7 @@
 export type SongStoreEntry={songId:string;price:number;starter:boolean;legacyUnlockLevel:number};
-export type LocalSongEconomy={version:1;coins:number;unlockedSongIds:string[]};
+export type LocalSongEconomy={version:1;coins:number;unlockedSongIds:string[];coinMilestones:string[]};
+export type CoinBonusBreakdown={firstClear:number;sRank:number;fullCombo:number};
+export type LocalSongReward={economy:LocalSongEconomy;baseCoins:number;bonusCoins:number;totalCoins:number;bonuses:CoinBonusBreakdown};
 
 export const SONG_STORE_CATALOG:SongStoreEntry[]=[
  {songId:'voltage',price:0,starter:true,legacyUnlockLevel:1},
@@ -14,6 +16,9 @@ export const SONG_STORE_CATALOG:SongStoreEntry[]=[
  {songId:'gravity',price:650,starter:false,legacyUnlockLevel:4},
  {songId:'through-fire-flames',price:900,starter:false,legacyUnlockLevel:5},
 ];
+
+export const COIN_BONUS_VALUES={firstClear:15,sRank:10,fullCombo:15} as const;
+export const S_RANK_ACCURACY=95;
 
 const LOCAL_ECONOMY_KEY='rhythtap-song-economy-v1';
 const bySong=new Map(SONG_STORE_CATALOG.map(entry=>[entry.songId,entry]));
@@ -30,24 +35,50 @@ const normalizeUnlocked=(ids:unknown,legacyLevel:number)=>{
  for(const entry of SONG_STORE_CATALOG)if(legacyLevel>=entry.legacyUnlockLevel)set.add(entry.songId);
  return [...set];
 };
+const normalizeMilestones=(items:unknown)=>{
+ if(!Array.isArray(items))return[];
+ return [...new Set(items.filter((item):item is string=>typeof item==='string'&&item.length<=160))];
+};
+const milestoneKey=(songId:string,difficulty:string,type:'first-clear'|'s-rank'|'full-combo')=>
+ type==='first-clear'?`${songId}:ANY:first-clear`:`${songId}:${difficulty.toUpperCase()}:${type}`;
 
 export const loadLocalSongEconomy=(legacyXp:number,legacyLevel:number):LocalSongEconomy=>{
  try{
   const raw=localStorage.getItem(LOCAL_ECONOMY_KEY);
-  if(raw){const parsed=JSON.parse(raw);return{version:1,coins:Math.max(0,Math.floor(Number(parsed?.coins)||0)),unlockedSongIds:normalizeUnlocked(parsed?.unlockedSongIds,legacyLevel)}};
+  if(raw){const parsed=JSON.parse(raw);return{version:1,coins:Math.max(0,Math.floor(Number(parsed?.coins)||0)),unlockedSongIds:normalizeUnlocked(parsed?.unlockedSongIds,legacyLevel),coinMilestones:normalizeMilestones(parsed?.coinMilestones)}};
  }catch{}
- const seeded={version:1 as const,coins:Math.max(0,Math.floor(legacyXp/10)),unlockedSongIds:normalizeUnlocked([],legacyLevel)};
+ const seeded={version:1 as const,coins:Math.max(0,Math.floor(legacyXp/10)),unlockedSongIds:normalizeUnlocked([],legacyLevel),coinMilestones:[] as string[]};
  try{localStorage.setItem(LOCAL_ECONOMY_KEY,JSON.stringify(seeded))}catch{}
  return seeded;
 };
 
 export const saveLocalSongEconomy=(economy:LocalSongEconomy)=>{
- const normalized:LocalSongEconomy={version:1,coins:Math.max(0,Math.floor(economy.coins)),unlockedSongIds:normalizeUnlocked(economy.unlockedSongIds,1)};
+ const normalized:LocalSongEconomy={version:1,coins:Math.max(0,Math.floor(economy.coins)),unlockedSongIds:normalizeUnlocked(economy.unlockedSongIds,1),coinMilestones:normalizeMilestones(economy.coinMilestones)};
  try{localStorage.setItem(LOCAL_ECONOMY_KEY,JSON.stringify(normalized))}catch{}
  return normalized;
 };
 
 export const awardLocalCoins=(economy:LocalSongEconomy,xpAward:number)=>saveLocalSongEconomy({...economy,coins:economy.coins+coinsForXpAward(xpAward)});
+
+export const awardLocalSongCoins=(economy:LocalSongEconomy,input:{songId:string;difficulty:string;xpAward:number;accuracy:number;misses:number}):LocalSongReward=>{
+ const baseCoins=coinsForXpAward(input.xpAward),milestones=new Set(economy.coinMilestones);
+ const bonuses:CoinBonusBreakdown={firstClear:0,sRank:0,fullCombo:0};
+ if(baseCoins>0&&isOfficialStoreSong(input.songId)){
+  const firstKey=milestoneKey(input.songId,input.difficulty,'first-clear');
+  if(!milestones.has(firstKey)){milestones.add(firstKey);bonuses.firstClear=COIN_BONUS_VALUES.firstClear}
+  if(input.accuracy>=S_RANK_ACCURACY){
+   const key=milestoneKey(input.songId,input.difficulty,'s-rank');
+   if(!milestones.has(key)){milestones.add(key);bonuses.sRank=COIN_BONUS_VALUES.sRank}
+  }
+  if(input.misses===0&&input.accuracy>0){
+   const key=milestoneKey(input.songId,input.difficulty,'full-combo');
+   if(!milestones.has(key)){milestones.add(key);bonuses.fullCombo=COIN_BONUS_VALUES.fullCombo}
+  }
+ }
+ const bonusCoins=bonuses.firstClear+bonuses.sRank+bonuses.fullCombo,totalCoins=baseCoins+bonusCoins;
+ const next=saveLocalSongEconomy({...economy,coins:economy.coins+totalCoins,coinMilestones:[...milestones]});
+ return{economy:next,baseCoins,bonusCoins,totalCoins,bonuses};
+};
 
 export const purchaseLocalSong=(economy:LocalSongEconomy,songId:string)=>{
  const entry=bySong.get(songId);

@@ -41,18 +41,18 @@ Deno.serve(async req=>{
   if(!songId||!['EASY','NORMAL','HARD'].includes(difficulty))return json({error:'Invalid solo result metadata'},400);
   if(!RUN_ID_RE.test(runId))return json({error:'Invalid run id'},400);
   const chart=await loadChart(songId,difficulty,chartVersion),result=validateAgainstChart(body?.events,chart),admin=adminClient();
-  const {data,error}=await admin.rpc('record_validated_player_game',{p_user_id:userId,p_song_id:songId,p_difficulty:difficulty,p_score:result.score,p_accuracy:result.accuracy,p_max_combo:result.maxCombo,p_perfect_hits:result.perfect,p_chart_version:chartVersion,p_run_id:runId});
+  const {data,error}=await admin.rpc('record_validated_player_game_v2',{p_user_id:userId,p_song_id:songId,p_difficulty:difficulty,p_score:result.score,p_accuracy:result.accuracy,p_max_combo:result.maxCombo,p_perfect_hits:result.perfect,p_chart_version:chartVersion,p_run_id:runId,p_miss_hits:result.miss});
   if(error)throw error;
   const row=Array.isArray(data)?data[0]:data;
   if(!row)throw new Error('Progress update returned no data');
   const [{data:profileRow,error:profileError},{data:eventRow,error:eventError}]=await Promise.all([
    admin.from('player_profiles').select('coins').eq('user_id',userId).single(),
-   admin.from('player_progress_events').select('coin_awarded').eq('user_id',userId).eq('source_run_id',runId).maybeSingle()
+   admin.from('player_progress_events').select('coin_awarded,coin_base_awarded,coin_bonus_awarded,first_clear_bonus,s_rank_bonus,full_combo_bonus').eq('user_id',userId).eq('source_run_id',runId).maybeSingle()
   ]);
   if(profileError)throw profileError;
   if(eventError)throw eventError;
   return json({
-   progress:{xp:Number(row.xp),level:Number(row.level),songsCompleted:Number(row.songs_completed),perfectHits:Number(row.perfect_hits),bestCombo:Number(row.best_combo),xpAwarded:Number(row.xp_awarded),dailyBonus:Number(row.daily_bonus),coins:Number(profileRow?.coins)||0,coinsAwarded:Number(eventRow?.coin_awarded)||0},
+   progress:{xp:Number(row.xp),level:Number(row.level),songsCompleted:Number(row.songs_completed),perfectHits:Number(row.perfect_hits),bestCombo:Number(row.best_combo),xpAwarded:Number(row.xp_awarded),dailyBonus:Number(row.daily_bonus),coins:Number(profileRow?.coins)||0,coinsAwarded:Number(eventRow?.coin_awarded)||0,coinBaseAwarded:Number(eventRow?.coin_base_awarded)||0,coinBonusAwarded:Number(eventRow?.coin_bonus_awarded)||0,coinBonuses:{firstClear:Number(eventRow?.first_clear_bonus)||0,sRank:Number(eventRow?.s_rank_bonus)||0,fullCombo:Number(eventRow?.full_combo_bonus)||0}},
    result:{score:result.score,accuracy:result.accuracy,maxCombo:result.maxCombo,eventCount:result.eventCount,counts:{PERFECT:result.perfect,GREAT:result.great,GOOD:result.good,MISS:result.miss},validationVersion:chartVersion,chartVersion,validation:'verified'}
   });
  }catch(error){

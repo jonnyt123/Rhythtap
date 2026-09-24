@@ -61,7 +61,7 @@ HTMLMediaElement.prototype.play=async function(){
   if(!consumePreroll())return nativeMediaPlay.call(this);
 
   // Unlock iOS media playback while the user activation is still live, but
-  // keep the transport parked at t=0 while the five-second countdown runs.
+  // keep the transport parked at t=0 while the three-second countdown runs.
   const wasMuted=this.muted;
   const oldVolume=this.volume;
   this.muted=true;
