@@ -50,3 +50,5 @@
 @keyframes unlock-card-in{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes unlock-cover-in{from{opacity:0;transform:scale(.78) rotate(-2deg)}to{opacity:1;transform:scale(1) rotate(0)}}@keyframes unlock-burst-in{from{opacity:0;transform:scale(.72) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0)}}@keyframes unlock-spark{0%{opacity:0;transform:scale(.4) rotate(-35deg)}65%{opacity:1;transform:scale(1.22) rotate(8deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @media(max-height:620px){.song-unlock-card{padding:14px 16px 13px;gap:3px}.song-unlock-card h2{font-size:28px}.song-unlock-cover{width:72px;height:82px;margin:5px 0 3px}.song-unlock-cover svg{width:31px;height:31px}.song-unlock-purchase{margin-top:4px}.song-unlock-card button{margin-top:6px;min-height:42px}}
 @media(prefers-reduced-motion:reduce){.song-unlock-card,.song-unlock-cover,.song-unlock-burst,.song-unlock-spark{animation:none!important}}
+
+.result-coin-reward em{margin-top:4px;font-style:normal;font-size:7px;line-height:1.35;letter-spacing:.08em;font-weight:950;color:#ffc96d;text-align:center}
