@@ -51,6 +51,7 @@ jobs:
           await page.goto('http://127.0.0.1:4173/Rhythtap/',{waitUntil:'networkidle'});
           await page.evaluate(()=>{
             localStorage.setItem('rhythtap-tutorial-seen','1');
+            localStorage.setItem('rhythtap-tutorial-complete-v1','1');
             localStorage.setItem('rhythtap-song-economy-v1',JSON.stringify({
               version:1,coins:725,
               unlockedSongIds:['voltage','sickness','never-left','fly-eagle','afterglow'],
