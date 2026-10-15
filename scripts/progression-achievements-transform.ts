@@ -13,8 +13,8 @@ export function progressionAchievementsTransform():Plugin{
    "import {createRoot} from 'react-dom/client';",
    "import {createRoot} from 'react-dom/client';\nimport {ProgressionAchievementsScreen} from './progression-achievements';");
   code=required(code,'achievement render',
-   "{screen==='achievements'&&<AchievementsScreen stats={stats} back={()=>setScreen('home')}/>} ",
-   "{screen==='achievements'&&<ProgressionAchievementsScreen stats={stats} userId={playerAccount.userId} accountLoading={playerAccount.loading} cloudUnlockedSongIds={playerAccount.unlockedSongIds} localEconomy={localSongEconomy} back={()=>setScreen('home')}/>} ");
+   "{screen==='achievements'&&<AchievementsScreen stats={stats} back={()=>setScreen('home')}/>}\n",
+   "{screen==='achievements'&&<ProgressionAchievementsScreen stats={stats} userId={playerAccount.userId} accountLoading={playerAccount.loading} cloudUnlockedSongIds={playerAccount.unlockedSongIds} localEconomy={localSongEconomy} back={()=>setScreen('home')}/>}\n");
   return{code,map:null};
  }};
 }
