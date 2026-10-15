@@ -59,11 +59,10 @@ jobs:
             }));
           });
           await page.reload({waitUntil:'networkidle'});
-          const achievements=page.getByRole('button',{name:/achievements/i}).first();
-          if(await achievements.count())await achievements.click();else{
-            const textButton=page.locator('button').filter({hasText:/ACHIEVEMENTS/i}).first();
-            await textButton.click();
-          }
+          const tutorial=page.locator('.tutorial-screen');
+          if(await tutorial.count())await page.getByRole('button',{name:'Exit tutorial'}).click();
+          await page.locator('.metal-home').waitFor();
+          await page.locator('.metal-menu-achievements').click();
           await page.getByRole('heading',{name:'ACHIEVEMENTS'}).waitFor();
           for(const text of ['SONG MASTERY','FIRST CLEARS','S RANKS','FULL COMBOS','Afterglow Circuit']){
             if(!(await page.getByText(text,{exact:false}).count()))throw new Error('Missing achievement content: '+text);
