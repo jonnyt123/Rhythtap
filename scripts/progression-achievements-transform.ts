@@ -15,6 +15,12 @@ export function progressionAchievementsTransform():Plugin{
   code=required(code,'achievement render',
    "{screen==='achievements'&&<AchievementsScreen stats={stats} back={()=>setScreen('home')}/>}\n",
    "{screen==='achievements'&&<ProgressionAchievementsScreen stats={stats} userId={playerAccount.userId} accountLoading={playerAccount.loading} cloudUnlockedSongIds={playerAccount.unlockedSongIds} localEconomy={localSongEconomy} back={()=>setScreen('home')}/>}\n");
+  code=required(code,'home achievements copy',
+   "<em>{completedAchievements} / {achievements.length} earned</em>",
+   "<em>First clears · S ranks · full combos</em>");
+  code=required(code,'home career copy',
+   "{stats.bestCombo} best combo · {completedAchievements}/{achievements.length} achievements",
+   "{stats.bestCombo} best combo · setlist mastery");
   return{code,map:null};
  }};
 }
