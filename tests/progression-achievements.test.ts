@@ -63,6 +63,8 @@ Deno.test('achievement UI is wired after store and coin transforms',()=>{
  assert(transform.includes("ProgressionAchievementsScreen"));
  assert(transform.includes("playerAccount.unlockedSongIds"));
  assert(transform.includes("localEconomy={localSongEconomy}"));
+ assert(transform.includes("First clears · S ranks · full combos"));
+ assert(transform.includes("best combo · setlist mastery"));
  assert(vite.indexOf('coinBonusTransform()')<vite.indexOf('progressionAchievementsTransform()'));
  assert(css.includes('.progress-achievements-scroll{'));
  assert(css.includes('env(safe-area-inset-bottom)'));
