@@ -1,0 +1,79 @@
+name: Progression Achievements QA
+
+on:
+  push:
+    branches: [feature/progression-achievements]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_RHYTHTAP_BUILD: ${{ github.sha }}
+          VITE_STRIPE_BILLING_ENV: test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Full release regression gate
+        run: npm run test:regression
+      - name: Install focused browser QA runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start production preview
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/rhythtap-preview.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/Rhythtap/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/rhythtap-preview.log
+          exit 1
+      - name: Verify achievements screen on phone viewport
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+          await page.goto('http://127.0.0.1:4173/Rhythtap/',{waitUntil:'networkidle'});
+          await page.evaluate(()=>{
+            localStorage.setItem('rhythtap-tutorial-seen','1');
+            localStorage.setItem('rhythtap-song-economy-v1',JSON.stringify({
+              version:1,coins:725,
+              unlockedSongIds:['voltage','sickness','never-left','fly-eagle','afterglow'],
+              coinMilestones:['voltage:ANY:first-clear','voltage:NORMAL:s-rank','voltage:NORMAL:full-combo','afterglow:ANY:first-clear']
+            }));
+          });
+          await page.reload({waitUntil:'networkidle'});
+          const achievements=page.getByRole('button',{name:/achievements/i}).first();
+          if(await achievements.count())await achievements.click();else{
+            const textButton=page.locator('button').filter({hasText:/ACHIEVEMENTS/i}).first();
+            await textButton.click();
+          }
+          await page.getByRole('heading',{name:'ACHIEVEMENTS'}).waitFor();
+          for(const text of ['SONG MASTERY','FIRST CLEARS','S RANKS','FULL COMBOS','Afterglow Circuit']){
+            if(!(await page.getByText(text,{exact:false}).count()))throw new Error('Missing achievement content: '+text);
+          }
+          const metrics=await page.evaluate(()=>({
+            scrollWidth:document.documentElement.scrollWidth,
+            innerWidth:innerWidth,
+            bodyWidth:document.body.scrollWidth,
+            screen:document.querySelector('.progress-achievements')?.getBoundingClientRect().toJSON()
+          }));
+          if(metrics.scrollWidth>metrics.innerWidth||metrics.bodyWidth>metrics.innerWidth)throw new Error('Horizontal overflow: '+JSON.stringify(metrics));
+          console.log('Progression achievements browser QA: PASS',metrics);
+          await browser.close();
+          NODE
