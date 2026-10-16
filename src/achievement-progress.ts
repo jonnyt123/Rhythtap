@@ -2,12 +2,15 @@ import {SONG_STORE_CATALOG} from './song-economy';
 
 export type AchievementMilestoneType='first-clear'|'s-rank'|'full-combo';
 export type AchievementMilestone={songId:string;difficulty:'ANY'|'EASY'|'NORMAL'|'HARD';milestone:AchievementMilestoneType;coinAwarded:number;earnedAt?:string};
+export type MasteryDifficulty='EASY'|'NORMAL'|'HARD';
 export type SongAchievementProgress={
  songId:string;
  unlocked:boolean;
  firstClear:boolean;
  sRanks:number;
  fullCombos:number;
+ sRankDifficulties:MasteryDifficulty[];
+ fullComboDifficulties:MasteryDifficulty[];
 };
 export type AchievementProgressSummary={
  unlockedSongs:number;
@@ -71,7 +74,16 @@ export const buildAchievementProgress=(milestones:AchievementMilestone[],unlocke
  }
  const songs=SONG_STORE_CATALOG.map(entry=>{
   const bucket=bySong.get(entry.songId)!;
-  return{songId:entry.songId,unlocked:unlocked.has(entry.songId),firstClear:bucket.first,sRanks:bucket.s.size,fullCombos:bucket.fc.size};
+  const order:MasteryDifficulty[]=['EASY','NORMAL','HARD'];
+  return{
+   songId:entry.songId,
+   unlocked:unlocked.has(entry.songId),
+   firstClear:bucket.first,
+   sRanks:bucket.s.size,
+   fullCombos:bucket.fc.size,
+   sRankDifficulties:order.filter(difficulty=>bucket.s.has(difficulty)),
+   fullComboDifficulties:order.filter(difficulty=>bucket.fc.has(difficulty))
+  };
  });
  const firstClears=songs.filter(song=>song.firstClear).length;
  const sRanks=songs.reduce((sum,song)=>sum+song.sRanks,0);
