@@ -14,7 +14,7 @@ export function progressionAchievementsTransform():Plugin{
    "import {createRoot} from 'react-dom/client';\nimport {ProgressionAchievementsScreen} from './progression-achievements';");
   code=required(code,'achievement render',
    "{screen==='achievements'&&<AchievementsScreen stats={stats} back={()=>setScreen('home')}/>}\n",
-   "{screen==='achievements'&&<ProgressionAchievementsScreen stats={stats} userId={playerAccount.userId} accountLoading={playerAccount.loading} cloudUnlockedSongIds={playerAccount.unlockedSongIds} localEconomy={localSongEconomy} back={()=>setScreen('home')}/>}\n");
+   "{screen==='achievements'&&<ProgressionAchievementsScreen stats={stats} userId={playerAccount.userId} accountLoading={playerAccount.loading} cloudUnlockedSongIds={playerAccount.unlockedSongIds} localEconomy={localSongEconomy} coins={coinBalance} back={()=>setScreen('home')} openStore={()=>setScreen('store')} openSong={(songId,difficulty)=>{const target=library.find(item=>item.id===songId);if(target){setSong(target);setDifficulty(difficulty);setScreen('select')}}}/>}\n");
   code=required(code,'home achievements copy',
    "<em>{completedAchievements} / {achievements.length} earned</em>",
    "<em>First clears · S ranks · full combos</em>");
