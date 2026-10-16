@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useState} from 'react';
-import {ArrowLeft,Check,Coins,Lock,Medal,Music2,Sparkles,Target,Trophy,Zap} from 'lucide-react';
+import {ArrowLeft,Check,ChevronRight,Coins,Lock,Medal,Music2,Sparkles,Target,Trophy,Zap} from 'lucide-react';
 import {buildAchievementProgress,normalizeCloudCoinMilestones,parseLocalCoinMilestones,type AchievementMilestone,type MasteryDifficulty} from './achievement-progress';
 import {SONG_STORE_CATALOG,type LocalSongEconomy} from './song-economy';
 import {getAccountSupabaseClient} from './supabase-account-client';
@@ -95,7 +95,7 @@ export function ProgressionAchievementsScreen({
 
    {cloudError&&<div className="achievement-sync-note"><Zap/><span><strong>CLOUD MILESTONES UNAVAILABLE</strong><small>Showing this device's local achievement snapshot instead.</small></span></div>}
 
-   <button className="achievement-career-map" onClick={()=>setView('career')}><span><Zap/><i><small>GUIDED PROGRESSION</small><strong>OPEN CAREER MAP</strong><em>See the next song, difficulty and mastery goal to chase.</em></i></span><b>VIEW ROUTE <ArrowLeft/></b></button>
+   <button className="achievement-career-map" onClick={()=>setView('career')}><span><Zap/><i><small>GUIDED PROGRESSION</small><strong>OPEN CAREER MAP</strong><em>See the next song, difficulty and mastery goal to chase.</em></i></span><b>VIEW ROUTE <ChevronRight/></b></button>
 
    <div className="achievement-rings" aria-label="Achievement progress summary">
     <ProgressRing value={progress.unlockedSongs} total={progress.totalSongs} label="SONGS"/>
