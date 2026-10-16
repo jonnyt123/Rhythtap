@@ -4,6 +4,20 @@ import type {AchievementProgressSummary,MasteryDifficulty} from './achievement-p
 import {buildCareerRoadmap,type CareerGoalKind} from './career-progression-model';
 import './career-progression-map.css';
 
+const SONG_META:Record<string,{title:string;artist:string;color:string}>={
+ voltage:{title:'Midnight Voltage',artist:'NOVA//STATIC',color:'#e45a2b'},
+ sickness:{title:'Down With the Sickness',artist:'Disturbed',color:'#9cff3d'},
+ 'never-left':{title:'If You Never Left',artist:'blink-182',color:'#ff704d'},
+ 'fly-eagle':{title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',color:'#ffd43b'},
+ afterglow:{title:'Afterglow Circuit',artist:'Luma Driver',color:'#ff3dad'},
+ 'my-immortal':{title:'My Immortal',artist:'Evanescence',color:'#a875ff'},
+ 'crazy-train':{title:'Crazy Train',artist:'Ozzy Osbourne',color:'#ff9b42'},
+ kryptonite:{title:'Kryptonite',artist:'3 Doors Down',color:'#5fc6ff'},
+ 'kill-you':{title:'Kill You',artist:'Eminem',color:'#ff625f'},
+ gravity:{title:'Zero Gravity',artist:'Phase Garden',color:'#b650ff'},
+ 'through-fire-flames':{title:'Through the Fire and Flames',artist:'DragonForce',color:'#ffbd38'}
+};
+
 const iconFor=(kind:CareerGoalKind)=>{
  if(kind==='unlock')return <Lock/>;
  if(kind==='first-clear')return <Target/>;
