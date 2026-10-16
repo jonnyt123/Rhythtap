@@ -117,7 +117,7 @@ const cases=[
  {label:'tour',expected:'.career-tour',action:{selector:'.tour-main-cta'}},
  {label:'solo play',expected:'.select',action:{selector:'button',text:'SOLO PLAY'}},
  {label:'my charts',expected:'.imported-library',action:{selector:'button',text:'MY CHARTS'}},
- {label:'achievements',expected:'.achievementsPage',action:{selector:'button',text:'ACHIEVEMENTS'}},
+ {label:'achievements',expected:'.progress-achievements',action:{selector:'button',text:'ACHIEVEMENTS'}},
  {label:'profile',expected:'.account-screen',action:{selector:'button',text:'PROFILE'}},
  // Anonymous Online Battle intentionally routes to RhythmTap ID.
  {label:'online battle sign-in gate',expected:'.account-screen',action:{selector:'button',text:'ONLINE BATTLE'}},
