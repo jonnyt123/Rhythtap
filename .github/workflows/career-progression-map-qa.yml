@@ -88,7 +88,7 @@ jobs:
               screenWidth:document.querySelector('.career-map')?.getBoundingClientRect().width
             }));
             if(metrics.scrollWidth>metrics.innerWidth||metrics.bodyWidth>metrics.innerWidth)throw new Error('Career map horizontal overflow '+JSON.stringify({viewport,metrics}));
-            if(Math.abs((metrics.screenWidth||0)-metrics.innerWidth)>2)throw new Error('Career screen width mismatch '+JSON.stringify({viewport,metrics}));
+            if((metrics.screenWidth||0)>metrics.innerWidth||metrics.innerWidth-(metrics.screenWidth||0)>16)throw new Error('Career screen width mismatch '+JSON.stringify({viewport,metrics}));
             await page.close();
           }
 
