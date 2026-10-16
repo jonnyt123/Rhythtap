@@ -1,8 +1,9 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,Check,Coins,Lock,Medal,Music2,Sparkles,Target,Trophy,Zap} from 'lucide-react';
-import {buildAchievementProgress,normalizeCloudCoinMilestones,parseLocalCoinMilestones,type AchievementMilestone} from './achievement-progress';
+import {buildAchievementProgress,normalizeCloudCoinMilestones,parseLocalCoinMilestones,type AchievementMilestone,type MasteryDifficulty} from './achievement-progress';
 import {SONG_STORE_CATALOG,type LocalSongEconomy} from './song-economy';
 import {getAccountSupabaseClient} from './supabase-account-client';
+import {CareerProgressionMap} from './career-progression-map';
 import './progression-achievements.css';
 
 type StatsLike={songsCompleted:number;perfectHits:number;bestCombo:number};
@@ -30,18 +31,22 @@ const ProgressRing=({value,total,label}:{value:number;total:number;label:string}
 };
 
 export function ProgressionAchievementsScreen({
- stats,userId,accountLoading,cloudUnlockedSongIds,localEconomy,back
+ stats,userId,accountLoading,cloudUnlockedSongIds,localEconomy,coins,back,openStore,openSong
 }:{
  stats:StatsLike;
  userId:string|null;
  accountLoading:boolean;
  cloudUnlockedSongIds:string[];
  localEconomy:LocalSongEconomy;
+ coins:number;
  back:()=>void;
+ openStore:()=>void;
+ openSong:(songId:string,difficulty:MasteryDifficulty)=>void;
 }){
  const[cloudMilestones,setCloudMilestones]=useState<AchievementMilestone[]>([]);
  const[loading,setLoading]=useState(Boolean(userId));
  const[cloudError,setCloudError]=useState('');
+ const[view,setView]=useState<'achievements'|'career'>('achievements');
  useEffect(()=>{
   let active=true;
   if(!userId){setCloudMilestones([]);setLoading(false);setCloudError('');return()=>{active=false}};
@@ -73,6 +78,8 @@ export function ProgressionAchievementsScreen({
  const legacyComplete=legacy.filter(item=>item.value>=item.target).length;
  const syncLabel=accountLoading||loading?'SYNCING…':userId?(cloudError?'LOCAL FALLBACK':'CLOUD SYNCED'):'LOCAL PLAYER';
 
+ if(view==='career')return <CareerProgressionMap progress={progress} coins={coins} back={()=>setView('achievements')} openStore={openStore} openSong={openSong}/>;
+
  return <section className="progress-achievements screen">
   <header className="progress-achievements-top">
    <button className="icon" onClick={back} aria-label="Back"><ArrowLeft/></button>
@@ -87,6 +94,8 @@ export function ProgressionAchievementsScreen({
    </section>
 
    {cloudError&&<div className="achievement-sync-note"><Zap/><span><strong>CLOUD MILESTONES UNAVAILABLE</strong><small>Showing this device's local achievement snapshot instead.</small></span></div>}
+
+   <button className="achievement-career-map" onClick={()=>setView('career')}><span><Zap/><i><small>GUIDED PROGRESSION</small><strong>OPEN CAREER MAP</strong><em>See the next song, difficulty and mastery goal to chase.</em></i></span><b>VIEW ROUTE <ArrowLeft/></b></button>
 
    <div className="achievement-rings" aria-label="Achievement progress summary">
     <ProgressRing value={progress.unlockedSongs} total={progress.totalSongs} label="SONGS"/>
