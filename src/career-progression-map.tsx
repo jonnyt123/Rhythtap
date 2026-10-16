@@ -1,38 +1,8 @@
 import React,{useMemo} from 'react';
 import {ArrowLeft,Check,ChevronRight,Coins,Lock,Map,Medal,Music2,Sparkles,Target,Trophy,Zap} from 'lucide-react';
-import type {AchievementProgressSummary,MasteryDifficulty,SongAchievementProgress} from './achievement-progress';
-import {SONG_STORE_CATALOG} from './song-economy';
+import type {AchievementProgressSummary,MasteryDifficulty} from './achievement-progress';
+import {buildCareerRoadmap,type CareerGoalKind} from './career-progression-model';
 import './career-progression-map.css';
-
-type CareerGoalKind='unlock'|'first-clear'|'s-rank'|'full-combo'|'mastered';
-type CareerGoal={kind:CareerGoalKind;difficulty?:MasteryDifficulty;label:string;detail:string;actionLabel:string};
-type RoadNode={song:SongAchievementProgress;goal:CareerGoal;masteryCount:number;masteryTotal:number;masteryPercent:number;current:boolean;price:number};
-
-const SONG_META:Record<string,{title:string;artist:string;color:string}>={
- voltage:{title:'Midnight Voltage',artist:'NOVA//STATIC',color:'#e45a2b'},
- sickness:{title:'Down With the Sickness',artist:'Disturbed',color:'#9cff3d'},
- 'never-left':{title:'If You Never Left',artist:'blink-182',color:'#ff704d'},
- 'fly-eagle':{title:'Fly Like an Eagle (Metal)',artist:'Licensed recording',color:'#ffd43b'},
- afterglow:{title:'Afterglow Circuit',artist:'Luma Driver',color:'#ff3dad'},
- 'my-immortal':{title:'My Immortal',artist:'Evanescence',color:'#a875ff'},
- 'crazy-train':{title:'Crazy Train',artist:'Ozzy Osbourne',color:'#ff9b42'},
- kryptonite:{title:'Kryptonite',artist:'3 Doors Down',color:'#5fc6ff'},
- 'kill-you':{title:'Kill You',artist:'Eminem',color:'#ff625f'},
- gravity:{title:'Zero Gravity',artist:'Phase Garden',color:'#b650ff'},
- 'through-fire-flames':{title:'Through the Fire and Flames',artist:'DragonForce',color:'#ffbd38'}
-};
-
-const ORDER:MasteryDifficulty[]=['EASY','NORMAL','HARD'];
-
-const nextGoal=(song:SongAchievementProgress,price:number):CareerGoal=>{
- if(!song.unlocked)return{kind:'unlock',label:'UNLOCK TRACK',detail:`${price.toLocaleString()} coins required`,actionLabel:'OPEN STORE'};
- if(!song.firstClear)return{kind:'first-clear',difficulty:'NORMAL',label:'FIRST CLEAR',detail:'Finish the song on any difficulty',actionLabel:'PLAY NORMAL'};
- for(const difficulty of ORDER){
-  if(!song.sRankDifficulties.includes(difficulty))return{kind:'s-rank',difficulty,label:`${difficulty} S RANK`,detail:'Reach 95%+ accuracy',actionLabel:`PLAY ${difficulty}`};
-  if(!song.fullComboDifficulties.includes(difficulty))return{kind:'full-combo',difficulty,label:`${difficulty} FULL COMBO`,detail:'Finish with zero misses',actionLabel:`PLAY ${difficulty}`};
- }
- return{kind:'mastered',label:'MASTERED',detail:'All 7 mastery goals complete',actionLabel:'PLAY AGAIN'};
-};
 
 const iconFor=(kind:CareerGoalKind)=>{
  if(kind==='unlock')return <Lock/>;
@@ -51,16 +21,7 @@ export function CareerProgressionMap({
  openStore:()=>void;
  openSong:(songId:string,difficulty:MasteryDifficulty)=>void;
 }){
- const route=useMemo(()=>{
-  const nodes:RoadNode[]=progress.songs.map(song=>{
-   const entry=SONG_STORE_CATALOG.find(item=>item.songId===song.songId)!;
-   const masteryCount=(song.firstClear?1:0)+song.sRanks+song.fullCombos;
-   return{song,goal:nextGoal(song,entry.price),masteryCount,masteryTotal:7,masteryPercent:masteryCount/7*100,current:false,price:entry.price};
-  });
-  const nextIndex=Math.max(0,nodes.findIndex(node=>node.goal.kind!=='mastered'));
-  if(nodes[nextIndex])nodes[nextIndex]={...nodes[nextIndex],current:true};
-  return nodes;
- },[progress]);
+ const route=useMemo(()=>buildCareerRoadmap(progress),[progress]);
 
  const current=route.find(node=>node.current)??route[route.length-1];
  const currentMeta=SONG_META[current.song.songId]??{title:current.song.songId,artist:'RhythmTap',color:'#b24e2b'};
