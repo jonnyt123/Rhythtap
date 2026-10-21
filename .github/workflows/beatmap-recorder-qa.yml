@@ -1,8 +1,19 @@
 name: Beatmap Recorder QA
 
 on:
-  push:
-    branches: [feature/beatmap-recorder-logo-fix]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/beatmap-recorder.tsx'
+      - 'src/beatmap-recorder.css'
+      - 'src/recorded-beatmap.ts'
+      - 'scripts/beatmap-recorder-transform.ts'
+      - 'scripts/beatmap-recorder-browser-qa.mjs'
+      - 'scripts/metal-menu-transform.ts'
+      - 'src/song-store.tsx'
+      - 'src/metal-menu.css'
+      - 'src/song-store.css'
+      - 'vite.config.ts'
   workflow_dispatch:
 
 permissions:
