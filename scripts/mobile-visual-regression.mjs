@@ -55,7 +55,14 @@ async function prepareHome(page,{xp=null}={}){
   localStorage.setItem('rhythmtap-tutorial-complete-v1','1');
   localStorage.setItem('rhythmtap-tutorial-seen','1');
   localStorage.setItem('rhythtap-graphics','LOW');
-  if(xp!==null)localStorage.setItem('rhythtap-profile',JSON.stringify({xp}));
+  if(xp!==null){
+   localStorage.setItem('rhythtap-profile',JSON.stringify({xp}));
+   // Stress the real coin wallet independently of legacy XP; the old XP-credit
+   // display no longer exists, and a previously seeded wallet must not be reused.
+   localStorage.setItem('rhythtap-song-economy-v1',JSON.stringify({
+    version:1,coins:1000000,unlockedSongIds:['voltage','sickness','never-left','fly-eagle'],coinMilestones:[]
+   }));
+  }
  },{xp});
  await page.reload({waitUntil:'domcontentloaded',timeout:45000});
  await page.waitForTimeout(700);
@@ -198,7 +205,7 @@ async function checkExactMainMenuViewport(browserName,browser,viewport,{largeVal
   }
   if(largeValues){
    const stats=(await page.locator('.reference-stat-row').allTextContents()).join(' | ');
-   if(!stats.replaceAll(',','').includes('1000000'))add(browserName,'high',`${label}: 1,000,000-credit stress value missing`,stats);
+   if(!stats.replaceAll(',','').includes('1000000'))add(browserName,'high',`${label}: 1,000,000-coin wallet stress value missing`,stats);
   }
 
   await capturePaint(page,browserName,label);
