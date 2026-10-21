@@ -52,3 +52,30 @@
 @media(prefers-reduced-motion:reduce){.song-unlock-card,.song-unlock-cover,.song-unlock-burst,.song-unlock-spark{animation:none!important}}
 
 .result-coin-reward em{margin-top:4px;font-style:normal;font-size:7px;line-height:1.35;letter-spacing:.08em;font-weight:950;color:#ffc96d;text-align:center}
+
+
+/* Do not render the malformed legacy logo image on the store hero. */
+.song-store-wordmark{
+ position:relative;
+ width:100%;
+ min-width:0;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ transform:rotate(-3deg);
+ filter:drop-shadow(0 4px 4px #0009);
+ font:900 italic clamp(22px,4vw,40px)/.88 'Metal Mania',Impact,'Arial Black',sans-serif;
+ letter-spacing:-.035em;
+ text-align:center;
+}
+.song-store-wordmark b,.song-store-wordmark strong{
+ display:block;
+ font:inherit;
+ white-space:nowrap;
+ -webkit-text-stroke:1px #72210e;
+ color:#ffe0a1;
+ text-shadow:0 2px #79240f,0 4px #260707,0 0 12px #b74c2777;
+}
+.song-store-wordmark strong{font-size:1.2em;color:#ff964b}
+@media(max-width:430px){.song-store-wordmark{font-size:clamp(19px,6vw,30px)}}
