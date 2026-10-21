@@ -1,33 +1,15 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,Check,Headphones,Music2,Pause,Play,RotateCcw,Save,Trash2,Upload,Undo2,Volume2} from 'lucide-react';
 import {MAX_TAP_DURATION_MS,MAX_TAP_NOTES} from './tapChart';
+import {normalizeRecordedNotes,isSupportedBeatmapAudio,type RecordedBeatmapNote,type RecordedBeatmapDraft} from './recorded-beatmap';
 import './beatmap-recorder.css';
 
-export type RecordedBeatmapNote={id:number;time:number;lane:number;duration?:number};
-export type RecordedBeatmapDraft={
- file:File;title:string;artist:string;bpm:number;duration:number;notes:RecordedBeatmapNote[];
-};
 const LANES=['LEFT','MIDDLE','RIGHT'] as const;
 const KEYS=['D','F','J'] as const;
-const MAX_AUDIO_BYTES=120*1024*1024;
-const allowedAudio=(file:File)=>file.type.startsWith('audio/')||/\.(mp3|m4a|aac|wav|ogg|opus|flac|webm)$/i.test(file.name);
 const stamp=(ms:number)=>{
  const seconds=Math.max(0,Math.floor(ms/1000));
  return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 };
-export const normalizeRecordedNotes=(notes:RecordedBeatmapNote[],durationMs:number)=>{
- const safeDuration=Math.min(MAX_TAP_DURATION_MS,Math.max(0,durationMs));
- return notes
-  .filter(note=>Number.isFinite(note.time)&&Number.isInteger(note.lane)&&note.lane>=0&&note.lane<3&&note.time>=0&&note.time<safeDuration)
-  .sort((a,b)=>a.time-b.time||a.id-b.id)
-  .slice(0,MAX_TAP_NOTES)
-  .map((note,id)=>({
-   id,time:Math.round(note.time),lane:note.lane,
-   ...(Number.isFinite(note.duration)&&Number(note.duration)>=160
-    ?{duration:Math.round(Math.min(Number(note.duration),safeDuration-note.time))}:{})
-  }));
-};
-
 export function BeatmapRecorder({onBack,onSave}:{
  onBack:()=>void;
  onSave:(draft:RecordedBeatmapDraft)=>Promise<void>;
@@ -69,8 +51,8 @@ export function BeatmapRecorder({onBack,onSave}:{
  const selectAudio=(incoming?:File)=>{
   if(!incoming)return;
   setMessage('');
-  if(!allowedAudio(incoming)){setMessage('Select an audio track such as MP3, M4A, WAV, AAC, OGG, or FLAC.');return}
-  if(incoming.size===0||incoming.size>MAX_AUDIO_BYTES){setMessage('Choose an audio file smaller than 120 MB.');return}
+  if(!(incoming.type.startsWith('audio/')||/\.(mp3|m4a|aac|wav|ogg|opus|flac|webm)$/i.test(incoming.name))){setMessage('Select an audio track such as MP3, M4A, WAV, AAC, OGG, or FLAC.');return}
+  if(!isSupportedBeatmapAudio(incoming)){setMessage('Choose an audio file smaller than 120 MB.');return}
   const audio=audioRef.current;
   audio?.pause();
   setPlaying(false);setRecording(false);pressRef.current.clear();
