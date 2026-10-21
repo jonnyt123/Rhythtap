@@ -31,7 +31,7 @@ export function SongShopScreen({songs,coins,unlockedSongIds,signedIn,playerName,
   </header>
   <div className="song-store-scroll">
    <div className="song-store-hero">
-    <img src={import.meta.env.BASE_URL+'assets/menu/rhythmtap-logo.webp'} alt="RhythmTap"/>
+    <div className="song-store-wordmark" role="img" aria-label="RhythmTap"><b>RHYTHM</b><strong>TAP</strong></div>
     <div><small>BUILD YOUR SETLIST</small><h2>UNLOCK MORE TRACKS.</h2><p>Clear songs to earn coins. Spend those coins here to permanently add tracks to your setlist.</p></div>
    </div>
    <div className="song-store-status"><ShoppingBag/><span><small>{signedIn?'CLOUD SETLIST':'GUEST SETLIST'}</small><strong>{signedIn?`${playerName} · unlocks follow your RhythmTap ID`:'Unlocks are saved on this device'}</strong></span></div>
