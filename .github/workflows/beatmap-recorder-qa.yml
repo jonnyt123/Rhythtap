@@ -1,0 +1,63 @@
+name: Beatmap Recorder QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/beatmap-recorder.tsx'
+      - 'src/beatmap-recorder.css'
+      - 'src/recorded-beatmap.ts'
+      - 'scripts/beatmap-recorder-transform.ts'
+      - 'scripts/beatmap-recorder-browser-qa.mjs'
+      - 'scripts/metal-menu-transform.ts'
+      - 'src/song-store.tsx'
+      - 'src/metal-menu.css'
+      - 'src/song-store.css'
+      - 'vite.config.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Full release regression
+        run: npm run test:regression
+      - name: Install browser QA
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start production preview
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/rt-preview.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/Rhythtap/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/rt-preview.log
+          exit 1
+      - name: Record and replay uploaded audio on phone
+        run: node scripts/beatmap-recorder-browser-qa.mjs
+        env:
+          RHYTHTAP_QA_URL: http://127.0.0.1:4173/Rhythtap/
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beatmap-recorder-qa
+          path: beatmap-qa-store.png
+          if-no-files-found: ignore
+          retention-days: 5

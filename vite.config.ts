@@ -24,6 +24,7 @@ import { deepAuditFixesTransform } from './scripts/deep-audit-fixes-transform.ts
 import { songStoreTransformV2 } from './scripts/song-store-transform-v2.ts';
 import { coinBonusTransform } from './scripts/coin-bonus-transform.ts';
 import { progressionAchievementsTransform } from './scripts/progression-achievements-transform.ts';
+import { beatmapRecorderTransform } from './scripts/beatmap-recorder-transform.ts';
 
 const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.VERCEL);
 
@@ -31,7 +32,7 @@ export default defineConfig(({ mode }) => {
   const isItch = mode === 'itch';
 
   return {
-    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), deepAuditFixesTransform(), songStoreTransformV2(), coinBonusTransform(), progressionAchievementsTransform(), react()],
+    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), deepAuditFixesTransform(), songStoreTransformV2(), coinBonusTransform(), progressionAchievementsTransform(), beatmapRecorderTransform(), react()],
     base: isItch ? './' : (isVercel ? '/' : '/Rhythtap/'),
     build: isItch ? {
       outDir: 'dist-itch',

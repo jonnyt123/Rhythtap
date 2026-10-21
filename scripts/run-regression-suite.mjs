@@ -22,6 +22,7 @@ const denoTests=[
  ['tests/song-store.test.ts'],
  ['tests/song-economy-simulation.test.ts'],
  ['tests/progression-achievements.test.ts'],
+ ['--unstable-sloppy-imports','tests/beatmap-recorder.test.ts'],
  ['tests/mobile-layout.test.ts'],
  ['tests/scrolling-regression.test.ts'],
  ['tests/death-metal-theme.test.ts'],
