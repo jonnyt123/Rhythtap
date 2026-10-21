@@ -1,4 +1,4 @@
-import {MAX_TAP_DURATION_MS,MAX_TAP_NOTES} from './tapChart';
+import {MAX_TAP_DURATION_MS,MAX_TAP_NOTES} from './tapChart.ts';
 
 export type RecordedBeatmapNote={id:number;time:number;lane:number;duration?:number};
 export type RecordedBeatmapDraft={
