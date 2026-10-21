@@ -1335,3 +1335,47 @@
 }
 .reference-character-slot:before,.reference-character-slot:after{z-index:3!important;pointer-events:none!important}
 .reference-character-slot>small{z-index:4!important}
+
+
+/* Reliable, semantic art-direction fallback. Avoid the corrupt legacy logo WebP. */
+.metal-home .reference-logo-block{
+ background:none!important;
+ min-height:84px;
+ display:flex!important;
+ justify-content:flex-end;
+ align-items:center;
+ padding:6px 5px 11px;
+ overflow:visible;
+}
+.rhythmtap-metal-wordmark{
+ position:relative;
+ display:inline-flex!important;
+ flex-wrap:nowrap;
+ align-items:baseline;
+ justify-content:flex-end;
+ gap:0!important;
+ width:max-content;
+ max-width:100%;
+ font:900 italic clamp(31px,7.8vw,64px)/.93 'Metal Mania',Impact,'Arial Black',sans-serif;
+ letter-spacing:-.035em;
+ transform:rotate(-2deg);
+ filter:drop-shadow(0 4px 1px #160303) drop-shadow(0 10px 3px rgba(0,0,0,.7));
+}
+.rhythmtap-metal-wordmark b,
+.rhythmtap-metal-wordmark strong{
+ display:inline!important;
+ font:inherit;
+ text-transform:uppercase;
+ color:#ffd68e!important;
+ -webkit-text-stroke:1.4px #74220f;
+ text-shadow:0 2px #fff1be66,2px 4px #8a220d,4px 6px #290403,0 0 13px #d44e1c77;
+}
+.rhythmtap-metal-wordmark strong{color:#f58044!important;text-shadow:0 2px #fca95d80,2px 4px #4e100c,4px 6px #150303,0 0 18px #d73617b3}
+.rhythmtap-metal-wordmark i{
+ position:absolute;right:-3px;top:-13px;font:900 16px/1 serif;
+ color:#ffb46e;text-shadow:0 0 8px #ff6029;
+}
+@media(max-width:430px){
+ .metal-home .reference-logo-block{min-height:67px}
+ .rhythmtap-metal-wordmark{font-size:clamp(28px,7.2vw,40px)}
+}
