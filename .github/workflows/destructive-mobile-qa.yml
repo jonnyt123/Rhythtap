@@ -25,7 +25,8 @@ concurrency:
 
 jobs:
   mobile-qa:
-    runs-on: ubuntu-latest
+    # Playwright 1.55 lacks Ubuntu 26.04 browser installers; use supported LTS image.
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
