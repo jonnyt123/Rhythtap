@@ -18,6 +18,11 @@ on:
 permissions:
   contents: read
 
+# Keep the latest QA evidence for a branch while avoiding obsolete parallel browser runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   mobile-qa:
     runs-on: ubuntu-latest
