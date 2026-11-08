@@ -7,6 +7,7 @@ const target=process.env.RHYTHTAP_QA_URL||'http://127.0.0.1:4173/Rhythtap/';
 const out=path.resolve(process.env.RHYTHTAP_QA_OUT||'qa-artifacts');
 const MIN_PAINTED_PNG_BYTES=30000;
 const issues=[];
+const notes=[];
 await fs.mkdir(out,{recursive:true});
 
 const slug=value=>value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -213,7 +214,16 @@ async function checkExactMainMenuViewport(browserName,browser,viewport,{largeVal
 
   await capturePaint(page,browserName,label);
   for(const error of pageErrors)add(browserName,'critical',`${label}: page exception`,error);
-  for(const error of consoleErrors.filter(value=>!/favicon|Failed to load resource.*404/i.test(value)))add(browserName,'high',`${label}: console error`,error);
+  // The GitHub runner may lack DNS access to the real Supabase host. That is
+  // external service availability, not a visual-paint defect. Preserve it in
+  // evidence while keeping every other console error release-blocking.
+  for(const error of consoleErrors){
+   if(/Failed to load resource: Error resolving .*\\.supabase\\.co.*Name or service not known/i.test(error)){
+    notes.push(`${browserName}: ${label}: external Supabase DNS unavailable — ${error}`);
+    continue;
+   }
+   if(!/favicon|Failed to load resource.*404/i.test(error))add(browserName,'high',`${label}: console error`,error);
+  }
  }catch(error){
   add(browserName,'critical',`${label}: viewport QA aborted`,error instanceof Error?error.stack||error.message:String(error));
  }finally{
@@ -232,9 +242,9 @@ async function checkExactMainMenuViewport(browserName,browser,viewport,{largeVal
 
 const severity={critical:4,high:3,medium:2,low:1};
 issues.sort((a,b)=>severity[b.severity]-severity[a.severity]);
-const report={target,generatedAt:new Date().toISOString(),minimumPaintedPngBytes:MIN_PAINTED_PNG_BYTES,issues};
+const report={target,generatedAt:new Date().toISOString(),minimumPaintedPngBytes:MIN_PAINTED_PNG_BYTES,issues,notes};
 await fs.writeFile(path.join(out,'visual-report.json'),JSON.stringify(report,null,2));
-const markdown=['# RhythmTap mobile visual paint QA','',`Target: ${target}`,`Issues: ${issues.length}`,'',...issues.map((issue,index)=>`${index+1}. **${issue.severity.toUpperCase()} — ${issue.title}** (${issue.browser})\n   ${issue.detail}`)].join('\n');
+const markdown=['# RhythmTap mobile visual paint QA','',`Target: ${target}`,`Issues: ${issues.length}`,'',...issues.map((issue,index)=>`${index+1}. **${issue.severity.toUpperCase()} — ${issue.title}** (${issue.browser})\n   ${issue.detail}`),...(notes.length?['','## External network diagnostics',...notes.map(note=>`- ${note}`)]:[])].join('\n');
 await fs.writeFile(path.join(out,'visual-report.md'),markdown);
 console.log(markdown);
 if(issues.some(issue=>issue.severity==='critical'||issue.severity==='high'))process.exitCode=1;
