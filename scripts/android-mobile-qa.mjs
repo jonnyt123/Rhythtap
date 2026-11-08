@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {registerQaTelemetryRoute} from './qa-telemetry.mjs';
 import {chromium,devices} from 'playwright';
 
 const target=process.env.RHYTHTAP_QA_URL||'http://127.0.0.1:4173/Rhythtap/';
@@ -23,6 +24,7 @@ try{
       locale:'en-CA',
       timezoneId:'America/Toronto',
     });
+    await registerQaTelemetryRoute(context);
     const page=await context.newPage();
     const errors=[];
     page.on('pageerror',e=>errors.push(String(e)));
@@ -35,6 +37,13 @@ try{
       await page.reload({waitUntil:'domcontentloaded'});
     }
     await page.waitForTimeout(700);
+    if(!clean){
+      const tutorial=page.locator('.tutorial-screen').filter({visible:true}).first();
+      if(await vis(tutorial,900)){
+        const exit=page.locator('.tutorial-screen button[aria-label="Exit tutorial"]').first();
+        if(await vis(exit,900)){await exit.click();await page.waitForTimeout(250)}
+      }
+    }
     return{context,page,errors};
   };
 
