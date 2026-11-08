@@ -218,7 +218,7 @@ async function checkExactMainMenuViewport(browserName,browser,viewport,{largeVal
   // external service availability, not a visual-paint defect. Preserve it in
   // evidence while keeping every other console error release-blocking.
   for(const error of consoleErrors){
-   if(/Failed to load resource: Error resolving .*\\.supabase\\.co.*Name or service not known/i.test(error)){
+   if(/Failed to load resource: Error resolving .*\.supabase\.co.*Name or service not known/i.test(error)){
     notes.push(`${browserName}: ${label}: external Supabase DNS unavailable — ${error}`);
     continue;
    }
