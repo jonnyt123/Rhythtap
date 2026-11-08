@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {registerQaTelemetryRoute} from './qa-telemetry.mjs';
 import {chromium,webkit,devices} from 'playwright';
 
 const target=process.env.RHYTHTAP_QA_URL||'http://127.0.0.1:4173/Rhythtap/';
@@ -44,7 +45,9 @@ async function newContext(browser,landscape=false,viewport=null){
  const landscapeProfile=devices['iPhone 14 landscape'];
  const profile=landscape&&landscapeProfile?landscapeProfile:portrait;
  const size=viewport?{viewport,screen:viewport}:{};
- return browser.newContext({...profile,...size,locale:'en-CA',timezoneId:'America/Toronto'});
+ const context=await browser.newContext({...profile,...size,locale:'en-CA',timezoneId:'America/Toronto'});
+ await registerQaTelemetryRoute(context);
+ return context;
 }
 
 async function prepareHome(page,{xp=null}={}){

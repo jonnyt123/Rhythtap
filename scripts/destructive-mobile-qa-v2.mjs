@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {registerQaTelemetryRoute} from './qa-telemetry.mjs';
 import {chromium,webkit,devices} from 'playwright';
 
 const target=process.env.RHYTHTAP_QA_URL||'http://127.0.0.1:4173/Rhythtap/';
@@ -13,16 +14,23 @@ async function snap(page,browser,name){await page.screenshot({path:path.join(out
 async function fresh(browser,engine,{landscape=false}={}){
  const profile=devices['iPhone 14'];
  const context=await browser.newContext({...profile,viewport:landscape?{width:844,height:390}:profile.viewport,screen:landscape?{width:844,height:390}:profile.screen,locale:'en-CA',timezoneId:'America/Toronto'});
+ await registerQaTelemetryRoute(context);
  const page=await context.newPage();
  const pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e)));
  await page.goto(target,{waitUntil:'domcontentloaded',timeout:45000});
  await page.evaluate(()=>{localStorage.setItem('rhythmtap-tutorial-complete-v1','1');localStorage.setItem('rhythtap-tutorial-seen','1')});
  await page.reload({waitUntil:'domcontentloaded'});await page.waitForTimeout(700);
+ // The tutorial may still be active after a storage-seeded reload.
+ const tutorial=page.locator('.tutorial-screen').filter({visible:true}).first();
+ if(await vis(tutorial,900)){
+  const exit=page.locator('.tutorial-screen button[aria-label="Exit tutorial"]').first();
+  if(await vis(exit,900)){await exit.click();await page.waitForTimeout(250)}
+ }
  return{context,page,pageErrors};
 }
 async function requireHome(page,browser,label){
  const home=page.locator('.metal-home,.home');
- if(!(await vis(home,4000))){add(browser,'critical',`${label}: home not rendered`,(await page.locator('#root').innerText().catch(()=>'' )).slice(0,300));return false}
+ if(!(await vis(home,4000))&&!(await vis(page.locator('button').filter({hasText:'SOLO PLAY',visible:true}).first(),1500))){add(browser,'critical',`${label}: home not rendered`,(await page.locator('#root').innerText().catch(()=>'' )).slice(0,300));await snap(page,browser,`home-failed-${slug(label)}`);return false}
  const text=(await page.locator('#root').innerText()).trim();if(!text)add(browser,'critical',`${label}: home DOM is empty`,'#root has no visible text');return Boolean(text);
 }
 async function checkOverflow(page,browser,label){const x=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);if(x>3)add(browser,'medium',`${label}: horizontal overflow`,`${x}px beyond viewport`)}
@@ -32,7 +40,7 @@ async function runEngine(browserName,engine){
  try{
   // First-launch tutorial is independently reachable and paintable.
   {
-   const context=await browser.newContext({...devices['iPhone 14'],locale:'en-CA',timezoneId:'America/Toronto'});const page=await context.newPage();
+   const context=await browser.newContext({...devices['iPhone 14'],locale:'en-CA',timezoneId:'America/Toronto'});await registerQaTelemetryRoute(context);const page=await context.newPage();
    await page.goto(target,{waitUntil:'domcontentloaded',timeout:45000});await page.waitForTimeout(700);
    if(!(await vis(page.locator('.tutorial-screen'),3000)))add(browserName,'high','First-launch tutorial did not render','Expected .tutorial-screen on clean storage');
    await snap(page,browserName,'01-first-launch');await context.close();

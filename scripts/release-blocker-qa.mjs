@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {registerQaTelemetryRoute} from './qa-telemetry.mjs';
 import {chromium,webkit,devices} from 'playwright';
 
 const target=process.env.RHYTHTAP_QA_URL||'http://127.0.0.1:4173/Rhythtap/';
@@ -71,6 +72,7 @@ async function restoreVisibleState(page){
    isMobile:true,hasTouch:true,locale:'en-CA',timezoneId:'America/Toronto',
    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 16_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
   });
+  await registerQaTelemetryRoute(context);
   const page=await context.newPage();
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await prepare(page);
@@ -121,6 +123,7 @@ async function restoreVisibleState(page){
  try{
   const profile=devices['Pixel 5'];
   const context=await browser.newContext({...profile,locale:'en-CA',timezoneId:'America/Toronto'});
+  await registerQaTelemetryRoute(context);
   const page=await context.newPage();
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   const cdp=await context.newCDPSession(page);
