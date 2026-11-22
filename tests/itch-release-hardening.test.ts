@@ -2,6 +2,7 @@ import {assert,assertEquals,assertThrows} from 'https://deno.land/std@0.224.0/as
 import {MAX_TAP_DURATION_MS,MAX_TAP_FILE_BYTES,MAX_TAP_NOTES,parseTapChart} from '../src/tapChart.ts';
 
 const hardening=await Deno.readTextFile('scripts/game-wide-hardening-transform.ts');
+const main=await Deno.readTextFile('src/main.tsx');
 const itchWorkflow=await Deno.readTextFile('.github/workflows/build-itch.yml');
 
 Deno.test('itch account links use a URL-aware relative base',()=>{
@@ -14,7 +15,7 @@ Deno.test('audio loads are invalidated and abortable',()=>{
  assert(hardening.includes('loadGeneration=0;loadAbort:AbortController|null=null'));
  assert(hardening.includes("this.loadAbort?.abort();this.loadAbort=null"));
  assert(hardening.includes("fetch(path,{signal})"));
- assert(hardening.includes("if(!started)return;setPreviewing(s.id)"));
+ assert(main.includes('if(request.current!==pending)return'));
 });
 
 Deno.test('short local audio can finish an imported chart without hanging',()=>{

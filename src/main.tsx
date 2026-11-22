@@ -1,6 +1,6 @@
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ArrowLeft, Award, Check, ChevronRight, Coins, FileUp, Gauge, Headphones, Music2, Pause, Play, RotateCcw, Settings, Sparkles, Square, Target, Trash2, Trophy, User, Volume2, Zap} from 'lucide-react';
+import {ArrowLeft, Award, Check, ChevronRight, Coins, FileUp, Gauge, Headphones, Hourglass, Music2, Pause, Play, RotateCcw, Settings, Sparkles, Square, Target, Trash2, Trophy, User, Volume2, Zap} from 'lucide-react';
 import {flyEagleEvents,neverLeftEvents,sicknessEvents,type OnsetEvent} from './audioChartData';
 import {parseTapChart} from './tapChart';
 import './styles.css';
@@ -23,6 +23,7 @@ const LANES=['D','F','J'];
 const COLORS=['#29f2ff','#b650ff','#ff3dad'];
 const TIMING={perfect:55,great:110,good:220};
 const MAX_INPUT_EVENT_AGE_MS=120;
+const SONG_PREVIEW_DURATION_MS=12_000;
 const SONG_FAIL_GRACE_MS=2000;
 const SONG_FAIL_WARNING=25;
 const inputEventAgeMs=(eventTimeStamp?:number)=>{if(!Number.isFinite(eventTimeStamp))return 0;const now=performance.now();let stamp=Number(eventTimeStamp);if(stamp>1e12&&Number.isFinite(performance.timeOrigin))stamp-=performance.timeOrigin;const age=now-stamp;return Number.isFinite(age)?Math.max(0,Math.min(MAX_INPUT_EVENT_AGE_MS,age)):0};
@@ -82,7 +83,7 @@ class SynthTransport{
  ctx:AudioContext|null=null;source:AudioBufferSourceNode|null=null;media:HTMLAudioElement|null=null;objectUrl='';startAt=0;pausedAt=0;timer:number|undefined;song:Song|null=null;onDownloadProgress:DownloadProgress=()=>{};
  async playMedia(url:string,from=0,objectUrl=false){const media=new Audio(url);this.media=media;if(objectUrl)this.objectUrl=url;media.preload='auto';if(media.readyState<1)await new Promise<void>((resolve,reject)=>{const loaded=()=>{cleanup();resolve()},failed=()=>{cleanup();reject(new Error('Unable to load audio'))},cleanup=()=>{media.removeEventListener('loadedmetadata',loaded);media.removeEventListener('error',failed)};media.addEventListener('loadedmetadata',loaded,{once:true});media.addEventListener('error',failed,{once:true});media.load()});media.currentTime=Math.min(from/1000,Number.isFinite(media.duration)?Math.max(0,media.duration-.05):from/1000);await media.play();this.pausedAt=media.currentTime*1000}
  async start(song:Song,from=0){this.stop();this.song=song;if(song.localAudio){const file=await getStoredAudio(song.id);if(!file)throw new Error(`Audio missing for ${song.title}`);await this.playMedia(URL.createObjectURL(file),from,true);return}if(song.audioFile){const source=await cachedAudioUrl(import.meta.env.BASE_URL+song.audioFile,this.onDownloadProgress);await this.playMedia(source.url,from,source.objectUrl);return}this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime-from/1000;this.schedule(song,from)}
- async preview(song:Song){this.stop();this.song=song;if(song.localAudio){const file=await getStoredAudio(song.id);if(!file)throw new Error(`Audio missing for ${song.title}`);await this.playMedia(URL.createObjectURL(file),0,true);return}if(song.previewFile){const source=await cachedAudioUrl(import.meta.env.BASE_URL+song.previewFile);await this.playMedia(source.url,0,source.objectUrl);return}this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime;this.schedule(song,0)}
+ async preview(song:Song){this.stop();this.song=song;if(song.localAudio){const file=await getStoredAudio(song.id);if(!file)throw new Error(`Audio missing for ${song.title}`);await this.playMedia(URL.createObjectURL(file),0,true);return true}if(song.previewFile){const source=await cachedAudioUrl(import.meta.env.BASE_URL+song.previewFile);await this.playMedia(source.url,0,source.objectUrl);return true}this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime;this.schedule(song,0);return true}
  now(){return this.media?this.media.currentTime*1000:this.ctx?(this.ctx.currentTime-this.startAt)*1000:this.pausedAt}
  schedule(song:Song,from:number){if(!this.ctx)return;const ctx=this.ctx,step=30/song.bpm,leadIn=1.8;let n=Math.max(0,Math.floor((from/1000-leadIn)/step));const pump=()=>{if(!this.ctx)return;const horizon=(ctx.currentTime-this.startAt)+1.2;while(leadIn+n*step<horizon){const t=this.startAt+leadIn+n*step;if(t>ctx.currentTime){const bar=Math.floor(n/8),pos=n%8,root=song.root+song.progression[bar%song.progression.length],pitch=song.melody[n%song.melody.length];this.hat(t,pos%2?0.035:0.055);if(pos===0||pos===4)this.kick(t,pos===0?.34:.25);if(pos===2||pos===6)this.snare(t,.13);if(pos%2===0)this.tone(t,this.midi(root-12),step*.82,.12,'sawtooth',520);if(pos===0||pos===4)this.chord(t,root,step*3.4,.035);this.tone(t,this.midi(song.root+pitch),step*.72,pos%2?.042:.052,'square',1800)}n++}this.timer=window.setTimeout(pump,260)};pump()}
  midi(n:number){return 440*Math.pow(2,(n-69)/12)}
@@ -132,11 +133,61 @@ function Home({profile,stats,onPlay,onLibrary,onAchievements,onSettings}:{profil
  <div className={'daily '+(dailyProgress>=2?'complete':'')}><Target/><div><small>DAILY CHALLENGE</small><strong>{dailyProgress>=2?'Reward claimed · +100 XP':'Complete 2 tracks · +100 XP'}</strong><i><b style={{width:(dailyProgress/2*100)+'%'}}/></i></div><span>{dailyProgress}/2</span></div></div>
  </section>}
 
-function Select({songs,song,setSong,difficulty,setDifficulty,profile,noteTheme,importTap,back,play}:{songs:Song[],song:Song,setSong:(s:Song)=>void,difficulty:Difficulty,setDifficulty:(d:Difficulty)=>void,profile:Profile,noteTheme:NoteTheme,importTap:(file:File)=>Promise<void>,back:()=>void,play:()=>void}){const preview=useRef(new SynthTransport()),[previewing,setPreviewing]=useState(''),[previewError,setPreviewError]=useState('');useEffect(()=>()=>preview.current.stop(),[]);const togglePreview=async(s:Song)=>{if(previewing===s.id){preview.current.stop();setPreviewing('');return}preview.current.stop();setSong(s);setPreviewError('');try{await preview.current.preview(s);setPreviewing(s.id);window.setTimeout(()=>setPreviewing(current=>{if(current===s.id){preview.current.stop();return ''}return current}),12000)}catch{setPreviewError('Preview unavailable');setPreviewing('')}};const importFile=async(file?:File)=>{if(!file)return;setPreviewError('');try{await importTap(file)}catch(error){setPreviewError(error instanceof Error?error.message:'Unable to import this .tap chart.')}};const leave=(next:()=>void)=>{preview.current.stop();next()};return <section className="select screen">
+function Select({songs,song,setSong,difficulty,setDifficulty,profile,noteTheme,importTap,back,play}:{songs:Song[],song:Song,setSong:(s:Song)=>void,difficulty:Difficulty,setDifficulty:(d:Difficulty)=>void,profile:Profile,noteTheme:NoteTheme,importTap:(file:File)=>Promise<void>,back:()=>void,play:()=>void}){
+ const preview=useRef(new SynthTransport());
+ const request=useRef<{songId:string;timer?:number}|null>(null);
+ const [previewState,setPreviewState]=useState<{songId:string;loading:boolean}|null>(null);
+ const [previewError,setPreviewError]=useState('');
+
+ const stopPreview=useCallback(()=>{
+  window.clearTimeout(request.current?.timer);
+  request.current=null;
+  preview.current.stop();
+ },[]);
+ useEffect(()=>stopPreview,[stopPreview]);
+
+ const togglePreview=async(s:Song)=>{
+  const stopping=request.current?.songId===s.id;
+  stopPreview();
+  setPreviewError('');
+  if(stopping){setPreviewState(null);return}
+
+  const pending:{songId:string;timer?:number}={songId:s.id};
+  request.current=pending;
+  setPreviewState({songId:s.id,loading:true});
+  setSong(s);
+  try{
+   const started=await preview.current.preview(s);
+   if(request.current!==pending)return;
+   if(!started){stopPreview();setPreviewState(null);return}
+   setPreviewState({songId:s.id,loading:false});
+   pending.timer=window.setTimeout(()=>{
+    if(request.current!==pending)return;
+    stopPreview();
+    setPreviewState(null);
+   },SONG_PREVIEW_DURATION_MS);
+  }catch{
+   if(request.current!==pending)return;
+   stopPreview();
+   setPreviewState(null);
+   setPreviewError('Preview unavailable');
+  }
+ };
+ const importFile=async(file?:File)=>{if(!file)return;setPreviewError('');try{await importTap(file)}catch(error){setPreviewError(error instanceof Error?error.message:'Unable to import this .tap chart.')}};
+ const leave=(next:()=>void)=>{stopPreview();setPreviewState(null);next()};
+ return <section className="select screen">
  <header><button className="icon" onClick={()=>leave(back)} aria-label="Back"><ArrowLeft/></button><div><small>SETLIST</small><h2>CHOOSE A TRACK</h2></div><span className="level">LEVEL {profile.level}</span></header>
  <div className="section-label"><span>YOUR SONGS</span><label className="tap-import"><FileUp/> IMPORT .TAP<input type="file" accept=".tap,text/plain" onChange={event=>{void importFile(event.target.files?.[0]);event.currentTarget.value=''}}/></label><small>{songs.length} TRACKS</small></div>
- <div className="songlist">{songs.map((s,i)=>{const locked=profile.level<s.unlockLevel;return <div key={s.id} className={'song '+(song.id===s.id?'active ':'')+(locked?'locked':'')} style={{'--song':s.color} as React.CSSProperties}>
-  <button className="songpick" disabled={locked} onClick={()=>setSong(s)}><div className={'cover art-'+s.id}><div className="covergrid"/><b>{locked?'×':String(i+1).padStart(2,'0')}</b><i/></div><div className="songmeta"><span>{locked?`UNLOCKS AT LEVEL ${s.unlockLevel}`:s.artist}</span><h3>{s.title}</h3><div><em>{s.charts[difficulty].length} NOTES</em><span>{s.bpm} BPM</span></div></div></button><button className="preview" disabled={locked} onClick={()=>togglePreview(s)} aria-label={(previewing===s.id?'Stop ':'Preview ')+s.title}>{previewing===s.id?<Square fill="currentColor"/>:<Headphones/>}</button></div>})}</div>
+ <div className="songlist">{songs.map((s,i)=>{
+  const locked=profile.level<s.unlockLevel;
+  const previewing=previewState?.songId===s.id;
+  const loading=previewing&&previewState.loading;
+  return <div key={s.id} className={'song '+(song.id===s.id?'active ':'')+(locked?'locked':'')} style={{'--song':s.color} as React.CSSProperties}>
+  <button className="songpick" disabled={locked} onClick={()=>setSong(s)}><div className={'cover art-'+s.id}><div className="covergrid"/><b>{locked?'×':String(i+1).padStart(2,'0')}</b><i/></div><div className="songmeta"><span>{locked?`UNLOCKS AT LEVEL ${s.unlockLevel}`:s.artist}</span><h3>{s.title}</h3><div><em>{s.charts[difficulty].length} NOTES</em><span>{s.bpm} BPM</span></div></div></button>
+  <button className="preview" disabled={locked} onClick={()=>void togglePreview(s)} aria-label={(previewing?'Stop ':'Preview ')+s.title} aria-busy={loading}>
+   {loading?<Hourglass/>:previewing?<Square fill="currentColor"/>:<Headphones/>}
+  </button>
+ </div>})}</div>
  {previewError&&<div className="preview-error">{previewError}</div>}
  <div className="difficulty" aria-label="Difficulty">{(['EASY','NORMAL','HARD'] as Difficulty[]).map(d=><button key={d} className={difficulty===d?'active':''} onClick={()=>setDifficulty(d)}><span>{d}</span><small>{song.charts[d].length} NOTES</small></button>)}</div>
  <div className="playdock"><div className={'theme-preview theme-'+noteTheme.toLowerCase()} aria-label={(noteThemes.find(theme=>theme.id===noteTheme)?.label||'Orb')+' note theme preview'}>{COLORS.map((color,index)=><i key={color} style={{'--lane':color,'--delay':index} as React.CSSProperties}/>)}</div><div className="playdock-copy"><small>{difficulty} · {song.charts[difficulty].length} NOTES · {noteTheme}</small><strong>{song.title}</strong></div><button className="primary" onClick={()=>leave(play)}><Play fill="currentColor"/> PLAY</button></div>
