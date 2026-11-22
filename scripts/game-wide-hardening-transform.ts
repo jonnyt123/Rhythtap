@@ -18,7 +18,7 @@ const patchMain=(source:string)=>{
   "import {flushSync} from 'react-dom';\nimport {createRoot} from 'react-dom/client';");
  code=replaceRequired(code,'tap import limit constant',
   "import {parseTapChart} from './tapChart';",
-  "import {MAX_TAP_FILE_BYTES,parseTapChart} from './tapChart';");
+  "import {MAX_TAP_FILE_BYTES,parseTapChart} from './tapChart';\nimport {loadTrackPreview} from './track-preview';");
  code=replaceRequired(code,'persisted note speed',
   "[speed,setSpeed]=useState(1)",
   "[speed,setSpeed]=useState(()=>{const value=Number(localStorage.getItem('ntr-speed')||1);return Number.isFinite(value)?Math.max(.7,Math.min(1.5,value)):1})");
@@ -71,8 +71,39 @@ const patchMain=(source:string)=>{
   "async start(song:Song,from=0){this.stop();const generation=this.loadGeneration;this.loadAbort=new AbortController();this.song=song;try{if(song.localAudio){const file=await getStoredAudio(song.id);if(generation!==this.loadGeneration)return false;if(!file)throw new Error(`Audio missing for ${song.title}`);return await this.playMedia(URL.createObjectURL(file),from,true,generation)}if(song.audioFile){const source=await cachedAudioUrl(versionedAudioPath(song.audioFile),this.onDownloadProgress,this.loadAbort.signal);if(generation!==this.loadGeneration){if(source.objectUrl)URL.revokeObjectURL(source.url);return false}return await this.playMedia(source.url,from,source.objectUrl,generation)}if(generation!==this.loadGeneration)return false;this.ctx=new AudioContext();await this.ctx.resume();if(generation!==this.loadGeneration){void this.ctx.close();this.ctx=null;return false}this.startAt=this.ctx.currentTime-from/1000;this.schedule(song,from);return true}catch(error){if(generation!==this.loadGeneration||(error instanceof DOMException&&error.name==='AbortError'))return false;throw error}}"
  );
  code=replaceRequired(code,'cancellable preview start',
-  "async preview(song:Song){this.stop();this.song=song;if(song.localAudio){const file=await getStoredAudio(song.id);if(!file)throw new Error(`Audio missing for ${song.title}`);await this.playMedia(URL.createObjectURL(file),0,true);return}if(song.previewFile){const source=await cachedAudioUrl(versionedAudioPath(song.previewFile));await this.playMedia(source.url,0,source.objectUrl);return}this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime;this.schedule(song,0)}",
-  "async preview(song:Song){this.stop();const generation=this.loadGeneration;this.loadAbort=new AbortController();this.song=song;try{if(song.localAudio){const file=await getStoredAudio(song.id);if(generation!==this.loadGeneration)return false;if(!file)throw new Error(`Audio missing for ${song.title}`);return await this.playMedia(URL.createObjectURL(file),0,true,generation)}if(song.previewFile){const source=await cachedAudioUrl(versionedAudioPath(song.previewFile),()=>{},this.loadAbort.signal);if(generation!==this.loadGeneration){if(source.objectUrl)URL.revokeObjectURL(source.url);return false}return await this.playMedia(source.url,0,source.objectUrl,generation)}if(generation!==this.loadGeneration)return false;this.ctx=new AudioContext();await this.ctx.resume();if(generation!==this.loadGeneration){void this.ctx.close();this.ctx=null;return false}this.startAt=this.ctx.currentTime;this.schedule(song,0);return true}catch(error){if(generation!==this.loadGeneration||(error instanceof DOMException&&error.name==='AbortError'))return false;throw error}}"
+  "async preview(song:Song){this.stop();this.song=song;if(song.localAudio){const file=await getStoredAudio(song.id);if(!file)throw new Error(`Audio missing for ${song.title}`);await this.playMedia(URL.createObjectURL(file),0,true);return true}if(song.previewFile){const source=await cachedAudioUrl(versionedAudioPath(song.previewFile));await this.playMedia(source.url,0,source.objectUrl);return true}this.ctx=new AudioContext();await this.ctx.resume();this.startAt=this.ctx.currentTime;this.schedule(song,0);return true}",
+  `async preview(song:Song){
+   this.stop();
+   const generation=this.loadGeneration;
+   const controller=this.loadAbort=new AbortController();
+   this.song=song;
+   try{
+    if(song.localAudio){
+     const file=await getStoredAudio(song.id);
+     if(generation!==this.loadGeneration)return false;
+     if(!file)throw new Error('Audio missing for '+song.title);
+     return await this.playMedia(URL.createObjectURL(file),0,true,generation);
+    }
+    if(song.previewFile){
+     const path=versionedAudioPath(song.previewFile);
+     if(song.previewFile===song.audioFile){
+      const clip=await loadTrackPreview(path,AUDIO_CACHE,controller.signal);
+      return await this.playMedia(URL.createObjectURL(clip),0,true,generation);
+     }
+     const source=await cachedAudioUrl(path,()=>{},controller.signal);
+     return await this.playMedia(source.url,0,source.objectUrl,generation);
+    }
+    const context=this.ctx=new AudioContext();
+    await context.resume();
+    if(generation!==this.loadGeneration)return false;
+    this.startAt=context.currentTime;
+    this.schedule(song,0);
+    return true;
+   }catch(error){
+    if(generation!==this.loadGeneration||(error instanceof DOMException&&error.name==='AbortError'))return false;
+    throw error;
+   }
+  }`
  );
  code=replaceRequired(code,'invalidate pending audio loads',
   "stop(){if(this.timer)clearTimeout(this.timer);",
@@ -80,9 +111,6 @@ const patchMain=(source:string)=>{
  code=replaceRequired(code,'only ready after transport start',
   "await transport.current.start(song);if(multiplayerSession.enabled&&multiplayerSession.launch&&transport.current.media){",
   "const started=await transport.current.start(song);if(!started)return;if(multiplayerSession.enabled&&multiplayerSession.launch&&transport.current.media){");
- code=replaceRequired(code,'only mark preview after transport start',
-  "try{await preview.current.preview(s);setPreviewing(s.id);",
-  "try{const started=await preview.current.preview(s);if(!started)return;setPreviewing(s.id);");
  code=replaceRequired(code,'short local audio completion',
   "const mediaFinished=transport.current.ended()&&t>=notes.at(-1)!.time+TIMING.good;if((t>end||mediaFinished)&&!failedRef.current&&energyRef.current>0){transport.current.stop();const c=countsRef.current,",
   "const mediaFinished=transport.current.ended(),lastNoteEnd=notes.at(-1)!.time+TIMING.good,endedEarly=Boolean(song.localAudio&&mediaFinished&&t<lastNoteEnd);if((t>end||(mediaFinished&&t>=lastNoteEnd)||endedEarly)&&!failedRef.current&&energyRef.current>0){transport.current.stop();const remaining=endedEarly?notes.filter(n=>!judged.current.has(n.id)):[];if(remaining.length){for(const n of remaining){judged.current.add(n.id);soloEvents.current.push({kind:'MISS',noteId:n.id,lane:n.lane,atMs:Math.max(0,Math.round(t))})}}const c=remaining.length?{...countsRef.current,MISS:countsRef.current.MISS+remaining.length}:countsRef.current,");

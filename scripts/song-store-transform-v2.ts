@@ -25,7 +25,7 @@ const main=(source:string)=>{
  code=required(code,'announcement','More songs available in the setlist.','More songs available in the store.');
  code=required(code,'select destructure',"function Select({songs,song,setSong,difficulty,setDifficulty,profile,noteTheme,","function Select({songs,song,setSong,difficulty,setDifficulty,profile,noteTheme,isSongUnlocked,openStore,");
  code=required(code,'select types',"profile:Profile,noteTheme:NoteTheme,importTap:","profile:Profile,noteTheme:NoteTheme,isSongUnlocked:(songId:string)=>boolean,openStore:()=>void,importTap:");
- code=required(code,'selected lock',"const leave=(next:()=>void)=>{preview.current.stop();next()};return <section className=\"select screen\">","const leave=(next:()=>void)=>{preview.current.stop();next()},selectedLocked=!song.id.startsWith('tap-')&&!isSongUnlocked(song.id);return <section className=\"select screen\">");
+ code=required(code,'selected lock','return <section className="select screen">',"const selectedLocked=!song.id.startsWith('tap-')&&!isSongUnlocked(song.id);\n return <section className=\"select screen\">");
  code=required(code,'song lock',"const locked=profile.level<s.unlockLevel;","const locked=!s.id.startsWith('tap-')&&!isSongUnlocked(s.id);");
  code=required(code,'locked song click',"<button className=\"songpick\" disabled={locked} onClick={()=>setSong(s)}>","<button className=\"songpick\" onClick={()=>{if(locked){openStore();return}setSong(s)}}>");
  code=required(code,'locked song label',"{locked?`UNLOCKS AT LEVEL ${s.unlockLevel}`:s.artist}","{locked?`${songPrice(s.id).toLocaleString()} COINS · STORE`:s.artist}");
