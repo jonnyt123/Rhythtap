@@ -214,3 +214,10 @@ Do not add or distribute commercial recordings unless you have the required righ
 ## Status
 
 RhythmTap is under active development. Core solo gameplay, accounts, cloud progression, public profiles, custom chart importing, and authoritative two-player multiplayer are implemented. Real-world multiplayer behavior can still vary by browser/network conditions and should be tested across multiple devices when available.
+
+## CrazyGames original-track build
+
+Run `npm run build:crazygames` to produce `artifacts/rhythmtap-crazygames.zip`.
+The ZIP contains relative paths and only the three synthesized tracks Midnight Voltage, Afterglow Circuit, and Zero Gravity. This dedicated guest build opens directly on Easy gameplay. One tap starts the first song, with retry and next-track actions after completion.
+
+The packaging guard rejects a build above 20,000,000 uncompressed bytes, more than 1,500 files, or bundled audio/preview directories. Accounts, purchases, and multiplayer are absent from this build's reachable flow. Platform SDK integration and CrazyGames Preview/QA approval remain release gates before submission.

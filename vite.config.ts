@@ -1,3 +1,4 @@
+import {crazygamesTransform} from './scripts/crazygames-transform.ts';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { songPackTransform } from './scripts/song-pack-transform.ts';
@@ -30,11 +31,13 @@ const isVercel = Boolean((globalThis as typeof globalThis & { process?: { env?: 
 
 export default defineConfig(({ mode }) => {
   const isItch = mode === 'itch';
+  const isPortal = mode === 'crazygames';
 
   return {
-    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), deepAuditFixesTransform(), songStoreTransformV2(), coinBonusTransform(), progressionAchievementsTransform(), beatmapRecorderTransform(), react()],
-    base: isItch ? './' : (isVercel ? '/' : '/Rhythtap/'),
-    build: isItch ? {
+    plugins: [weightedChartTransform(), songPackTransform(), multiplayerTransform(), accountTransform(), metalMenuTransform(), stabilityTransform(), serverIdempotencyTransform(), battleExperienceTransform(), accountRecoveryTransform(), battleLobbyUsabilityTransform(), multiplayerSessionLoopTransform(), multiplayerHardeningTransform(), tourSocialRankedTransform(), pr13ReviewFixesTransform(), tourSetCareerTransform(), gameplayQualityTransform(), highResolutionMediaClockTransform(), engagementUiTransform(), stripeBillingTransform(), gameWideHardeningTransform(), deepAuditFixesTransform(), songStoreTransformV2(), coinBonusTransform(), progressionAchievementsTransform(), beatmapRecorderTransform(), ...(isPortal ? [crazygamesTransform()] : []), react()],
+    base: (isItch || isPortal) ? './' : (isVercel ? '/' : '/Rhythtap/'),
+    publicDir: isPortal ? false : 'public',
+    build: isPortal ? {outDir:'dist-crazygames',emptyOutDir:true} : isItch ? {
       outDir: 'dist-itch',
       emptyOutDir: true,
     } : undefined,

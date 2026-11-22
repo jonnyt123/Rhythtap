@@ -12,7 +12,8 @@
     "test:regression": "node scripts/run-regression-suite.mjs",
     "qa:blockers": "node scripts/release-blocker-qa.mjs",
     "qa:mobile": "node scripts/destructive-mobile-qa-v2.mjs && node scripts/android-mobile-qa.mjs && node scripts/mobile-visual-regression.mjs && npm run qa:blockers",
-    "qa:release": "npm run build && npm run test:regression"
+    "qa:release": "npm run build && npm run test:regression",
+    "build:crazygames": "tsc && vite build --mode crazygames && node scripts/package-itch.mjs dist-crazygames rhythmtap-crazygames.zip"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
