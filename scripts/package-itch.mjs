@@ -2,9 +2,9 @@ import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 
-const sourceDir = path.resolve('dist-itch');
+const sourceDir = path.resolve(process.argv[2] || 'dist-itch');
 const outputDir = path.resolve('artifacts');
-const outputFile = path.join(outputDir, 'rhythmtap-itch.zip');
+const outputFile = path.join(outputDir, process.argv[3] || 'rhythmtap-itch.zip');
 const excludedFromItch = relative => relative === 'sw.js' || relative === 'robots.txt' || relative === 'sitemap.xml' || relative.startsWith('launch/');
 const textExtensions = new Set(['.html', '.js', '.mjs', '.css', '.json', '.txt', '.xml']);
 
@@ -149,6 +149,12 @@ async function makeZip(files) {
 
 const allFiles = await collectFiles(sourceDir);
 await verifyBuild(allFiles);
+if(process.argv[2] === 'dist-crazygames'){
+ const bytes=(await Promise.all(allFiles.map(file=>stat(file.absolute)))).reduce((sum,file)=>sum+file.size,0);
+ if(bytes>20_000_000 || allFiles.length>1500)throw new Error('Portal download budget exceeded');
+ if(allFiles.some(file=>file.relative.startsWith('audio/')||file.relative.startsWith('previews/')))throw new Error('Recorded audio found in originals-only portal build');
+ console.log('Portal budget PASS',bytes,'bytes',allFiles.length,'files');
+}
 const files = allFiles.filter(file => !excludedFromItch(file.relative));
 if (!files.some(file => file.relative === 'index.html')) throw new Error('itch.io package must contain index.html at the ZIP root.');
 if (files.some(file => excludedFromItch(file.relative))) throw new Error('itch.io package contains website-only files.');
